@@ -1,14 +1,14 @@
 import socket
 import logging
 import time as ti
-from datetime import time
+from datetime import time, datetime
 
 import Constant as Cons
+import MainFunction as Mf
 
 from socket import AF_INET, SOCK_STREAM
 
 import Dialog
-
 
 # Sending Command with hex
 def send_data(send_cmd, root_view):
@@ -39,12 +39,20 @@ def send_data(send_cmd, root_view):
         client.close()
 
 
-def send_data_with_interval(interval: [float], repeat: int, send_cmds: [int], root_view):
+def send_data_with_interval(interval: [float], repeat: int, send_cmds: [int], cmd_title: [str], root_view):
     for i in range(repeat):
+        current_time = datetime.now()
+        time_str = current_time.strftime('%Y-%m-%d-%H.%M.%S')
         print(i)
+        print(time_str)
         for i, protocol in enumerate(send_cmds):
             if Cons.data_sending:
-                send_data(protocol, root_view)
-                ti.sleep(interval[i])
+                if protocol == Cons.capture_hex:
+                    path = Cons.capture_path['zoom']
+                    filename = rf'{path}/{cmd_title[i-1]}-{time_str}-{i}.png'
+                    Mf.capture_image(root_view, filename)
+                else:
+                    send_data(protocol, root_view)
+                    ti.sleep(interval[i])
             else:
                 print('Protocol sending was stopped')

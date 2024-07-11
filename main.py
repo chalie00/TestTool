@@ -8,7 +8,7 @@ import Constant as Cons
 import MainFunction as Mf
 import Communication as Comm
 import VideoPlayer as Vp
-import PTZ as ptz
+import Ptz as pt
 import OnOff_Switch as onoffSW
 import Table as tb
 import threading
@@ -22,7 +22,7 @@ from PIL import ImageTk, Image
 class TestTool(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
-
+        self.parent = parent
         # Set Title
         parent.title('Test Tool')
         parent.geometry(f'{Cons.WINDOWS_SIZE["x"]}x{Cons.WINDOWS_SIZE["y"]}+'
@@ -30,7 +30,13 @@ class TestTool(Frame):
         parent.config(padx=15, pady=15)
         parent.resizable(width=False, height=False)
 
+        # self.canvas = tk.Canvas(parent, width=Cons.camera_resolution['w'],
+        #                         height=Cons.camera_resolution['h'], bg='red')
+        # self.canvas.place(x=0, y=0)
+
         self.thread_running = False
+
+        # Check Main Window Position
 
         # Open RTSP and Get the Network Information from User Input
         def open_video_window():
@@ -106,12 +112,13 @@ class TestTool(Frame):
                 script_run_btn.config(state='disabled')
                 script_stop_btn.config(state='normal')
                 Cons.data_sending = True
-                if Cons.script_mode_value:
+                if Cons.script_toggle_flag:
                     print('run script')
                     interval = Cons.interval_arrays
                     repeat = int(repeat_txt_fld.get())
                     script = Cons.script_hex_arrays
-                    Comm.send_data_with_interval(interval, repeat, script, parent)
+                    titles = Cons.script_cmd_titles
+                    Comm.send_data_with_interval(interval, repeat, script, titles, parent)
                 else:
                     protocol_str_arr = []
                     hex_protocol = []
@@ -125,7 +132,7 @@ class TestTool(Frame):
                     print(hex_protocol)
                     interval = float(int(interval_txt_fld.get()) / 1000)
                     repeat = int(repeat_txt_fld.get())
-                    Comm.send_data_with_interval(interval, repeat, hex_protocol, parent)
+                    Comm.send_data_with_interval(interval, repeat, hex_protocol, titles, parent)
 
                     return hex_protocol
                 time.sleep(1)
@@ -147,7 +154,9 @@ class TestTool(Frame):
             print('clear script')
             Mf.clr_table_arrays(parent)
 
-        # Input User, Model Information
+        # ================================================ UI Layout ============================================
+
+        # ======================================== Input User, Model Information ================================
         validator = Cons.validator_lbl
         validator_txt = Cons.validator_txt_fld
         model = Cons.model_lbl
@@ -176,7 +185,7 @@ class TestTool(Frame):
                                      h=fw_txt['h'], w=fw_txt['w'], element='Entry',
                                      bg=fw_txt['bg'])
 
-        # Set Network Information
+        # ============================================ Set Network Information ================================
         ip = Cons.ip_lbl_info
         ip_txt = Cons.ip_txt_fld_info
         port = Cons.port_lbl_info
@@ -232,7 +241,7 @@ class TestTool(Frame):
                                        anchor='center',
                                        command=open_video_window)
 
-        # Set Searching a command UI
+        # ===================================== Set Searching a command UI =====================================
         sear_txt = Cons.search_txt_fld_info
         sear_btn = Cons.search_btn
 
@@ -253,7 +262,7 @@ class TestTool(Frame):
         ipc_id_txt_fld.insert(0, test_txt['id'])
         ipc_pw_txt_fld.insert(0, test_txt['pw'])
 
-        # Set Command Table
+        # ======================================== Set Command Table ===========================================
         column_name = Cons.column_array
         column_count = len(column_name)
         cmd_data = Cons.command_array
@@ -261,11 +270,12 @@ class TestTool(Frame):
         treeview = Mf.make_table(parent, column_count, Cons.tree_view_size['w'], column_name,
                                  Cons.treeview_pos['x'], Cons.treeview_pos['y'], cmd_data)
 
-        # Set Script Table
+        # ========================================= Set Script Table ===========================================
         script_tb = tb.Table(parent)
 
-        # Set PTZ UI
-        ptz_ui = ptz.PTZ(parent)
+        # ======================== Set PTZ UI, interval, repeat, script mode, script run/stop/clear ============
+        ptz_ui = pt.PTZ(parent)
+
         inter_lbl = Cons.interval_lbl
         inter_txt = Cons.interval_txt_fld
         inter_add_btn = Cons.interval_add_btn
@@ -307,7 +317,8 @@ class TestTool(Frame):
                                        scr_mode_lbl['h'], scr_mode_lbl['w'],
                                        bg=scr_mode_lbl['bg'], element='Label',
                                        text=scr_mode_lbl['text'], anchor='center')
-        script_mode_ui = onoffSW.SwitchOnOff(parent)
+        script_btn_id = 'SCRIPT'
+        script_mode_ui = onoffSW.SwitchOnOff(parent, None, script_btn_id, Cons.script_mode_btn)
 
         script_run_btn = Mf.make_element(r_btn['x'], r_btn['y'],
                                          r_btn['h'], r_btn['w'],

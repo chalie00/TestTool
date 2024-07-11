@@ -2,7 +2,8 @@ import string
 import tkinter.ttk
 from tkinter import ttk
 import openpyxl
-import socket
+import pygetwindow as gw
+import pyautogui
 
 import Dialog
 import Communication as Th
@@ -11,6 +12,9 @@ import Table as tb
 
 from tkinter import *
 from ttkwidgets import CheckboxTreeview
+from PIL import ImageGrab
+from screeninfo import get_monitors
+from mss import mss
 
 
 # Set element(label, text field, button) as specified position and size
@@ -117,10 +121,8 @@ def check_interval_active():
     interval_count = len(Cons.interval_arrays)
     if cmd_title_count > interval_count:
         Cons.interval_button.configure(state='normal')
-        Cons.script_button_flag = True
     else:
         Cons.interval_button.configure(state='disabled')
-        Cons.script_button_flag = False
 
 
 # Called when table element was clicked
@@ -139,7 +141,7 @@ def clicked_table_element(event, root_view, tv):
         show_network_dialog(root_view, 'Please enter a network info.')
         return
 
-    if Cons.script_mode_value:
+    if Cons.script_toggle_flag:
         handle_script_mode(event, value, root_view)
     else:
         handle_normal_mode(event, tags, iden, root_view, tv)
@@ -213,8 +215,43 @@ def get_data_from_csv(file_path) -> [(str, str)]:
 
     return command_data
 
+
+# (2024.07.05) Capture a Image from RTSP
+def capture_image(root, filename):
+    x = root.winfo_rootx()
+    y = root.winfo_rooty()
+    w = root.winfo_width()
+    h = root.winfo_height()
+    bbox = (x, y, Cons.camera_resolution['w'], Cons.camera_resolution['h'])
+    image = ImageGrab.grab(bbox=bbox)
+    image.save(filename)
+
+
+def print_monitor_info():
+    monitors = get_monitors()
+    for i, monitor in enumerate(monitors):
+        print(f"Monitor {i}:")
+        print(f"  - X: {monitor.x}")
+        print(f"  - Y: {monitor.y}")
+        print(f"  - Width: {monitor.width}")
+        print(f"  - Height: {monitor.height}")
+        print()
+
+
+# (2024.07.05) Get a Monitor Information
+def get_secondary_monitor_bbox():
+    monitors = get_monitors()
+    if len(monitors) > 1:
+        secondary_monitor = monitors[1]
+        print(secondary_monitor.x, secondary_monitor.y,
+              secondary_monitor.x + secondary_monitor.width,
+              secondary_monitor.y + secondary_monitor.height)
+        return (secondary_monitor.x, secondary_monitor.y,
+                secondary_monitor.x + secondary_monitor.width,
+                secondary_monitor.y + secondary_monitor.height)
+    return None
+
 # TODO: Generate exe format
 # TODO: Check whether sent command was applied
 # TODO: Absolute move
 # TODO: Move to point of click (Centering)
-

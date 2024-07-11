@@ -18,7 +18,8 @@ class VideoPlayer:
         self.player = self.instance.media_player_new()
 
         self.canvas = tk.Canvas(root, width=Cons.camera_resolution['w'], height=Cons.camera_resolution['h'])
-        self.canvas.grid(row=3, column=0)
+        # self.canvas.grid(row=0, column=0)
+        self.canvas.place(x=Cons.rtsp_pos['x'], y=Cons.rtsp_pos['y'])
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 

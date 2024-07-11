@@ -44,22 +44,41 @@ column_array = ['Function', 'Command']
 # Command from CSV File
 command_array = Mf.get_data_from_csv(cmd_path)
 
-# For Script Variable
-script_mode_value = None
-script_button = None
-script_button_flag = True
+# Script Variable
+script_toggle_flag = False
 # script_hex_arrays = []
 # script_cmd_titles = []
 # interval_arrays = []
 # cmd_itv_arrays = []
 
+# ScreenShot Hex Value
+capture_hex = [255, 1, 0, 0, 0, 0, 0]
+
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
 script_hex_arrays = [[255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-                     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178]]
-script_cmd_titles = ['Zoom Out', 'All Stop', 'AF', 'Zoom In', 'All Stop', 'AF']
-interval_arrays = [2.5, 0.3, 7.0, 2.5, 0.3, 7.0]
-cmd_itv_arrays = [['Zoom Out', 2.5], ['All Stop', 0.3], ['AF', 4.0], ['Zoom In', 2.5], ['All Stop', 0.3],
-                  ['AF', 4.0]]
+                     [255, 1, 0, 0, 0, 0, 0],
+                     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+                     [255, 1, 0, 0, 0, 0, 0],
+                     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+                     [255, 1, 0, 0, 0, 0, 0],
+                     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+                     [255, 1, 0, 0, 0, 0, 0]
+                     ]
+script_cmd_titles = ['Zoom Out', 'All Stop', 'AF', 'ScreenShot',
+                     'Zoom In', 'All Stop', 'AF', 'ScreenShot',
+                     'Far', 'All Stop', 'AF', 'ScreenShot',
+                     'Near', 'All Stop', 'AF', 'ScreenShot'
+                     ]
+interval_arrays = [2.5, 0.3, 3.0, 1.0,
+                   2.5, 0.3, 3.0, 1.0,
+                   2.5, 0.3, 3.0, 1.0,
+                   2.5, 0.3, 3.0, 1.0
+                   ]
+cmd_itv_arrays = [['Zoom Out', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0],
+                  ['Zoom In', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0],
+                  ['Far', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0],
+                  ['Near', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0]
+                  ]
 
 # Network Information form User Input
 data_sending = True
@@ -73,14 +92,15 @@ rtsp_url = ''
 ipc_id = ''
 ipc_pw = ''
 
-normal_coord = {
-    'x': 0,
-    'y': 0,
-}
+# PTZ/OSD Toggle Variable
+ptz_osd_toggle_flag = False
 
 # User, Model Information
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
 right_text_fd_size = int(WINDOWS_SIZE['x'] * 0.01875)
+
+rtsp_pos = {'x': 0, 'y': 0,
+            'h': camera_resolution['w'], 'w': camera_resolution['w']}
 
 validator_lbl = {'x': info_start_pos['x'], 'y': info_start_pos['y'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
@@ -148,6 +168,14 @@ search_btn = {'x': register_btn['x'], 'y': search_txt_fld_info['y'] - 2,
 treeview_pos = {'x': camera_resolution['w'] + 30, 'y': search_btn['y'] + search_btn['h'] + 10}
 tree_view_size = {'w': int((WINDOWS_SIZE['x'] - 1280) / 2.7), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17) + 7}
 
+# (2024.07.10) PTZ/OSD Mode Toggle
+ptz_osd_mode_lbl = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'],
+                    'h': lbl_size['h'] * 2, 'w': lbl_size['w'] / 2,
+                    'bg': my_color['fg'], 'text': 'PTZ\nMode'}
+ptz_osd_mode_btn = {'x': ptz_osd_mode_lbl['x'], 'y': ptz_osd_mode_lbl['y'] + ptz_osd_mode_lbl['h'],
+                    'h': lbl_size['h'], 'w': lbl_size['w'],
+                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
+
 # PTZ UI
 ptz_canvas = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'],
               'w': 160, 'h': 160}
@@ -174,15 +202,15 @@ script_tb_pos = {'x': camera_resolution['w'] * 1 / 3 + 3, 'y': ptz_canvas['y'],
 script_column = ['Function', 'Interval']
 
 # Script(Repeat, interval) Position Setting
-interval_lbl = {'x': search_btn['x'] - 200, 'y': treeview_pos['y'] + tree_view_size['h'] + 5,
+interval_lbl = {'x': search_btn['x'] - 150, 'y': treeview_pos['y'] + tree_view_size['h'] + 5,
                 'h': lbl_size['h'], 'w': lbl_size['w'],
                 'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Interval(msec)'}
 interval_txt_fld = {'x': interval_lbl['x'] + interval_lbl['w'] + 10, 'y': interval_lbl['y'],
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['spare_fir'], 'fg': my_color['fg']}
 interval_add_btn = {'x': interval_txt_fld['x'] + interval_txt_fld['w'] + 5, 'y': interval_txt_fld['y'],
-                    'h': lbl_size['h'], 'w': lbl_size['w'],
-                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Interval Add'}
+                    'h': lbl_size['h'], 'w': lbl_size['w']/2,
+                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Add'}
 interval_button = None
 
 repeat_lbl = {'x': interval_lbl['x'], 'y': interval_lbl['y'] + interval_lbl['h'] + 5,
@@ -195,7 +223,7 @@ repeat_txt_fld = {'x': repeat_lbl['x'] + repeat_lbl['w'] + 10, 'y': repeat_lbl['
 script_mode_lbl = {'x': repeat_lbl['x'], 'y': repeat_lbl['y'] + repeat_lbl['h'] + 5,
                    'h': lbl_size['h'], 'w': lbl_size['w'],
                    'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
-script_mode_btn = {'x': script_mode_lbl['x'] + script_mode_lbl['w'] + 30, 'y': script_mode_lbl['y'],
+script_mode_btn = {'x': script_mode_lbl['x'] + script_mode_lbl['w'] + 5, 'y': script_mode_lbl['y'],
                    'h': lbl_size['h'], 'w': lbl_size['w'],
                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
 
@@ -208,3 +236,7 @@ script_stop_btn = {'x': script_run_btn['x'], 'y': script_run_btn['y'] + script_r
 script_clear_btn = {'x': script_stop_btn['x'], 'y': script_stop_btn['y'] + script_stop_btn['h'] + 5,
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Clear'}
+
+capture_pos = {'x': rtsp_pos['x'], 'y': rtsp_pos['y'],
+               'h': rtsp_pos['h'], 'w': rtsp_pos['w']}
+capture_path = {'zoom': rf'Capture/Zoom', 'focus': rf'Capture/Focus'}
