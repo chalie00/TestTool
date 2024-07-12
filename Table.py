@@ -12,9 +12,9 @@ class Table:
     def __init__(self, root):
         self.root = root
 
-        self.canvas = tk.Canvas(root, bg='white', width=Cons.script_tb_pos['w'],
-                                height=Cons.WINDOWS_SIZE['y'] - Cons.camera_resolution['h'] - 10)
-        self.canvas.place(x=Cons.script_tb_pos['x'], y=Cons.script_tb_pos['y'])
+        self.canvas = tk.Canvas(root, bg='lightgray', width=Cons.script_tb_pos['w'] - 25,
+                                height=Cons.WINDOWS_SIZE['y'] - Cons.camera_resolution['h'] - 25)
+        self.canvas.place(x=Cons.script_tb_pos['x'], y=Cons.script_tb_pos['y'] + 5)
 
         self.inner_frame = tk.Frame(self.canvas)
         self.canvas.create_window(((int(self.canvas['width']) / 2), (int(self.canvas['height']) / 2)),
@@ -25,7 +25,7 @@ class Table:
         dis_column = [str(n) for n in column]
         # cmd_data = Cons.script_cmd_titles
         cmd_data = Cons.cmd_itv_arrays
-        tv = CheckboxTreeview(self.inner_frame, height=5, columns=dis_column, displaycolumns=dis_column)
+        tv = CheckboxTreeview(self.inner_frame, height=6, columns=dis_column, displaycolumns=dis_column)
         self.style = ttk.Style()
         self.style.configure('script Table', background='lightgray')
         # tv.grid(row=0, column=0, columnspan=column_num, sticky='nsew')

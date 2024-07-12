@@ -31,7 +31,7 @@ class SwitchOnOff:
                     Cons.ptz_osd_toggle_flag = not Cons.ptz_osd_toggle_flag
                     self.ptz_instance.refresh_ptz()
             elif self.id == 'SCRIPT':
-                if Cons.script_toggle_flag:
+                if not Cons.script_toggle_flag:
                     on_button.config(image=on)
                     print(rf'script off:{Cons.script_toggle_flag}')
                     Cons.script_toggle_flag = not Cons.script_toggle_flag

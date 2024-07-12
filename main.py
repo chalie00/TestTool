@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import tkinter
 import tkinter as tk
-
 import cv2
+import threading
+import time
 
 import Constant as Cons
 import MainFunction as Mf
@@ -11,10 +12,9 @@ import VideoPlayer as Vp
 import Ptz as pt
 import OnOff_Switch as onoffSW
 import Table as tb
-import threading
-import time
+import Response as Res
 
-from ttkwidgets import CheckboxTreeview
+# from ttkwidgets import CheckboxTreeview
 from tkinter import *
 from PIL import ImageTk, Image
 
@@ -132,6 +132,7 @@ class TestTool(Frame):
                     print(hex_protocol)
                     interval = float(int(interval_txt_fld.get()) / 1000)
                     repeat = int(repeat_txt_fld.get())
+                    titles = Cons.script_cmd_titles
                     Comm.send_data_with_interval(interval, repeat, hex_protocol, titles, parent)
 
                     return hex_protocol
@@ -269,6 +270,10 @@ class TestTool(Frame):
 
         treeview = Mf.make_table(parent, column_count, Cons.tree_view_size['w'], column_name,
                                  Cons.treeview_pos['x'], Cons.treeview_pos['y'], cmd_data)
+
+        # ========================================== Log Text Field ============================================
+        log_pos = Cons.log_txt_fld_info
+        log_fld = Res.Response(parent, log_pos)
 
         # ========================================= Set Script Table ===========================================
         script_tb = tb.Table(parent)

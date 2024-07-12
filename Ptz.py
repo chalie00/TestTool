@@ -11,7 +11,7 @@ class PTZ:
         self.root = root
 
         self.canvas = tk.Canvas(root, width=Cons.ptz_canvas['w'], height=Cons.ptz_canvas['h'])
-        self.canvas.place(x=Cons.ptz_canvas['x'], y=Cons.ptz_canvas['y'])
+        self.canvas.place(x=Cons.ptz_canvas['x'], y=Cons.ptz_canvas['y'] + 5)
 
         ptz_osd_mode_btn = {'x': Cons.ptz_up_btn['x'] + Cons.ptz_up_btn['w'] / 2 + 5,
                             'y': Cons.ptz_up_btn['y'] - Cons.ptz_up_btn['h'] / 2}

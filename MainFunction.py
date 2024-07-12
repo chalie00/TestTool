@@ -1,9 +1,6 @@
-import string
-import tkinter.ttk
-from tkinter import ttk
 import openpyxl
-import pygetwindow as gw
-import pyautogui
+import tkinter
+import string
 
 import Dialog
 import Communication as Th
@@ -11,10 +8,10 @@ import Constant as Cons
 import Table as tb
 
 from tkinter import *
+from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
 from PIL import ImageGrab
 from screeninfo import get_monitors
-from mss import mss
 
 
 # Set element(label, text field, button) as specified position and size
@@ -36,7 +33,8 @@ def make_element(x, y, h, w, element, *args, **kwargs):
         return btn
 
 
-# Set Command Table TODO: (2024.02.15) CheckBox Change a treeview to CheckTreeView  and event is changed to
+# Set Command Table
+# (2024.02.15) CheckBox Change a treeview to CheckTreeView  and event is changed to
 #  Double-Button-1, CheckBox is controlled with tag
 def make_table(root: tkinter, column_num: int, width: int, column_title: [string], x: int, y: int,
                cmd_data: []) -> CheckboxTreeview:
@@ -52,15 +50,6 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
     dis_column = [str(n) for n in column]
     tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
     # set the treeview scroll
-    vsb_style = ttk.Style()
-    vsb_style.theme_use('classic')
-    vsb_style.configure("Vertical.TScrollbar", background="light gray",
-                        troughcolor="light gray",
-                        gripcount=0,
-                        gripcolor="white",
-                        gripinset=2,
-                        gripborderwidth=0,
-                        thickness=10)
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
     vsb.place(x=width * column_num + 100 + Cons.camera_resolution['w'], y=y, height=Cons.tree_view_size['h'])
     # tv = tkinter.ttk.Treeview(root, columns=column, displaycolumns=dis_column)
@@ -133,8 +122,8 @@ def clicked_table_element(event, root_view, tv):
     iden = tv.identify_row(event.y)
     tags = tv.item(iden, 'tags')
     item = tv.item(iden)
+    # value is title that user was clicked
     value = item['values'][0]
-    print(rf'values = {value}')
 
     if not host or not port:
         print("Invalid command")
@@ -144,7 +133,7 @@ def clicked_table_element(event, root_view, tv):
     if Cons.script_toggle_flag:
         handle_script_mode(event, value, root_view)
     else:
-        handle_normal_mode(event, tags, iden, root_view, tv)
+        handle_normal_mode(event, tags, iden, value, root_view, tv)
 
 
 # 2024.07.04: Operating script mode
@@ -170,14 +159,14 @@ def handle_script_mode(event, value, root_view):
 
 
 # 2024.07.04: Operating normal mode
-def handle_normal_mode(event, tags, iden, root_view, tv):
+def handle_normal_mode(event, tags, iden, value, root_view, tv):
     Cons.data_sending = True
     if 'checked' in tags:
         tv.item(iden, tags='unchecked')
     else:
         tv.item(iden, tags='checked')
     hex_value = select_item(event, root_view)
-    Th.send_data(hex_value, root_view)
+    Th.send_data(hex_value, value, root_view)
 
 
 # (2024.07.04): Clear the Script Arrays
@@ -252,6 +241,4 @@ def get_secondary_monitor_bbox():
     return None
 
 # TODO: Generate exe format
-# TODO: Check whether sent command was applied
 # TODO: Absolute move
-# TODO: Move to point of click (Centering)

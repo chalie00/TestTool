@@ -45,7 +45,7 @@ column_array = ['Function', 'Command']
 command_array = Mf.get_data_from_csv(cmd_path)
 
 # Script Variable
-script_toggle_flag = False
+script_toggle_flag = None
 # script_hex_arrays = []
 # script_cmd_titles = []
 # interval_arrays = []
@@ -86,6 +86,7 @@ host_ip: str = ""
 port: int = 0  # Default 32000
 rtsp_port: int = 0
 buf_size = 4096
+response_txt = []
 
 # RTSP Information
 rtsp_url = ''
@@ -94,6 +95,25 @@ ipc_pw = ''
 
 # PTZ/OSD Toggle Variable
 ptz_osd_toggle_flag = False
+
+# (2024.07.12) Query Data Store
+zoom_q = {'zoom': '', 'magnification': ''}
+focus_q = {'focus': ''}
+comm_q = {'mode': '', 'add': '', 'baud': '', 'word': '',
+          'stop': '', 'parity': '', 'protocol': ''}
+lens_q = {'af_trigger': '', 'zoom_spd': '', 'focus_spd': '', 'af_mode': '',
+          'af_interval': '', 'fov_position': '', 'query_mode': ''}
+image_q = {'dis': '', 'dnr': '', 'flip': '', 'mirror': '',
+           'freeze': '', 'dzoom': '', 'dzoom_position': ''}
+sensor_q = {'histogram': '', 'brightness': '', 'contrast': '', 'white_hot': '',
+            'pseudo': '', 'edge': ''}
+cali_q = {'trigger': '', 'mode': '', 'interval': ''}
+etc_q = {'save': '', 'cvbs': '', 'display': ''}
+status_q = {'boot': '', 'board_t': '', 'lens_t': '', 'sensor_t': '',
+            'fan': '', 'telemetry': '', 'calibration': '', 'af': ''}
+version_q = {'sensor': '', 'lens': '', 'main': '', 'main_y': '',
+             'main_m_d': '', 'osd': '', 'osd_y': '', 'osd_m_d': ''}
+encoder_q = {'zoom_max': '', 'zoom_min': '', 'focus_max': '', 'focus_min': ''}
 
 # User, Model Information
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
@@ -168,6 +188,17 @@ search_btn = {'x': register_btn['x'], 'y': search_txt_fld_info['y'] - 2,
 treeview_pos = {'x': camera_resolution['w'] + 30, 'y': search_btn['y'] + search_btn['h'] + 10}
 tree_view_size = {'w': int((WINDOWS_SIZE['x'] - 1280) / 2.7), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17) + 7}
 
+# Script Table
+script_tb_pos = {'x': camera_resolution['w'] * 67 / 100, 'y': treeview_pos['y'] + tree_view_size['h'],
+                 'w': int(camera_resolution['w'] / 3), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17),
+                 'c': int(camera_resolution['w'] / 8)}
+script_column = ['Function', 'Interval']
+
+# Log Field Position and Size
+log_txt_fld_info = {'x': 0, 'y': script_tb_pos['y'],
+                    'h': lbl_size['h'] * 8 + 9, 'w': lbl_size['w'] * 6,
+                    'bg': my_color['spare_fir'], 'fg': my_color['bg']}
+
 # (2024.07.10) PTZ/OSD Mode Toggle
 ptz_osd_mode_lbl = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'],
                     'h': lbl_size['h'] * 2, 'w': lbl_size['w'] / 2,
@@ -195,21 +226,15 @@ ptz_center = {'x': 53, 'y': 70,
               'h': 50, 'w': 50,
               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'AF'}
 
-# Script Table
-script_tb_pos = {'x': camera_resolution['w'] * 1 / 3 + 3, 'y': ptz_canvas['y'],
-                 'w': int(camera_resolution['w'] / 2), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17) + 7,
-                 'c': int(camera_resolution['w'] / 8)}
-script_column = ['Function', 'Interval']
-
 # Script(Repeat, interval) Position Setting
-interval_lbl = {'x': search_btn['x'] - 150, 'y': treeview_pos['y'] + tree_view_size['h'] + 5,
+interval_lbl = {'x': search_btn['x'] - 150, 'y': treeview_pos['y'] + tree_view_size['h'] + 10,
                 'h': lbl_size['h'], 'w': lbl_size['w'],
                 'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Interval(msec)'}
 interval_txt_fld = {'x': interval_lbl['x'] + interval_lbl['w'] + 10, 'y': interval_lbl['y'],
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['spare_fir'], 'fg': my_color['fg']}
 interval_add_btn = {'x': interval_txt_fld['x'] + interval_txt_fld['w'] + 5, 'y': interval_txt_fld['y'],
-                    'h': lbl_size['h'], 'w': lbl_size['w']/2,
+                    'h': lbl_size['h'], 'w': lbl_size['w'] / 2,
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Add'}
 interval_button = None
 
