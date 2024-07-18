@@ -69,15 +69,15 @@ script_cmd_titles = ['Zoom Out', 'All Stop', 'AF', 'ScreenShot',
                      'Far', 'All Stop', 'AF', 'ScreenShot',
                      'Near', 'All Stop', 'AF', 'ScreenShot'
                      ]
-interval_arrays = [2.5, 0.3, 3.0, 1.0,
-                   2.5, 0.3, 3.0, 1.0,
-                   2.5, 0.3, 3.0, 1.0,
-                   2.5, 0.3, 3.0, 1.0
+interval_arrays = [2.0, 0.3, 12.0, 1.0,
+                   2.0, 0.3, 12.0, 1.0,
+                   2.0, 0.3, 12.0, 1.0,
+                   2.0, 0.3, 12.0, 1.0
                    ]
-cmd_itv_arrays = [['Zoom Out', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0],
-                  ['Zoom In', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0],
-                  ['Far', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0],
-                  ['Near', 2.5], ['All Stop', 0.3], ['AF', 3.0], ['ScreenShot', 1.0]
+cmd_itv_arrays = [['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+                  ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+                  ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+                  ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
                   ]
 
 # Network Information form User Input
@@ -97,6 +97,7 @@ ipc_pw = ''
 ptz_osd_toggle_flag = False
 
 # (2024.07.12) Query Data Store
+normal_q = {'normal': ''}
 zoom_q = {'zoom': '', 'magnification': ''}
 focus_q = {'focus': ''}
 comm_q = {'mode': '', 'add': '', 'baud': '', 'word': '',
@@ -114,6 +115,12 @@ status_q = {'boot': '', 'board_t': '', 'lens_t': '', 'sensor_t': '',
 version_q = {'sensor': '', 'lens': '', 'main': '', 'main_y': '',
              'main_m_d': '', 'osd': '', 'osd_y': '', 'osd_m_d': ''}
 encoder_q = {'zoom_max': '', 'zoom_min': '', 'focus_max': '', 'focus_min': ''}
+
+# (2024.07.16) Query MSB+LSB Data Store
+# position, speed, mode
+zoom_msb_lsb = [zoom_q['zoom'], lens_q['zoom_spd'], image_q['dzoom'], image_q['dzoom_position']]
+focus_msb_lsb = [focus_q['focus'], lens_q['focus_spd'], lens_q['af_mode']]
+fov_msb_lsb = [lens_q['fov_position']]
 
 # User, Model Information
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
@@ -198,6 +205,15 @@ script_column = ['Function', 'Interval']
 log_txt_fld_info = {'x': 0, 'y': script_tb_pos['y'],
                     'h': lbl_size['h'] * 8 + 9, 'w': lbl_size['w'] * 6,
                     'bg': my_color['spare_fir'], 'fg': my_color['bg']}
+
+# (2024.07.15): System Information Position and Size
+sys_info_tab = {'x': log_txt_fld_info['x'] + log_txt_fld_info['w'] + 5, 'y': log_txt_fld_info['y'] + 8,
+                'h': lbl_size['h'] * 8 + 9, 'w': lbl_size['w'] * 3 + 15,
+                'bg': 'lightgray', 'fg': my_color['bg']}
+# (2024.07.17) System Information Update Button
+sys_info_update_btn = {'x': sys_info_tab['x'] + sys_info_tab['w'] - 50, 'y': sys_info_tab['y'] + sys_info_tab['h'] - 50,
+                       'h': lbl_size['h'] + 2, 'w': lbl_size['w'] - 7,
+                       'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Search'}
 
 # (2024.07.10) PTZ/OSD Mode Toggle
 ptz_osd_mode_lbl = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'],

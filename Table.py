@@ -14,7 +14,7 @@ class Table:
 
         self.canvas = tk.Canvas(root, bg='lightgray', width=Cons.script_tb_pos['w'] - 25,
                                 height=Cons.WINDOWS_SIZE['y'] - Cons.camera_resolution['h'] - 25)
-        self.canvas.place(x=Cons.script_tb_pos['x'], y=Cons.script_tb_pos['y'] + 5)
+        self.canvas.place(x=Cons.script_tb_pos['x'] + 30, y=Cons.script_tb_pos['y'] + 5)
 
         self.inner_frame = tk.Frame(self.canvas)
         self.canvas.create_window(((int(self.canvas['width']) / 2), (int(self.canvas['height']) / 2)),
@@ -30,6 +30,7 @@ class Table:
         self.style.configure('script Table', background='lightgray')
         # tv.grid(row=0, column=0, columnspan=column_num, sticky='nsew')
         tv.pack(fill=tk.BOTH, expand=True)
+        # tv.place(x=Cons.script_tb_pos['x'] + 5, y=Cons.script_tb_pos['y'] - 20)
 
         # Set the Table No Tab
         tv.column('#0', width=70, anchor='center', stretch='yes')
@@ -45,3 +46,8 @@ class Table:
             # values = (data, '')
             tv.insert('', 'end', text=i + 1, values=data, iid=str(i) + '번', tags=('checked',))
             tv.column(dis_column[0], anchor='center')
+
+        scrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=tv.yview)
+        scrollbar.place(x=Cons.script_tb_pos['x'] + Cons.script_tb_pos['w'] + 5, y=Cons.script_tb_pos['y'] + 10,
+                        height=Cons.script_tb_pos['h'] - 450)
+        tv.config(yscrollcommand=scrollbar.set)

@@ -64,7 +64,7 @@ class PTZ:
 
     def send_data(self, cmd):
         hex_array = [int(cmd[i:i + 2], 16) for i in range(0, len(cmd), 2)]
-        Th.send_data(hex_array, self.root)
+        Th.send_data(hex_array, 'Normal Query', self.root)
 
     def create_circle_button(self, x, y, r, color, text, command):
         oval = self.canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, outline=color)

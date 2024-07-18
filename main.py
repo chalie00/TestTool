@@ -13,6 +13,7 @@ import Ptz as pt
 import OnOff_Switch as onoffSW
 import Table as tb
 import Response as Res
+import System_Info as SysInfo
 
 # from ttkwidgets import CheckboxTreeview
 from tkinter import *
@@ -28,7 +29,6 @@ class TestTool(Frame):
         parent.geometry(f'{Cons.WINDOWS_SIZE["x"]}x{Cons.WINDOWS_SIZE["y"]}+'
                         f'{Cons.WINDOWS_POSITION["x"]}+{Cons.WINDOWS_POSITION["y"]}')
         parent.config(padx=15, pady=15)
-        parent.resizable(width=False, height=False)
 
         # self.canvas = tk.Canvas(parent, width=Cons.camera_resolution['w'],
         #                         height=Cons.camera_resolution['h'], bg='red')
@@ -274,6 +274,10 @@ class TestTool(Frame):
         # ========================================== Log Text Field ============================================
         log_pos = Cons.log_txt_fld_info
         log_fld = Res.Response(parent, log_pos)
+
+        # ========================================== System Information  ============================================
+        sys_info_pos = Cons.sys_info_tab
+        sys_info = SysInfo.SysInfo(parent, sys_info_pos)
 
         # ========================================= Set Script Table ===========================================
         script_tb = tb.Table(parent)

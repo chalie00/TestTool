@@ -166,6 +166,7 @@ def handle_normal_mode(event, tags, iden, value, root_view, tv):
     else:
         tv.item(iden, tags='checked')
     hex_value = select_item(event, root_view)
+    print(hex_value)
     Th.send_data(hex_value, value, root_view)
 
 
@@ -211,7 +212,9 @@ def capture_image(root, filename):
     y = root.winfo_rooty()
     w = root.winfo_width()
     h = root.winfo_height()
-    bbox = (x, y, Cons.camera_resolution['w'], Cons.camera_resolution['h'])
+    print(x, y, w, h)
+    # bbox = (x, y, Cons.camera_resolution['w'], Cons.camera_resolution['h'])
+    bbox = (x, y, 1340, 860)
     image = ImageGrab.grab(bbox=bbox)
     image.save(filename)
 

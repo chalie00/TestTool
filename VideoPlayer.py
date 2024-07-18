@@ -14,6 +14,11 @@ class VideoPlayer:
         self.cap = None
         self.running = False
 
+        # self.instance = vlc.Instance(
+        #     '--network-caching=300',  # Set network caching to 300 ms
+        #     '--rtsp-frame-buffer-size=10000000',  # Adjust RTSP frame buffer size (if necessary)
+        #     '--rtsp-tcp'  # Use RTSP over T1. CP, which might help with stability (optional)
+        # )
         self.instance = vlc.Instance()
         self.player = self.instance.media_player_new()
 
