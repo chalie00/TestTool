@@ -28,11 +28,14 @@ camera_resolution = {'w': 1280, 'h': 720}
 info_start_pos = {'x': camera_resolution['w'] + 30, 'y': 0}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
+# (2024.07.19): Model Flag (Uncooled, NTX Series)
+selected_model = 'Uncooled'
+model_option = ['Uncooled', 'NYX Series']
+
 # Command File Position
 cmd_path = rf'Command/Command.xlsx'
 
 # Table Data
-# column_array = ['Function', 'Command', 'Remark'] : 'Remark' is Deleted due to addition of VLC player
 column_array = ['Function', 'Command']
 # 0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35
 # command_array = [('Color Mode Gray', 'ff002113000034'),
@@ -241,6 +244,10 @@ ptz_right = {'x': ptz_canvas['w'] / 3 / 2 + 100 + 7, 'y': ptz_left_btn['y'],
 ptz_center = {'x': 53, 'y': 70,
               'h': 50, 'w': 50,
               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'AF'}
+
+set_nyx = {'x': ptz_right['x'], 'y': ptz_right['y'] + 45,
+           'h': 30, 'w': 30,
+           'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Set'}
 
 # Script(Repeat, interval) Position Setting
 interval_lbl = {'x': search_btn['x'] - 150, 'y': treeview_pos['y'] + tree_view_size['h'] + 10,

@@ -1,17 +1,22 @@
 import openpyxl
 import tkinter
 import string
+import socket
+import time as ti
+
 
 import Dialog
 import Communication as Th
 import Constant as Cons
 import Table as tb
+import Response as Res
 
 from tkinter import *
 from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
 from PIL import ImageGrab
 from screeninfo import get_monitors
+from datetime import time, datetime
 
 
 # Set element(label, text field, button) as specified position and size
@@ -74,9 +79,13 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
         # tv.column(dis_column[1], anchor='center')
         # tv.bind('<<TreeviewSelect>>', selectItem)
         # tv.bind('<<TreeviewSelect>>', lambda event, root_view=root: check_network_Info(event, root_view))
-        # print(cmd_data[i])
-        tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
+        model = Cons.selected_model
 
+        if model == 'NYX Series':
+            tv.bind('<Double-Button-1>', lambda event, root_view=root: send_data_for_nyx(event, root_view))
+        elif model == 'Uncooled':
+            tv.bind('<Double-Button-1>',
+                    lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
     return tv
 
 
@@ -187,19 +196,22 @@ def show_network_dialog(root_view, dialog_text):
 
 
 # Get the Command from csv file
+# (2024.07.29) change protocol list base on selected model
 def get_data_from_csv(file_path) -> [(str, str)]:
     wb = openpyxl.load_workbook(file_path, data_only=True)
-    sh = wb.worksheets[0]
-    sh = wb['IR RAW CMD']
-    sh = wb.active
+    sel_model = Cons.selected_model
+    command_data = []
+
+    if sel_model in ['Uncooled', 'NYX Series']:
+        sh = wb[f'{sel_model}']
+    else:
+        return command_data
 
     max_column = sh.max_column
     max_row = sh.max_row
-
-    command_data = []
     for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
         cmd_title = sh.cell(row=i, column=2).value
-        cmd_data = sh.cell(row=i, column=15).value
+        cmd_data = sh.cell(row=i, column=3).value
         cmd_pair = (cmd_title, cmd_data)
         command_data.append(cmd_pair)
 
@@ -243,5 +255,61 @@ def get_secondary_monitor_bbox():
                 secondary_monitor.y + secondary_monitor.height)
     return None
 
-# TODO: Generate exe format
-# TODO: Absolute move
+
+def send_frame_to_server(root, send_form, host='192.168.100.234', send_port=39190):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, send_port))
+        s.sendall(send_form.encode('utf-8'))
+        response = s.recv(1024)
+
+        current_time = datetime.now()
+        time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
+
+        print(f"Received response: {response.decode('utf-8')}")
+        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+        Cons.response_txt.append(response_with_time)
+        log_pos = Cons.log_txt_fld_info
+        log_fld = Res.Response(root, log_pos)
+
+
+# 2024.07.19): Calculate LRC for NYX
+def calc_lrc(send_form):
+    lrc_key = 0x40
+    lrc = 0
+
+    for char in send_form:
+        # convert each character of string to unicode int
+        lrc += ord(char)
+
+    lrc = (lrc ^ 0xFF) + 0x01
+    lrc_hi = lrc_key + ((lrc >> 4) & 0x0F)
+    lrc_lo = lrc_key + (lrc & 0x0F)
+
+    return chr(lrc_hi), chr(lrc_lo)
+
+
+# (2024.07.19): Create Protocol form for NYX
+def create_form(cmd):
+    lrc_hi, lrc_lo = calc_lrc(cmd)
+    cmd += lrc_hi + lrc_lo + '\n'
+    return cmd
+
+
+# (2024.07.19): Protocol send function for NYX
+def send_data_for_nyx(event, root):
+    tree = event.widget
+    # get id of select item
+    selected_item = tree.selection()[0]
+    # get item of selected id
+    item = tree.item(selected_item)
+    values = item['values'][1]
+    form = create_form(values)
+    send_frame_to_server(root, form)
+
+
+# (2024.7.22): Protocol send with command for NYX
+def send_data_with_cmd_for_nyx(root, cmd):
+    value = cmd
+    print(f'value = {value}')
+    form = create_form(value)
+    send_frame_to_server(root, form)

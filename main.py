@@ -18,6 +18,7 @@ import System_Info as SysInfo
 # from ttkwidgets import CheckboxTreeview
 from tkinter import *
 from PIL import ImageTk, Image
+from tkinter import ttk
 
 
 class TestTool(Frame):
@@ -45,7 +46,8 @@ class TestTool(Frame):
             Cons.rtsp_port = rtsp_txt_fld.get()
             Cons.ipc_id = ipc_id_txt_fld.get()
             Cons.ipc_pw = ipc_pw_txt_fld.get()
-            Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/cam0_0'
+            # Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/cam0_0'
+            Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/test'
             # video_window = tk.Toplevel(parent)
             # video_window.title("RTSP Video Player")
             video_player = Vp.VideoPlayer(parent, Cons.rtsp_url)
@@ -71,18 +73,31 @@ class TestTool(Frame):
             # stream_lbl.configure(image=imgtk)
             # stream_lbl.after(1, get_stream_from_camera)
 
+        # (2024.07.19): Model Drop Down Menu function
+        def model_select(event):
+            current_sel = sel_op.get()
+            if current_sel in ['NYX Series', 'Uncooled']:
+                Cons.selected_model = current_sel
+                col_name = Cons.column_array
+                col_count = len(col_name)
+                command_data = Mf.get_data_from_csv(Cons.cmd_path)
+
+                Mf.make_table(parent, col_count, Cons.tree_view_size['w'], col_name,
+                              Cons.treeview_pos['x'], Cons.treeview_pos['y'], command_data)
+                ptz_ui.refresh_ptz()
+
         # Search a protocol which user typed text
         def search_command():
             query = search_txt_fld.get().lower()
             selected_item = []
-            for item in Cons.command_array:
+            command_data = Mf.get_data_from_csv(Cons.cmd_path)
+            for item in command_data:
                 if query in item[0].lower():
-                    print(item[0])
                     selected_item.append(item)
-                    print('searching is completed')
+
             Mf.make_table(parent, column_count, Cons.tree_view_size['w'], column_name,
                           Cons.treeview_pos['x'], Cons.treeview_pos['y'], selected_item)
-            self.update()
+            print('searching is completed')
 
         # Add interval to each script command
         def interval_add():
@@ -175,9 +190,20 @@ class TestTool(Frame):
         model_lbl = Mf.make_element(x=model['x'], y=model['y'],
                                     h=model['h'], w=model['w'], element='Label',
                                     bg=model['bg'], text=model['text'], anchor='center')
-        model_txt_fld = Mf.make_element(x=model_txt['x'], y=model_txt['y'],
-                                        h=model_txt['h'], w=model_txt['w'], element='Entry',
-                                        bg=model_txt['bg'])
+
+        # (2024.07.19): Change a model entry to selectable drop down menu (NYX Series, Uncooled type)
+        # model_option = ['Uncooled', 'NYX Series']
+        model_option = Cons.model_option
+        sel_op = tk.StringVar()
+        drop_down = ttk.Combobox(parent, textvariable=sel_op)
+        drop_down['values'] = model_option
+        drop_down.current(0)
+        drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
+        drop_down.bind('<<ComboboxSelected>>', model_select)
+
+        # model_txt_fld = Mf.make_element(x=model_txt['x'], y=model_txt['y'],
+        #                                 h=model_txt['h'], w=model_txt['w'], element='Entry',
+        #                                 bg=model_txt['bg'])
 
         fw_lbl = Mf.make_element(x=fw['x'], y=fw['y'],
                                  h=fw['h'], w=fw['w'], element='Label',
@@ -250,13 +276,18 @@ class TestTool(Frame):
                                          h=sear_txt['h'], w=sear_txt['w'],
                                          bg=sear_txt['bg'], element='Entry')
         query_txt = search_txt_fld.get()
+        # search_btn = Mf.make_element(x=sear_btn['x'], y=sear_btn['y'],
+        #                              h=sear_btn['h'], w=sear_btn['w'], element='Button',
+        #                              bg=sear_btn['bg'], text=sear_btn['text'],
+        #                              anchor='center', command=search_command)
+
         search_btn = Mf.make_element(x=sear_btn['x'], y=sear_btn['y'],
                                      h=sear_btn['h'], w=sear_btn['w'], element='Button',
                                      bg=sear_btn['bg'], text=sear_btn['text'],
                                      anchor='center', command=search_command)
 
         # For Test Code
-        test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.234', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
         ip_txt_fld.insert(0, test_txt['ip'])
         port_txt_fld.insert(0, test_txt['port'])
         rtsp_txt_fld.insert(0, test_txt['rtsp_port'])
@@ -350,3 +381,8 @@ if __name__ == '__main__':
 
     app = TestTool(root)
     root.mainloop()
+
+
+# TODO: (2024.07.19): Command File Import Function
+# TODO: (2024.07.19): Generate exe format
+# TODO: (2024.07.23): Need to modify Cooled Type System Information
