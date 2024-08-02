@@ -13,7 +13,7 @@ class Table:
         self.root = root
 
         self.canvas = tk.Canvas(root, bg='lightgray', width=Cons.script_tb_pos['w'] - 25,
-                                height=Cons.WINDOWS_SIZE['y'] - Cons.camera_resolution['h'] - 25)
+                                height=Cons.WINDOWS_SIZE['y'] - Cons.cam1_resolution['h'] - 25)
         self.canvas.place(x=Cons.script_tb_pos['x'] + 30, y=Cons.script_tb_pos['y'] + 5)
 
         self.inner_frame = tk.Frame(self.canvas)

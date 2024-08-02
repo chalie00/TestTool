@@ -17,18 +17,18 @@ class Response:
         # Create Lof Field
         self.text_widget = tk.Text(self.canvas, bg='lightgray', width=79, height=12)
         self.text_widget.place(x=0, y=5)
+        scrollbar = tk.Scrollbar(orient=tk.VERTICAL, command=self.text_widget.yview)
+        scrollbar.place(x=self.pos['x'] + self.pos['w'] - 25, y=self.pos['y'] + 5, height=self.pos['h'] - 10)
+        self.text_widget.config(yscrollcommand=scrollbar.set)
 
         self.dis_response_text()
 
     # Response Text
     def dis_response_text(self):
-        # dis_txt = reversed(Cons.response_txt)
-        scrollbar = tk.Scrollbar(orient=tk.VERTICAL, command=self.text_widget.yview)
-        scrollbar.place(x=self.pos['x'] + self.pos['w'] - 25, y=self.pos['y'] + 5, height=self.pos['h'] - 10)
-        self.text_widget.config(yscrollcommand=scrollbar.set)
-        for i, txt in enumerate(Cons.response_txt):
+        dis_txt = list(reversed(Cons.response_txt))
+        for i, txt in enumerate(dis_txt[:20]):
             self.text_widget.insert(tk.END, txt + '\n')
             # (2024.07.17) Move last line
-            self.text_widget.see(tk.END)
+            # self.text_widget.see(tk.END)
         self.text_widget.config(state=tk.DISABLED)
 

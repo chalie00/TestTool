@@ -1,22 +1,19 @@
 import openpyxl
 import tkinter
 import string
-import socket
-import time as ti
-
 
 import Dialog
-import Communication as Th
+import Communication as Comm
 import Constant as Cons
 import Table as tb
-import Response as Res
 
 from tkinter import *
 from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
 from PIL import ImageGrab
 from screeninfo import get_monitors
-from datetime import time, datetime
+
+from Communication import send_data_for_nyx
 
 
 # Set element(label, text field, button) as specified position and size
@@ -56,7 +53,7 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
     tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
     # set the treeview scroll
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
-    vsb.place(x=width * column_num + 100 + Cons.camera_resolution['w'], y=y, height=Cons.tree_view_size['h'])
+    vsb.place(x=width * column_num + 100 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'])
     # tv = tkinter.ttk.Treeview(root, columns=column, displaycolumns=dis_column)
     # Treeview의 width, height 글자 수로 정해 진다.
     # tv.configure(height=len(Cons.command_array) + 1)
@@ -81,11 +78,13 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
         # tv.bind('<<TreeviewSelect>>', lambda event, root_view=root: check_network_Info(event, root_view))
         model = Cons.selected_model
 
-        if model == 'NYX Series':
-            tv.bind('<Double-Button-1>', lambda event, root_view=root: send_data_for_nyx(event, root_view))
-        elif model == 'Uncooled':
-            tv.bind('<Double-Button-1>',
-                    lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
+        # if model == 'NYX Series':
+        #     tv.bind('<Double-Button-1>', lambda event, root_view=root: send_data_for_nyx(event, root_view))
+        # elif model == 'Uncooled':
+        #     tv.bind('<Double-Button-1>',
+        #             lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
+        tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
+
     return tv
 
 
@@ -115,7 +114,7 @@ def select_item(event, root_view) -> []:
 # Check Whether Interval Button Active
 def check_interval_active():
     Cons.interval_button.config(state='normal')
-    cmd_title_count = len(Cons.script_hex_arrays)
+    cmd_title_count = len(Cons.script_cmd_titles)
     interval_count = len(Cons.interval_arrays)
     if cmd_title_count > interval_count:
         Cons.interval_button.configure(state='normal')
@@ -131,8 +130,9 @@ def clicked_table_element(event, root_view, tv):
     iden = tv.identify_row(event.y)
     tags = tv.item(iden, 'tags')
     item = tv.item(iden)
-    # value is title that user was clicked
-    value = item['values'][0]
+    # item['values'][0] is title that user was clicked
+    # item['values'][1] is command
+    selected_item = item['values']
 
     if not host or not port:
         print("Invalid command")
@@ -140,48 +140,69 @@ def clicked_table_element(event, root_view, tv):
         return
 
     if Cons.script_toggle_flag:
-        handle_script_mode(event, value, root_view)
+        handle_script_mode(event, selected_item, root_view)
     else:
-        handle_normal_mode(event, tags, iden, value, root_view, tv)
+        handle_normal_mode(event, tags, iden, selected_item, root_view, tv)
 
 
 # 2024.07.04: Operating script mode
+# (2024.07.25): NYX added to script mode
 def handle_script_mode(event, value, root_view):
     Cons.data_sending = True
-    hex_value = select_item(event, root_view)
-    Cons.script_hex_arrays.append(hex_value)
-    Cons.script_cmd_titles.append(value)
-    print(Cons.script_cmd_titles)
-    if not Cons.cmd_itv_arrays:
-        Cons.cmd_itv_arrays = Cons.cmd_itv_arrays or [[0] * 2 for _ in range(len(Cons.script_cmd_titles))]
-        for i, cmd_title in enumerate(Cons.script_cmd_titles):
-            Cons.cmd_itv_arrays[i][0] = cmd_title
-            print(Cons.cmd_itv_arrays[i])
-    else:
-        added = [value, 0]
-        Cons.cmd_itv_arrays.append(added)
-        print(f'added = {added}')
-        print(Cons.cmd_itv_arrays)
-        print(Cons.script_hex_arrays)
-    script_tb = tb.Table(root_view)
-    check_interval_active()
+    if Cons.selected_model == 'Uncooled':
+        hex_value = select_item(event, root_view)
+        Cons.script_hex_nyx_cmd_arrays.append(hex_value)
+        Cons.script_cmd_titles.append(value[0])
+        print(Cons.script_cmd_titles)
+
+        gene_interval_arrays()
+        script_tb = tb.Table(root_view)
+        check_interval_active()
+
+    elif Cons.selected_model == 'NYX Series':
+        Cons.script_cmd_titles.append(value[0])
+        # converted_cmd = Comm.create_form(value[1])
+        Cons.script_hex_nyx_cmd_arrays.append(value[1])
+
+        gene_interval_arrays(value)
+        script_tb = tb.Table(root_view)
+        check_interval_active()
 
 
 # 2024.07.04: Operating normal mode
+# (2024.07.25): NYX added to normal mode
 def handle_normal_mode(event, tags, iden, value, root_view, tv):
     Cons.data_sending = True
     if 'checked' in tags:
         tv.item(iden, tags='unchecked')
     else:
         tv.item(iden, tags='checked')
-    hex_value = select_item(event, root_view)
-    print(hex_value)
-    Th.send_data(hex_value, value, root_view)
+    if Cons.selected_model == 'Uncooled':
+        hex_value = select_item(event, root_view)
+        print(hex_value)
+        Comm.send_data(hex_value, value, root_view)
+    elif Cons.selected_model == 'NYX Series':
+        send_data_for_nyx(event, root_view)
+
+
+# (2024.07.25) Generate a interval array
+def gene_interval_arrays(value):
+    if not Cons.cmd_itv_arrays:
+        Cons.cmd_itv_arrays = Cons.cmd_itv_arrays or [[0] * 2 for _ in range(len(Cons.script_cmd_titles))]
+        for i, cmd_title in enumerate(Cons.script_cmd_titles):
+            Cons.cmd_itv_arrays[i][0] = cmd_title
+            print(Cons.cmd_itv_arrays[i])
+    else:
+        added = [value[0], 0]
+        Cons.cmd_itv_arrays.append(added)
+        print(f'added = {added}')
+        print(Cons.cmd_itv_arrays)
+        print(Cons.script_hex_nyx_cmd_arrays)
 
 
 # (2024.07.04): Clear the Script Arrays
 def clr_table_arrays(root):
-    Cons.script_hex_arrays = []
+    Cons.script_hex_nyx_cmd_arrays = []
     Cons.script_cmd_titles = []
     Cons.interval_arrays = []
     Cons.cmd_itv_arrays = []
@@ -254,62 +275,3 @@ def get_secondary_monitor_bbox():
                 secondary_monitor.x + secondary_monitor.width,
                 secondary_monitor.y + secondary_monitor.height)
     return None
-
-
-def send_frame_to_server(root, send_form, host='192.168.100.234', send_port=39190):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((host, send_port))
-        s.sendall(send_form.encode('utf-8'))
-        response = s.recv(1024)
-
-        current_time = datetime.now()
-        time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-
-        print(f"Received response: {response.decode('utf-8')}")
-        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-        Cons.response_txt.append(response_with_time)
-        log_pos = Cons.log_txt_fld_info
-        log_fld = Res.Response(root, log_pos)
-
-
-# 2024.07.19): Calculate LRC for NYX
-def calc_lrc(send_form):
-    lrc_key = 0x40
-    lrc = 0
-
-    for char in send_form:
-        # convert each character of string to unicode int
-        lrc += ord(char)
-
-    lrc = (lrc ^ 0xFF) + 0x01
-    lrc_hi = lrc_key + ((lrc >> 4) & 0x0F)
-    lrc_lo = lrc_key + (lrc & 0x0F)
-
-    return chr(lrc_hi), chr(lrc_lo)
-
-
-# (2024.07.19): Create Protocol form for NYX
-def create_form(cmd):
-    lrc_hi, lrc_lo = calc_lrc(cmd)
-    cmd += lrc_hi + lrc_lo + '\n'
-    return cmd
-
-
-# (2024.07.19): Protocol send function for NYX
-def send_data_for_nyx(event, root):
-    tree = event.widget
-    # get id of select item
-    selected_item = tree.selection()[0]
-    # get item of selected id
-    item = tree.item(selected_item)
-    values = item['values'][1]
-    form = create_form(values)
-    send_frame_to_server(root, form)
-
-
-# (2024.7.22): Protocol send with command for NYX
-def send_data_with_cmd_for_nyx(root, cmd):
-    value = cmd
-    print(f'value = {value}')
-    form = create_form(value)
-    send_frame_to_server(root, form)

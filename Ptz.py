@@ -1,10 +1,12 @@
 import tkinter as tk
 
-import Constant
+import time as ti
+
+import Communication
 import Constant as Cons
-import MainFunction as Mf
 import Communication as Th
 import OnOff_Switch as onoffSW
+import System_Info as sysinfo
 
 d_click_detected = False
 press_time = 0
@@ -42,7 +44,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 up_cmd = 'NYX.SET#isp0_guic=up'
-                Mf.send_data_with_cmd_for_nyx(self.root, up_cmd)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, up_cmd)
         else:
             if Cons.selected_model == 'Uncooled':
                 # PTZ Uncooled
@@ -50,7 +52,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # Zoom In NYX
                 zoom_in = 'NYX.SET#lens_zctl=narrow'
-                Mf.send_data_with_cmd_for_nyx(self.root, zoom_in)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, zoom_in)
 
     def down_zoom_out(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -60,7 +62,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 down_cmd = 'NYX.SET#isp0_guic=down'
-                Mf.send_data_with_cmd_for_nyx(self.root, down_cmd)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, down_cmd)
         else:
             if Cons.selected_model == 'Uncooled':
                 # Uncooled Zoom Out
@@ -68,7 +70,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # Zoom Out NYX
                 zoom_out = 'NYX.SET#lens_zctl=wide'
-                Mf.send_data_with_cmd_for_nyx(self.root, zoom_out)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, zoom_out)
 
     def left_near(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -78,7 +80,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 left_cmd = 'NYX.SET#isp0_guic=left'
-                Mf.send_data_with_cmd_for_nyx(self.root, left_cmd)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, left_cmd)
         else:
             if Cons.selected_model == 'Uncooled':
                 # Near Uncooled
@@ -86,7 +88,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # Near NYX
                 near = 'NYX.SET#lens_fctl=near'
-                Mf.send_data_with_cmd_for_nyx(self.root, near)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, near)
 
     def right_far(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -96,7 +98,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 right_cmd = 'NYX.SET#isp0_guic=right'
-                Mf.send_data_with_cmd_for_nyx(self.root, right_cmd)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, right_cmd)
         else:
             if Cons.selected_model == 'Uncooled':
                 # Far Uncooled
@@ -104,7 +106,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # Far NYX
                 far = 'NYX.SET#lens_fctl=far'
-                Mf.send_data_with_cmd_for_nyx(self.root, far)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, far)
 
     def osd_af(self, event):
         if not Cons.ptz_osd_toggle_flag:
@@ -114,7 +116,7 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 osd_cmd = 'NYX.SET#isp0_guie=on'
-                Mf.send_data_with_cmd_for_nyx(self.root, osd_cmd)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, osd_cmd)
         else:
             if Cons.selected_model == 'Uncooled':
                 # AF Uncooled
@@ -122,34 +124,38 @@ class PTZ:
             elif Cons.selected_model == 'NYX Series':
                 # AF NYX
                 af = 'NYX.SET#lens_afex=execute'
-                Mf.send_data_with_cmd_for_nyx(self.root, af)
+                Communication.send_data_with_cmd_for_nyx_ptz(self.root, af)
 
     def release_cmd(self, event):
         btn = event.widget
         btn_text = btn.cget('text')
-        print(btn_text)
+
+        sys_info_pos = Cons.sys_info_tab
+        sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
+
         if Cons.selected_model == 'Uncooled':
             # All Stop
             self.send_data('FF010000000001')
         elif Cons.selected_model == 'NYX Series':
             if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
-                print('zoom')
                 self.zoom_focus_stop_for_nyx('zoom')
             elif btn_text in ['Near', 'Far']:
-                print('near')
                 self.zoom_focus_stop_for_nyx('focus')
+
+        ti.sleep(0.1)
+        sys_info.update_with_protocol()
 
     def zoom_focus_stop_for_nyx(self, btn_str):
         if btn_str == 'zoom':
             zoom_stop = 'NYX.SET#lens_zctl=stop'
-            Mf.send_data_with_cmd_for_nyx(self.root, 'NYX.SET#lens_zctl=stop')
+            Communication.send_data_with_cmd_for_nyx_ptz(self.root, 'NYX.SET#lens_zctl=stop')
         elif btn_str == 'focus':
             focus_stop = 'NYX.SET#lens_fctl=stop'
-            Mf.send_data_with_cmd_for_nyx(self.root, 'NYX.SET#lens_fctl=stop')
+            Communication.send_data_with_cmd_for_nyx_ptz(self.root, 'NYX.SET#lens_fctl=stop')
 
     def set_nyx_osd(self, event=None):
         set_cmd = 'NYX.SET#isp0_guic=set'
-        Mf.send_data_with_cmd_for_nyx(self.root, set_cmd)
+        Communication.send_data_with_cmd_for_nyx_ptz(self.root, set_cmd)
 
     def send_data(self, cmd):
         hex_array = [int(cmd[i:i + 2], 16) for i in range(0, len(cmd), 2)]

@@ -2,7 +2,7 @@ import binascii
 import socket
 import logging
 import time as ti
-from datetime import time, datetime
+from datetime import datetime
 
 import Constant as Cons
 import MainFunction as Mf
@@ -38,7 +38,7 @@ def send_data(send_cmd, title, root_view):
             # print(hex_data_14dig_24space)
 
             # Store Constant for display Query
-            store_response(root_view, title, hex_data)
+            uncooled_store_response(root_view, title, hex_data)
 
             current_time = datetime.now()
             time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
@@ -64,27 +64,25 @@ def send_data(send_cmd, title, root_view):
 
 
 def send_data_with_interval(interval: [float], repeat: int, send_cmds: [int], cmd_title: [str], root_view):
-    for i in range(repeat):
-        current_time = datetime.now()
-        time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
-        print(i)
-        print(time_str)
-        for i, protocol in enumerate(send_cmds):
-            if Cons.data_sending:
-                if protocol == Cons.capture_hex:
-                    path = Cons.capture_path['zoom']
-                    filename = rf'{path}/{cmd_title[i - 1]}-{time_str}-{i}.png'
-                    Mf.capture_image(root_view, filename)
-                else:
-                    title = cmd_title[i - 1]
-                    send_data(protocol, 'Normal Query', root_view)
-                    ti.sleep(interval[i])
+    current_time = datetime.now()
+    time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
+    print(time_str)
+    for i, protocol in enumerate(send_cmds):
+        if Cons.data_sending:
+            if protocol == Cons.capture_hex:
+                path = Cons.capture_path['zoom']
+                filename = rf'{path}/{cmd_title[i - 1]}-{time_str}-{i}.png'
+                Mf.capture_image(root_view, filename)
             else:
-                print('Protocol sending was stopped')
+                title = cmd_title[i - 1]
+                send_data(protocol, 'Normal Query', root_view)
+                ti.sleep(interval[i])
+        else:
+            print('Protocol sending was stopped')
 
 
 # (2024.07.12) Save the response data in 14-digit increments.
-def store_response(root_view, title, response):
+def uncooled_store_response(root_view, title, response):
     # res_arrays = []
     # for i in range(0, len(response), 14):
     #     res_data = response[i:i + 14]
@@ -93,40 +91,41 @@ def store_response(root_view, title, response):
     print(res_arrays)
     queries = {
         'Normal Query': (
-            'normal_q', ['normal']
+            'uncooled_normal_q', ['normal']
         ),
         'Zoom Query': (
-            'zoom_q', ['zoom', 'magnification']
+            'uncooled_zoom_q', ['zoom', 'magnification']
         ),
         'Focus Query': (
-            'focus_q', ['focus']
+            'uncooled_focus_q', ['focus']
         ),
         'Lens Query': (
-            'lens_q', ['af_trigger', 'zoom_spd', 'focus_spd', 'af_mode', 'af_interval', 'fov_position', 'query_mode']
+            'uncooled_lens_q',
+            ['af_trigger', 'zoom_spd', 'focus_spd', 'af_mode', 'af_interval', 'fov_position', 'query_mode']
         ),
         'Comm Query': (
-            'comm_q', ['mode', 'add', 'baud', 'word', 'stop', 'parity', 'protocol']
+            'uncooled_comm_q', ['mode', 'add', 'baud', 'word', 'stop', 'parity', 'protocol']
         ),
         'Image Query': (
-            'image_q', ['dis', 'dnr', 'flip', 'mirror', 'freeze', 'dzoom', 'dzoom_position']
+            'uncooled_image_q', ['dis', 'dnr', 'flip', 'mirror', 'freeze', 'dzoom', 'dzoom_position']
         ),
         'Sensor Query': (
-            'sensor_q', ['histogram', 'brightness', 'contrast', 'white_hot', 'pseudo', 'edge']
+            'uncooled_sensor_q', ['histogram', 'brightness', 'contrast', 'white_hot', 'pseudo', 'edge']
         ),
         'Cali. Query': (
-            'cali_q', ['trigger', 'mode', 'interval']
+            'uncooled_cali_q', ['trigger', 'mode', 'interval']
         ),
         'ETC Query': (
-            'etc_q', ['save', 'cvbs', 'display']
+            'uncooled_etc_q', ['save', 'cvbs', 'display']
         ),
         'Status Query': (
-            'status_q', ['boot', 'board_t', 'lens_t', 'sensor_t', 'fan', 'telemetry', 'calibration', 'af']
+            'uncooled_status_q', ['boot', 'board_t', 'lens_t', 'sensor_t', 'fan', 'telemetry', 'calibration', 'af']
         ),
         'Version Query': (
-            'version_q', ['sensor', 'lens', 'main', 'main_y', 'main_m_d', 'osd', 'osd_y', 'osd_m_d']
+            'uncooled_version_q', ['sensor', 'lens', 'main', 'main_y', 'main_m_d', 'osd', 'osd_y', 'osd_m_d']
         ),
         'Encoder Query': (
-            'encoder_q', ['zoom_max', 'zoom_min', 'focus_max', 'focus_min']
+            'uncooled_encoder_q', ['zoom_max', 'zoom_min', 'focus_max', 'focus_min']
         )
     }
 
@@ -165,10 +164,10 @@ def convert_str_with_hex(root_view):
         return result
 
     # (2024.07.16) Get the System Info. Table Data From Constant
-    zoom_msb_lsb = [Cons.zoom_q['zoom'], Cons.lens_q['zoom_spd'],
-                    Cons.image_q['dzoom'], Cons.image_q['dzoom_position']]
-    focus_msb_lsb = [Cons.focus_q['focus'], Cons.lens_q['focus_spd'], Cons.lens_q['af_mode']]
-    fov_msb_lsb = [Cons.lens_q['fov_position']]
+    zoom_msb_lsb = [Cons.uncooled_zoom_q['zoom'], Cons.uncooled_lens_q['zoom_spd'],
+                    Cons.uncooled_image_q['dzoom'], Cons.uncooled_image_q['dzoom_position']]
+    focus_msb_lsb = [Cons.uncooled_focus_q['focus'], Cons.uncooled_lens_q['focus_spd'], Cons.uncooled_lens_q['af_mode']]
+    fov_msb_lsb = [Cons.uncooled_lens_q['fov_position']]
 
     zoom_str = extract_hex_value(zoom_msb_lsb)
     focus_str = extract_hex_value(focus_msb_lsb)
@@ -177,3 +176,142 @@ def convert_str_with_hex(root_view):
     Cons.focus_msb_lsb = focus_str
     Cons.fov_msb_lsb = fov_str
     SysInfo.SysInfo(root_view, Cons.sys_info_tab)
+
+
+# (2024.07.19): Open socket and send cmd to nyx
+def send_cmd_to_nyx(root, cmd):
+    host = Cons.host_ip
+    input_port = Cons.port
+    send_port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, send_port))
+        s.sendall(cmd.encode('utf-8'))
+        response = s.recv(1024)
+
+        current_time = datetime.now()
+        time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
+
+        print(f"Received response: {response.decode('utf-8')}")
+        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+        Cons.response_txt.append(response_with_time)
+        log_pos = Cons.log_txt_fld_info
+        log_fld = Res.Response(root, log_pos)
+
+
+# (2024.07.24): Open socket and store to Constant after send cmd with interval
+def send_cmd_to_nyx_with_interval(root, titles, cmds, intervals_sec, response_file_name):
+    host = Cons.host_ip
+    input_port = Cons.port
+    send_port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+
+    send_cmds = []
+
+    for cmd in cmds:
+        send_cmd = create_form(cmd)
+        send_cmds.append(send_cmd)
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((host, send_port))
+            for i, s_cmd in enumerate(send_cmds):
+                s.sendall(s_cmd.encode('utf-8'))
+                response = s.recv(1024)
+                current_time = datetime.now()
+                time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
+
+                if response_file_name:
+                    # Open file in write mode (creates a new file)
+                    with open(response_file_name, 'a') as a:
+                        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+                        a.write(response_with_time + '\n')
+                else:
+                    with open(response_file_name, 'w') as w:
+                        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+                        w.write(response_with_time + '\n')
+
+                print(f"Received response: {response.decode('utf-8')}")
+
+                if (
+                        'NYX.ACK#syst_stat=standby&lens_fpos' not in response.decode('utf-8') or
+                        'NYX.ACK#lens_zpos=' not in response.decode('utf-8') or
+                        'NYX.ACK#lens_fpos=' not in response.decode('utf-8') or
+                        'NYX.ACK#lens_zctl=' not in response.decode('utf-8') or
+                        'NYX.ACK#lens_fctl=' not in response.decode('utf-8')
+                ):
+                    response_with_time = fr'{time_str} : {(response.decode('utf-8').split('\n'))[0]}'
+                else:
+                    response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+
+                Cons.response_txt.append(response_with_time)
+                log_pos = Cons.log_txt_fld_info
+                ti.sleep(intervals_sec[i])
+                log_fld = Res.Response(root, log_pos)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    ti.sleep(3)
+
+
+# 2024.07.19): Calculate LRC for NYX
+def calc_lrc(send_form):
+    lrc_key = 0x40
+    lrc = 0
+
+    for char in send_form:
+        # convert each character of string to unicode int
+        lrc += ord(char)
+
+    lrc = (lrc ^ 0xFF) + 0x01
+    lrc_hi = lrc_key + ((lrc >> 4) & 0x0F)
+    lrc_lo = lrc_key + (lrc & 0x0F)
+
+    return chr(lrc_hi), chr(lrc_lo)
+
+
+# (2024.07.19): Create Protocol form for NYX
+def create_form(cmd):
+    lrc_hi, lrc_lo = calc_lrc(cmd)
+    cmd += lrc_hi + lrc_lo + '\n'
+    return cmd
+
+
+# (2024.07.19): Protocol send function for NYX
+def send_data_for_nyx(event, root):
+    tree = event.widget
+    # get id of select item
+    selected_item = tree.selection()[0]
+    # get item of selected id
+    item = tree.item(selected_item)
+    values = item['values'][1]
+    form = create_form(values)
+    send_cmd_to_nyx(root, form)
+
+
+# (2024.7.22): Protocol send with command for NYX
+def send_data_with_cmd_for_nyx_ptz(root, cmd):
+    value = cmd
+    print(f'value = {value}')
+    form = create_form(value)
+    send_cmd_to_nyx(root, form)
+
+
+# (2024.07.30): query for information
+def send_data_with_cmd_for_info(root, cmds):
+    host = Cons.host_ip
+    input_port = Cons.port
+    send_port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+
+    responses = []
+    for cmd in cmds:
+        form = create_form(cmd)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((host, send_port))
+            s.sendall(form.encode('utf-8'))
+            response = s.recv(1024)
+            res_decode = response.decode('utf-8')
+            start_digi = len(cmd)
+            info_data = res_decode[start_digi:-3]
+            responses.append(info_data)
+    Cons.cooled_lens_pos_spd = responses

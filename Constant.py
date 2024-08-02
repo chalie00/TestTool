@@ -22,18 +22,21 @@ my_color = {
     'noti_txt': '#FFA447'  # Orange
 }
 
-camera_resolution = {'w': 1280, 'h': 720}
+cam1_resolution = {'w': 1280, 'h': 720}
 
 # information Label and Text Field Size, Position
-info_start_pos = {'x': camera_resolution['w'] + 30, 'y': 0}
+info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 0}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
 selected_model = 'Uncooled'
 model_option = ['Uncooled', 'NYX Series']
 
-# Command File Position
+# Command File Path
 cmd_path = rf'Command/Command.xlsx'
+
+# Log File Path
+log_path = rf'Log/'
 
 # Table Data
 column_array = ['Function', 'Command']
@@ -49,7 +52,7 @@ command_array = Mf.get_data_from_csv(cmd_path)
 
 # Script Variable
 script_toggle_flag = None
-# script_hex_arrays = []
+# script_hex_nyx_cmd_arrays = []
 # script_cmd_titles = []
 # interval_arrays = []
 # cmd_itv_arrays = []
@@ -57,31 +60,57 @@ script_toggle_flag = None
 # ScreenShot Hex Value
 capture_hex = [255, 1, 0, 0, 0, 0, 0]
 
+# Uncooled Type Zo0m In/OPut AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
-script_hex_arrays = [[255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-                     [255, 1, 0, 0, 0, 0, 0],
-                     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-                     [255, 1, 0, 0, 0, 0, 0],
-                     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-                     [255, 1, 0, 0, 0, 0, 0],
-                     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-                     [255, 1, 0, 0, 0, 0, 0]
+# script_hex_nyx_cmd_arrays = [[255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#                      [255, 1, 0, 0, 0, 0, 0],
+#                      [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#                      [255, 1, 0, 0, 0, 0, 0],
+#                      [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#                      [255, 1, 0, 0, 0, 0, 0],
+#                      [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#                      [255, 1, 0, 0, 0, 0, 0]
+#                      ]
+# script_cmd_titles = ['Zoom Out', 'All Stop', 'AF', 'ScreenShot',
+#                      'Zoom In', 'All Stop', 'AF', 'ScreenShot',
+#                      'Far', 'All Stop', 'AF', 'ScreenShot',
+#                      'Near', 'All Stop', 'AF', 'ScreenShot'
+#                      ]
+# interval_arrays = [2.0, 0.3, 12.0, 1.0,
+#                    2.0, 0.3, 12.0, 1.0,
+#                    2.0, 0.3, 12.0, 1.0,
+#                    2.0, 0.3, 12.0, 1.0
+#                    ]
+# cmd_itv_arrays = [['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#                   ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#                   ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#                   ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
+#                   ]
+
+# NYX Series Zoom In/OPut AF Test Code
+# For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
+script_hex_nyx_cmd_arrays = [
+    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute',
+    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute',
+    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute',
+    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute'
+]
+script_cmd_titles = ['zoom narrow', 'zoom stop', 'af execute',
+                     'zoom wide', 'zoom stop', 'af execute',
+                     'focus near', 'focus stop', 'af execute',
+                     'focus far', 'focus stop', 'af execute'
                      ]
-script_cmd_titles = ['Zoom Out', 'All Stop', 'AF', 'ScreenShot',
-                     'Zoom In', 'All Stop', 'AF', 'ScreenShot',
-                     'Far', 'All Stop', 'AF', 'ScreenShot',
-                     'Near', 'All Stop', 'AF', 'ScreenShot'
-                     ]
-interval_arrays = [2.0, 0.3, 12.0, 1.0,
-                   2.0, 0.3, 12.0, 1.0,
-                   2.0, 0.3, 12.0, 1.0,
-                   2.0, 0.3, 12.0, 1.0
+interval_arrays = [2.0, 1.0, 4.0,
+                   2.5, 1.0, 4.0,
+                   2.0, 1.0, 4.0,
+                   2.0, 1.0, 4.0,
                    ]
-cmd_itv_arrays = [['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-                  ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-                  ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-                  ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
-                  ]
+cmd_itv_arrays = [
+    ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0],
+    ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0],
+    ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0],
+    ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0],
+]
 
 # Network Information form User Input
 data_sending = True
@@ -99,38 +128,45 @@ ipc_pw = ''
 # PTZ/OSD Toggle Variable
 ptz_osd_toggle_flag = False
 
-# (2024.07.12) Query Data Store
-normal_q = {'normal': ''}
-zoom_q = {'zoom': '', 'magnification': ''}
-focus_q = {'focus': ''}
-comm_q = {'mode': '', 'add': '', 'baud': '', 'word': '',
-          'stop': '', 'parity': '', 'protocol': ''}
-lens_q = {'af_trigger': '', 'zoom_spd': '', 'focus_spd': '', 'af_mode': '',
-          'af_interval': '', 'fov_position': '', 'query_mode': ''}
-image_q = {'dis': '', 'dnr': '', 'flip': '', 'mirror': '',
-           'freeze': '', 'dzoom': '', 'dzoom_position': ''}
-sensor_q = {'histogram': '', 'brightness': '', 'contrast': '', 'white_hot': '',
-            'pseudo': '', 'edge': ''}
-cali_q = {'trigger': '', 'mode': '', 'interval': ''}
-etc_q = {'save': '', 'cvbs': '', 'display': ''}
-status_q = {'boot': '', 'board_t': '', 'lens_t': '', 'sensor_t': '',
-            'fan': '', 'telemetry': '', 'calibration': '', 'af': ''}
-version_q = {'sensor': '', 'lens': '', 'main': '', 'main_y': '',
-             'main_m_d': '', 'osd': '', 'osd_y': '', 'osd_m_d': ''}
-encoder_q = {'zoom_max': '', 'zoom_min': '', 'focus_max': '', 'focus_min': ''}
+# (2024.07.12) Uncooled Type Query Data Store
+uncooled_normal_q = {'normal': ''}
+uncooled_zoom_q = {'zoom': '', 'magnification': ''}
+uncooled_focus_q = {'focus': ''}
+uncooled_comm_q = {'mode': '', 'add': '', 'baud': '', 'word': '',
+                   'stop': '', 'parity': '', 'protocol': ''}
+uncooled_lens_q = {'af_trigger': '', 'zoom_spd': '', 'focus_spd': '', 'af_mode': '',
+                   'af_interval': '', 'fov_position': '', 'query_mode': ''}
+uncooled_image_q = {'dis': '', 'dnr': '', 'flip': '', 'mirror': '',
+                    'freeze': '', 'dzoom': '', 'dzoom_position': ''}
+uncooled_sensor_q = {'histogram': '', 'brightness': '', 'contrast': '', 'white_hot': '',
+                     'pseudo': '', 'edge': ''}
+uncooled_cali_q = {'trigger': '', 'mode': '', 'interval': ''}
+uncooled_etc_q = {'save': '', 'cvbs': '', 'display': ''}
+uncooled_status_q = {'boot': '', 'board_t': '', 'lens_t': '', 'sensor_t': '',
+                     'fan': '', 'telemetry': '', 'calibration': '', 'af': ''}
+uncooled_version_q = {'sensor': '', 'lens': '', 'main': '', 'main_y': '',
+                      'main_m_d': '', 'osd': '', 'osd_y': '', 'osd_m_d': ''}
+uncooled_encoder_q = {'zoom_max': '', 'zoom_min': '', 'focus_max': '', 'focus_min': ''}
 
-# (2024.07.16) Query MSB+LSB Data Store
+# (2024.07.16) Uncooled Type Query MSB+LSB Data Store
 # position, speed, mode
-zoom_msb_lsb = [zoom_q['zoom'], lens_q['zoom_spd'], image_q['dzoom'], image_q['dzoom_position']]
-focus_msb_lsb = [focus_q['focus'], lens_q['focus_spd'], lens_q['af_mode']]
-fov_msb_lsb = [lens_q['fov_position']]
+zoom_msb_lsb = [uncooled_zoom_q['zoom'], uncooled_lens_q['zoom_spd'], uncooled_image_q['dzoom'],
+                uncooled_image_q['dzoom_position']]
+focus_msb_lsb = [uncooled_focus_q['focus'], uncooled_lens_q['focus_spd'], uncooled_lens_q['af_mode']]
+fov_msb_lsb = [uncooled_lens_q['fov_position']]
+
+# (2024.07.24): NYX Series Query Data Store
+# zoom_pos, focus_pos, fov, zoom_spd, focus_spd, dzoom
+# lens_pos_q = ['NYX.GET#lens_zpos', 'NYX.GET#lens_fpos', 'NYX.GET#lens_cfov',
+#               'NYX.GET#lens_zspd', 'NYX.GET#lens_fspd', 'NYX.GET#isp0_dzen']
+cooled_lens_pos_spd = [0, 0, 0, 0, 0, 0, 0]
 
 # User, Model Information
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
 right_text_fd_size = int(WINDOWS_SIZE['x'] * 0.01875)
 
 rtsp_pos = {'x': 0, 'y': 0,
-            'h': camera_resolution['w'], 'w': camera_resolution['w']}
+            'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
 
 validator_lbl = {'x': info_start_pos['x'], 'y': info_start_pos['y'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
@@ -195,13 +231,13 @@ search_btn = {'x': register_btn['x'], 'y': search_txt_fld_info['y'] - 2,
               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Search'}
 
 # Treeview Position and Size
-treeview_pos = {'x': camera_resolution['w'] + 30, 'y': search_btn['y'] + search_btn['h'] + 10}
+treeview_pos = {'x': cam1_resolution['w'] + 30, 'y': search_btn['y'] + search_btn['h'] + 10}
 tree_view_size = {'w': int((WINDOWS_SIZE['x'] - 1280) / 2.7), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17) + 7}
 
 # Script Table
-script_tb_pos = {'x': camera_resolution['w'] * 67 / 100, 'y': treeview_pos['y'] + tree_view_size['h'],
-                 'w': int(camera_resolution['w'] / 3), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17),
-                 'c': int(camera_resolution['w'] / 8)}
+script_tb_pos = {'x': cam1_resolution['w'] * 67 / 100, 'y': treeview_pos['y'] + tree_view_size['h'],
+                 'w': int(cam1_resolution['w'] / 3), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17),
+                 'c': int(cam1_resolution['w'] / 8)}
 script_column = ['Function', 'Interval']
 
 # Log Field Position and Size

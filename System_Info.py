@@ -20,7 +20,7 @@ class SysInfo:
         pos_lbl.place(x=pos_spd_mode_cons['x'], y=pos_spd_mode_cons['y'])
         spd_lbl = tk.Label(self.root, text='Speed', bg=Cons.my_color['fg'])
         spd_lbl.place(x=pos_spd_mode_cons['x'] + 70, y=pos_spd_mode_cons['y'])
-        mode_lbl = tk.Label(self.root, text='Mode', bg=Cons.my_color['fg'])
+        mode_lbl = tk.Label(self.root, text='DZoom', bg=Cons.my_color['fg'])
         mode_lbl.place(x=pos_spd_mode_cons['x'] + 135, y=pos_spd_mode_cons['y'])
 
         # Zoom column Position
@@ -32,8 +32,8 @@ class SysInfo:
         self.zoom_pos_txt_fld.place(x=zoom_pos_cons['x'] + 55, y=zoom_pos_cons['y'])
         self.zoom_spd_txt_fld = tk.Entry(self.root, width=7, justify='center')
         self.zoom_spd_txt_fld.place(x=zoom_pos_cons['x'] + 117, y=zoom_pos_cons['y'])
-        self.zoom_mode_txt_fld = tk.Entry(self.root, width=7, justify='center')
-        self.zoom_mode_txt_fld.place(x=zoom_pos_cons['x'] + 179, y=zoom_pos_cons['y'])
+        self.zoom_dzoom_txt_fld = tk.Entry(self.root, width=7, justify='center')
+        self.zoom_dzoom_txt_fld.place(x=zoom_pos_cons['x'] + 179, y=zoom_pos_cons['y'])
 
         # Focus column Position
         focus_pos_cons = {'x': Cons.sys_info_tab['x'] + 5, 'y': Cons.sys_info_tab['y'] + Cons.lbl_size['h'] * 2 + 15}
@@ -44,8 +44,8 @@ class SysInfo:
         self.focus_pos_txt_fld.place(x=focus_pos_cons['x'] + 55, y=focus_pos_cons['y'])
         self.focus_spd_txt_fld = tk.Entry(self.root, width=7, justify='center')
         self.focus_spd_txt_fld.place(x=focus_pos_cons['x'] + 117, y=focus_pos_cons['y'])
-        self.focus_mode_txt_fld = tk.Entry(self.root, width=7, justify='center')
-        self.focus_mode_txt_fld.place(x=focus_pos_cons['x'] + 179, y=focus_pos_cons['y'])
+        self.focus_dzoom_rate_txt_fld = tk.Entry(self.root, width=7, justify='center')
+        self.focus_dzoom_rate_txt_fld.place(x=focus_pos_cons['x'] + 179, y=focus_pos_cons['y'])
 
         # FOV column Position
         fov_pos_cons = {'x': Cons.sys_info_tab['x'] + 5, 'y': Cons.sys_info_tab['y'] + Cons.lbl_size['h'] * 3 + 20}
@@ -62,46 +62,80 @@ class SysInfo:
 
         self.update_ui()
 
+    # (2024.07.24): Added for all entry text delete
+    def clear_entries(self):
+        self.zoom_pos_txt_fld.delete(0, tk.END)
+        self.zoom_spd_txt_fld.delete(0, tk.END)
+        self.zoom_dzoom_txt_fld.delete(0, tk.END)
+
+        self.focus_pos_txt_fld.delete(0, tk.END)
+        self.focus_spd_txt_fld.delete(0, tk.END)
+        self.focus_dzoom_rate_txt_fld.delete(0, tk.END)
+
+        self.fov_pos_txt_fld.delete(0, tk.END)
+
     # (2024.07.16) Update Query Data
     def update_ui(self):
         self.canvas.delete('all')
-        self.zoom_pos_txt_fld.insert(0, Cons.zoom_msb_lsb[0])
-        self.zoom_spd_txt_fld.insert(0, Cons.zoom_msb_lsb[1])
-        self.zoom_mode_txt_fld.insert(0, Cons.zoom_msb_lsb[2])
+        self.clear_entries()
+        if Cons.selected_model == 'Uncooled':
+            self.zoom_pos_txt_fld.insert(0, Cons.zoom_msb_lsb[0])
+            self.zoom_spd_txt_fld.insert(0, Cons.zoom_msb_lsb[1])
+            self.zoom_dzoom_txt_fld.insert(0, Cons.zoom_msb_lsb[2])
 
-        self.focus_pos_txt_fld.insert(0, Cons.focus_msb_lsb[0])
-        self.focus_spd_txt_fld.insert(0, Cons.focus_msb_lsb[1])
-        self.focus_mode_txt_fld.insert(0, Cons.focus_msb_lsb[2])
+            self.focus_pos_txt_fld.insert(0, Cons.focus_msb_lsb[0])
+            self.focus_spd_txt_fld.insert(0, Cons.focus_msb_lsb[1])
+            self.focus_dzoom_rate_txt_fld.insert(0, Cons.focus_msb_lsb[2])
 
-        self.fov_pos_txt_fld.insert(0, Cons.fov_msb_lsb[0])
+            self.fov_pos_txt_fld.insert(0, Cons.fov_msb_lsb[0])
+        elif Cons.selected_model == 'NYX Series':
+            self.zoom_pos_txt_fld.insert(0, Cons.cooled_lens_pos_spd[0])
+            self.zoom_spd_txt_fld.insert(0, Cons.cooled_lens_pos_spd[3])
+            self.zoom_dzoom_txt_fld.insert(0, Cons.cooled_lens_pos_spd[5])
 
-    # Update Infromation All Element
+            self.focus_pos_txt_fld.insert(0, Cons.cooled_lens_pos_spd[1])
+            self.focus_spd_txt_fld.insert(0, Cons.cooled_lens_pos_spd[4])
+            self.focus_dzoom_rate_txt_fld.insert(0, Cons.cooled_lens_pos_spd[6])
+
+            self.fov_pos_txt_fld.insert(0, Cons.cooled_lens_pos_spd[2])
+
+    # Update Information All Element
     def update_with_protocol(self):
-        print('Hello')
-        # Zoom Query -> Focus Query -> Lens Query -> Image Query
-        protocols = [
-            [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
-            [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
-        ]
-        titles = {
-            'Normal Query': (
-                [255, 1, 0, 85, 0, 0, 86]
-            ),
-            'Zoom Query': (
-                [255, 1, 1, 85, 0, 0, 86]
-            ),
-            'Focus Query': (
-                [255, 1, 161, 16, 0, 0, 87]
-            ),
-            'Lens Query': (
-                [255, 1, 161, 16, 0, 0, 178]
-            ),
-            'Image Query': (
-                [255, 1, 161, 32, 0, 0, 194]
-            )
-        }
-        interval = [1.0, 1.0, 1.0, 1.0]
+        if Cons.selected_model == 'Uncooled':
+            # Zoom Query -> Focus Query -> Lens Query -> Image Query
+            protocols = [
+                [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
+                [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
+            ]
+            titles = {
+                'Normal Query': (
+                    [255, 1, 0, 85, 0, 0, 86]
+                ),
+                'Zoom Query': (
+                    [255, 1, 1, 85, 0, 0, 86]
+                ),
+                'Focus Query': (
+                    [255, 1, 161, 16, 0, 0, 87]
+                ),
+                'Lens Query': (
+                    [255, 1, 161, 16, 0, 0, 178]
+                ),
+                'Image Query': (
+                    [255, 1, 161, 32, 0, 0, 194]
+                )
+            }
+            interval = [1.0, 1.0, 1.0, 1.0]
 
-        for title, protocol in titles:
-            Comm.send_data(protocol, title, self.root)
+            for title, protocol in titles:
+                Comm.send_data(protocol, title, self.root)
+        elif Cons.selected_model == 'NYX Series':
+            print('NYX Updated')
+            # NYX.GET#lens_wnmm -> NYX.GET#lens_wnen
+            Cons.cooled_lens_pos_spd = []
+            lens_pos_q = ['NYX.GET#lens_zpos=', 'NYX.GET#lens_fpos=', 'NYX.GET#lens_cfov=',
+                          'NYX.GET#lens_zspd=', 'NYX.GET#lens_fspd=', 'NYX.GET#isp0_dzen=',
+                          'NYX.GET#isp0_dzra='
+                          ]
+            Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
+
         self.root.after(100, self.update_ui)

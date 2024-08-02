@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import tkinter
+
 import tkinter as tk
-import cv2
 import threading
 import time
+from datetime import datetime
 
 import Constant as Cons
 import MainFunction as Mf
@@ -15,30 +15,28 @@ import Table as tb
 import Response as Res
 import System_Info as SysInfo
 
-# from ttkwidgets import CheckboxTreeview
-from tkinter import *
-from PIL import ImageTk, Image
 from tkinter import ttk
 
 
-class TestTool(Frame):
+class TestTool(tk.Frame):
     def __init__(self, parent):
-        Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent)
         self.parent = parent
         # Set Title
-        parent.title('Test Tool')
-        parent.geometry(f'{Cons.WINDOWS_SIZE["x"]}x{Cons.WINDOWS_SIZE["y"]}+'
-                        f'{Cons.WINDOWS_POSITION["x"]}+{Cons.WINDOWS_POSITION["y"]}')
-        parent.config(padx=15, pady=15)
+        self.parent.title('Test Tool')
+        self.parent.geometry(f'{Cons.WINDOWS_SIZE["x"]}x{Cons.WINDOWS_SIZE["y"]}+'
+                             f'{Cons.WINDOWS_POSITION["x"]}+{Cons.WINDOWS_POSITION["y"]}')
+        self.parent.config(padx=15, pady=15)
 
         # self.canvas = tk.Canvas(parent, width=Cons.camera_resolution['w'],
         #                         height=Cons.camera_resolution['h'], bg='red')
         # self.canvas.place(x=0, y=0)
 
-        self.thread_running = False
+        # self.thread_running = False
+        self.thread_running = threading.Event()
+        self.thread = None
 
         # Check Main Window Position
-
         # Open RTSP and Get the Network Information from User Input
         def open_video_window():
             Cons.host_ip = ip_txt_fld.get()
@@ -50,28 +48,28 @@ class TestTool(Frame):
             Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/test'
             # video_window = tk.Toplevel(parent)
             # video_window.title("RTSP Video Player")
-            video_player = Vp.VideoPlayer(parent, Cons.rtsp_url)
-            print(Cons.rtsp_url)
-            video_player.start_video()
+
+            self.video_player = Vp.VideoPlayer(parent, Cons.rtsp_url, Cons.rtsp_pos)
+            self.video_player.start_video()
 
         # Get the stream from Camera
-        def get_stream_from_camera():
-            rtsp_add = Cons.rtsp_url
-            print(rtsp_add)
-            cap_file = cv2.VideoCapture(rtsp_add)
-            width = cap_file.get(cv2.CAP_PROP_FRAME_WIDTH)
-            height = cap_file.get(cv2.CAP_PROP_FRAME_HEIGHT)
-            # stream_lbl = Label(parent)
-            # stream_lbl.grid(row=3, column=0)
-            _, frame = cap_file.read()
-            cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-            img = Image.fromarray(cv2image)
-            imgtk = ImageTk.PhotoImage(image=img)
-            self.canvas.create_image(3, 0, image=imgtk, anchor=tkinter.center)
-            parent.after(1, get_stream_from_camera())
-            # stream_lbl.imgtk = imgtk
-            # stream_lbl.configure(image=imgtk)
-            # stream_lbl.after(1, get_stream_from_camera)
+        # def get_stream_from_camera():
+        #     rtsp_add = Cons.rtsp_url
+        #     print(rtsp_add)
+        #     cap_file = cv2.VideoCapture(rtsp_add)
+        #     width = cap_file.get(cv2.CAP_PROP_FRAME_WIDTH)
+        #     height = cap_file.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        #     # stream_lbl = Label(parent)
+        #     # stream_lbl.grid(row=3, column=0)
+        #     _, frame = cap_file.read()
+        #     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        #     img = Image.fromarray(cv2image)
+        #     imgtk = ImageTk.PhotoImage(image=img)
+        #     self.canvas.create_image(3, 0, image=imgtk, anchor=tkinter.center)
+        #     parent.after(1, get_stream_from_camera())
+        # stream_lbl.imgtk = imgtk
+        # stream_lbl.configure(image=imgtk)
+        # stream_lbl.after(1, get_stream_from_camera)
 
         # (2024.07.19): Model Drop Down Menu function
         def model_select(event):
@@ -103,7 +101,7 @@ class TestTool(Frame):
         def interval_add():
             cur_interval = float(int(interval_txt_fld.get()) / 1000)
             Cons.interval_arrays.append(cur_interval)
-            row_cmd_title = len(Cons.script_hex_arrays)
+            row_cmd_title = len(Cons.script_hex_nyx_cmd_arrays)
             col_interval = len(Cons.interval_arrays)
 
             for i, cmd_list in enumerate(Cons.interval_arrays):
@@ -116,42 +114,54 @@ class TestTool(Frame):
 
         # (2024.07.04): Start thread with selected script
         def start_thread():
-            if not self.thread_running:
-                self.thread_running = True
+            if not self.thread_running.isSet():
+                self.thread_running.set()
                 self.thread = threading.Thread(target=run_script)
                 self.thread.start()
 
         # (2024.07.04): Start thread with selected script
         def run_script() -> []:
-            while self.thread_running:
-                script_run_btn.config(state='disabled')
-                script_stop_btn.config(state='normal')
-                Cons.data_sending = True
-                if Cons.script_toggle_flag:
-                    print('run script')
-                    interval = Cons.interval_arrays
-                    repeat = int(repeat_txt_fld.get())
-                    script = Cons.script_hex_arrays
-                    titles = Cons.script_cmd_titles
-                    Comm.send_data_with_interval(interval, repeat, script, titles, parent)
-                else:
-                    protocol_str_arr = []
-                    hex_protocol = []
-                    for id in treeview.get_checked():
-                        item = treeview.set(id)
-                        protocol_str = item['2']
-                        protocol_str_arr.append(protocol_str)
-                    for protocol in protocol_str_arr:
-                        converted_hex = Mf.convert_str_to_hex(protocol)
-                        hex_protocol.append(converted_hex)
-                    print(hex_protocol)
-                    interval = float(int(interval_txt_fld.get()) / 1000)
-                    repeat = int(repeat_txt_fld.get())
-                    titles = Cons.script_cmd_titles
-                    Comm.send_data_with_interval(interval, repeat, hex_protocol, titles, parent)
+            current_time = datetime.now()
+            time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
+            response_file_name = rf'{Cons.log_path}_{time_str}.txt'
+            try:
+                while self.thread_running.isSet():
+                    script_run_btn.config(state='disabled')
+                    script_stop_btn.config(state='normal')
+                    Cons.data_sending = True
+                    if Cons.script_toggle_flag:
+                        print('run script')
+                        interval = Cons.interval_arrays
+                        repeat = int(repeat_txt_fld.get())
+                        script = Cons.script_hex_nyx_cmd_arrays
+                        titles = Cons.script_cmd_titles
+                        if Cons.selected_model == 'Uncooled':
+                            Comm.send_data_with_interval(interval, repeat, script, titles, parent)
+                        elif Cons.selected_model == 'NYX Series':
+                            Comm.send_cmd_to_nyx_with_interval(parent, titles, script, interval, response_file_name)
+                    else:
+                        protocol_str_arr = []
+                        hex_protocol = []
+                        for id in treeview.get_checked():
+                            item = treeview.set(id)
+                            protocol_str = item['2']
+                            protocol_str_arr.append(protocol_str)
+                        for protocol in protocol_str_arr:
+                            converted_hex = Mf.convert_str_to_hex(protocol)
+                            hex_protocol.append(converted_hex)
+                        print(hex_protocol)
+                        interval = float(int(interval_txt_fld.get()) / 1000)
+                        repeat = int(repeat_txt_fld.get())
+                        titles = Cons.script_cmd_titles
+                        Comm.send_data_with_interval(interval, repeat, hex_protocol, titles, parent)
 
-                    return hex_protocol
-                time.sleep(1)
+                        return hex_protocol
+                    time.sleep(0.1)
+            finally:
+                script_run_btn.config(state='normal')
+                script_stop_btn.config(state='disabled')
+                Cons.data_sending = False
+                print('stop script')
 
         # (2024.07.04): Stop Script(Threading Stop)
         def stop_script():
@@ -159,8 +169,11 @@ class TestTool(Frame):
             script_run_btn.config(state='normal')
             script_stop_btn.config(state='disabled')
             print('stop script')
-            self.thread_running = False
-            self.thread.join()
+
+            self.thread_running.clear()
+            if self.thread and self.thread.is_alive():
+                self.thread.join(timeout=1)  # Allow GUI to process events while waiting
+                self.thread = None
 
         # (2024.07.04): Clear the Script Table
         def clr_script():
@@ -287,7 +300,7 @@ class TestTool(Frame):
                                      anchor='center', command=search_command)
 
         # For Test Code
-        test_txt = {'ip': '192.168.100.234', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
         ip_txt_fld.insert(0, test_txt['ip'])
         port_txt_fld.insert(0, test_txt['port'])
         rtsp_txt_fld.insert(0, test_txt['rtsp_port'])
@@ -376,13 +389,12 @@ class TestTool(Frame):
                                            text=clr_btn['text'], anchor='center', command=clr_script)
 
 
+# TODO: (2024.07.19): Command File Import Function
+# TODO: (2024.07.19): Generate exe format
+# TODO: (2024.07.25): When script mode, need to apply repeat count
+
 if __name__ == '__main__':
     root = tk.Tk()
 
     app = TestTool(root)
     root.mainloop()
-
-
-# TODO: (2024.07.19): Command File Import Function
-# TODO: (2024.07.19): Generate exe format
-# TODO: (2024.07.23): Need to modify Cooled Type System Information
