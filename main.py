@@ -36,21 +36,72 @@ class TestTool(tk.Frame):
         self.thread_running = threading.Event()
         self.thread = None
 
+        # (2024.08.05): Called when ch button was pushed
+        def change_ch(btn, ch_name):
+            info = getattr(Cons, f'{ch_name.lower()}_rtsp_info')
+            info.update({
+                'model': sel_op.get(),
+                'ch': ch_name.lower(),
+                'ip': ip_txt_fld.get(),
+                'port': port_txt_fld.get(),
+                'rtsp_port': rtsp_txt_fld.get(),
+                'id': ipc_id_txt_fld.get(),
+                'pw': ipc_pw_txt_fld.get()
+            })
+
+            url_patterns = {
+                'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
+                'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0'
+            }
+            info['url'] = url_patterns.get(info['model'], 'Invalid model')
+
+            btn.config(bg='green')
+
+            Cons.video_players = {}
+            ch_info_dict = {
+                'ch1': Cons.ch1_rtsp_info,
+                'ch2': Cons.ch2_rtsp_info,
+                'ch3': Cons.ch3_rtsp_info,
+                'ch4': Cons.ch4_rtsp_info
+            }
+
+            # Print channel info and instantiate video players if URL is set
+            for ch_name, ch_info in ch_info_dict.items():
+                if ch_info['url']:
+                    pos = {'x': ch_info['x'], 'y': ch_info['y'], 'w': ch_info['w'], 'h': ch_info['h']}
+                    Cons.video_players[ch_name] = Vp.VideoPlayer(self.parent, ch_info['url'], pos, ch_name.lower())
+            print(Cons.video_players)
+            print(info)
+
         # Check Main Window Position
         # Open RTSP and Get the Network Information from User Input
         def open_video_window():
-            Cons.host_ip = ip_txt_fld.get()
-            Cons.port = port_txt_fld.get()
-            Cons.rtsp_port = rtsp_txt_fld.get()
-            Cons.ipc_id = ipc_id_txt_fld.get()
-            Cons.ipc_pw = ipc_pw_txt_fld.get()
-            # Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/cam0_0'
-            Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/test'
-            # video_window = tk.Toplevel(parent)
-            # video_window.title("RTSP Video Player")
+            # Set CH Button to default Color
+            for i in range(1, 5):
+                channel_names[f'CH{i}'].config(bg=Cons.ch1_btn_pos['bg'])
+            #
+            # # Cons.host_ip = ip_txt_fld.get()
+            # # Cons.port = port_txt_fld.get()
+            # # Cons.rtsp_port = rtsp_txt_fld.get()
+            # # Cons.ipc_id = ipc_id_txt_fld.get()
+            # # Cons.ipc_pw = ipc_pw_txt_fld.get()
+            # # Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/cam0_0'
+            # # Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/test'
+            # # video_window = tk.Toplevel(parent)
+            # # video_window.title("RTSP Video Player")
+            #
+            videos = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info,
+                      Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+            for video in videos:
+                if video['url']:
+                    pos = {'x': video['x'], 'y': video['y'], 'w': video['w'], 'h': video['h']}
+                    video_player = Vp.VideoPlayer(parent, video['url'], pos, video['ch'])
+                    Cons.video_players[video['ch']] = video_player
+                    video_player.start_video()
 
-            self.video_player = Vp.VideoPlayer(parent, Cons.rtsp_url, Cons.rtsp_pos)
-            self.video_player.start_video()
+            # videos_info = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info, Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+            # for video in videos_info:
+            #     if video['url'] is not '':
 
         # Get the stream from Camera
         # def get_stream_from_camera():
@@ -185,7 +236,19 @@ class TestTool(tk.Frame):
 
         # ================================================ UI Layout ============================================
 
-        # ======================================== Input User, Model Information ================================
+        # ======================================== CH Button, Input User, Model Information ================================
+        # (2024.08.05) Create a CH Button
+        channel_names = {}
+        for i in range(1, 5):
+            btn_pos = getattr(Cons, f'ch{i}_btn_pos')
+            channel_names[f'CH{i}'] = Mf.make_element(btn_pos['x'], btn_pos['y'], btn_pos['h'], btn_pos['w'],
+                                                      'Button', bg=btn_pos['bg'], text=btn_pos['text'], font=(None, 8),
+                                                      anchor='center')
+
+            channel_names[f'CH{i}'].bind('<Button-1>',
+                                         lambda event, btn=channel_names[f'CH{i}'], ch_name=btn_pos['text']: change_ch(
+                                             btn, ch_name))
+
         validator = Cons.validator_lbl
         validator_txt = Cons.validator_txt_fld
         model = Cons.model_lbl
@@ -275,7 +338,7 @@ class TestTool(tk.Frame):
                                          bg=ipc_pw_txt['bg'])
         ipc_pw_txt_fld.configure(show='*')
 
-        register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
+        self.register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
                                        h=regi_btn['h'], w=regi_btn['w'], element='Button',
                                        bg=regi_btn['bg'], text=regi_btn['text'],
                                        anchor='center',
@@ -294,7 +357,7 @@ class TestTool(tk.Frame):
         #                              bg=sear_btn['bg'], text=sear_btn['text'],
         #                              anchor='center', command=search_command)
 
-        search_btn = Mf.make_element(x=sear_btn['x'], y=sear_btn['y'],
+        self.search_btn = Mf.make_element(x=sear_btn['x'], y=sear_btn['y'],
                                      h=sear_btn['h'], w=sear_btn['w'], element='Button',
                                      bg=sear_btn['bg'], text=sear_btn['text'],
                                      anchor='center', command=search_command)
@@ -373,17 +436,17 @@ class TestTool(tk.Frame):
         script_btn_id = 'SCRIPT'
         script_mode_ui = onoffSW.SwitchOnOff(parent, None, script_btn_id, Cons.script_mode_btn)
 
-        script_run_btn = Mf.make_element(r_btn['x'], r_btn['y'],
+        self.script_run_btn = Mf.make_element(r_btn['x'], r_btn['y'],
                                          r_btn['h'], r_btn['w'],
                                          bg=r_btn['bg'], element='Button',
                                          text=r_btn['text'], anchor='center', command=start_thread)
 
-        script_stop_btn = Mf.make_element(st_btn['x'], st_btn['y'],
+        self.script_stop_btn = Mf.make_element(st_btn['x'], st_btn['y'],
                                           st_btn['h'], st_btn['w'],
                                           bg=st_btn['bg'], element='Button',
                                           text=st_btn['text'], anchor='center', command=stop_script)
 
-        script_clear_btn = Mf.make_element(clr_btn['x'], clr_btn['y'],
+        self.script_clear_btn = Mf.make_element(clr_btn['x'], clr_btn['y'],
                                            clr_btn['h'], clr_btn['w'],
                                            bg=clr_btn['bg'], element='Button',
                                            text=clr_btn['text'], anchor='center', command=clr_script)

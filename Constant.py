@@ -5,7 +5,7 @@ import MainFunction as Mf
 
 # Set the Application Size, Position with System Resolution
 SYS_RESOLUTION = {'x': 1920, 'y': 1080}
-WINDOWS_SIZE = {'x': 1850, 'y': 900}
+WINDOWS_SIZE = {'x': 1850, 'y': 950}
 WINDOWS_POSITION = {"x": int((SYS_RESOLUTION['x'] - WINDOWS_SIZE['x']) / 2),
                     "y": int((SYS_RESOLUTION['y'] - WINDOWS_SIZE['y']) / 2)}
 
@@ -25,7 +25,7 @@ my_color = {
 cam1_resolution = {'w': 1280, 'h': 720}
 
 # information Label and Text Field Size, Position
-info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 0}
+info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 10}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
@@ -125,6 +125,31 @@ rtsp_url = ''
 ipc_id = ''
 ipc_pw = ''
 
+video_players = {}
+video_player_ch1 = None
+video_player_ch2 = None
+video_player_ch3 = None
+video_player_ch4 = None
+
+
+ch1_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+                 'x': 0, 'y': 0,
+                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
+                 }
+ch2_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+                 'x': ch1_rtsp_info['w'] + 5, 'y': 0,
+                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
+                 }
+ch3_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+                 'x': 0, 'y': ch1_rtsp_info['h'] + 5,
+                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
+                 }
+ch4_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+                 'x': ch1_rtsp_info['w'] + 5, 'y': ch1_rtsp_info['h'] + 5,
+                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
+                 }
+
+
 # PTZ/OSD Toggle Variable
 ptz_osd_toggle_flag = False
 
@@ -165,8 +190,27 @@ cooled_lens_pos_spd = [0, 0, 0, 0, 0, 0, 0]
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
 right_text_fd_size = int(WINDOWS_SIZE['x'] * 0.01875)
 
-rtsp_pos = {'x': 0, 'y': 0,
-            'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
+# rtsp_ch1_pos = {'x': 0, 'y': 0,
+#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
+# rtsp_ch2_pos = {'x': rtsp_ch1_pos['w'] + 5, 'y': 0,
+#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
+# rtsp_ch3_pos = {'x': 0, 'y': rtsp_ch1_pos['h'] + 5,
+#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
+# rtsp_ch4_pos = {'x': rtsp_ch1_pos['w'] + 5, 'y': rtsp_ch1_pos['h'] + 5,
+#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
+
+ch1_btn_pos = {'x': info_start_pos['x'] + lbl_size['w'] * 2.5, 'y': info_start_pos['y'] - 20,
+               'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
+               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH1'}
+ch2_btn_pos = {'x': ch1_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+               'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
+               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH2'}
+ch3_btn_pos = {'x': ch2_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+               'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
+               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH3'}
+ch4_btn_pos = {'x': ch3_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+               'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
+               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH4'}
 
 validator_lbl = {'x': info_start_pos['x'], 'y': info_start_pos['y'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
@@ -235,7 +279,7 @@ treeview_pos = {'x': cam1_resolution['w'] + 30, 'y': search_btn['y'] + search_bt
 tree_view_size = {'w': int((WINDOWS_SIZE['x'] - 1280) / 2.7), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17) + 7}
 
 # Script Table
-script_tb_pos = {'x': cam1_resolution['w'] * 67 / 100, 'y': treeview_pos['y'] + tree_view_size['h'],
+script_tb_pos = {'x': cam1_resolution['w'] * 67 / 100, 'y': treeview_pos['y'] + tree_view_size['h'] - 20,
                  'w': int(cam1_resolution['w'] / 3), 'h': WINDOWS_SIZE['y'] - (lbl_size['h'] * 17),
                  'c': int(cam1_resolution['w'] / 8)}
 script_column = ['Function', 'Interval']
@@ -321,6 +365,6 @@ script_clear_btn = {'x': script_stop_btn['x'], 'y': script_stop_btn['y'] + scrip
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Clear'}
 
-capture_pos = {'x': rtsp_pos['x'], 'y': rtsp_pos['y'],
-               'h': rtsp_pos['h'], 'w': rtsp_pos['w']}
+capture_pos = {'x': ch1_rtsp_info['x'], 'y': ch1_rtsp_info['y'],
+               'h': ch1_rtsp_info['h'] * 2, 'w': ch1_rtsp_info['w'] * 2}
 capture_path = {'zoom': rf'Capture/Zoom', 'focus': rf'Capture/Focus'}

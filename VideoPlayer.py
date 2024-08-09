@@ -3,25 +3,35 @@ import vlc
 from PIL import Image, ImageTk
 from PIL.ImageTk import PhotoImage
 
+import Constant as Cons
+
 
 class VideoPlayer:
 
-    def __init__(self, root, rtsp_url, pos):
+    def __init__(self, root, rtsp_url, pos, tag):
         self.root = root
         self.rtsp_url = rtsp_url
         self.width = pos['w']
         self.height = pos['h']
+        self.tag = tag
+        self.is_default = True
+
+        self.running = True
 
         # self.instance = vlc.Instance(
         #     '--network-caching=300',  # Set network caching to 300 ms
         #     '--rtsp-frame-buffer-size=10000000',  # Adjust RTSP frame buffer size (if necessary)
         #     '--rtsp-tcp'  # Use RTSP over T1. CP, which might help with stability (optional)
         # )
-        self.instance = vlc.Instance('--network-caching=50', '--rtsp-tcp', '--clock-jitter=0', '--sout-mux-caching=10', '--avcodec-hw=any')
-        self.player = self.instance.media_player_new()
 
         self.canvas = tk.Canvas(root, width=self.width, height=self.height, bg='black', highlightthickness=0)
         self.canvas.place(x=pos['x'], y=pos['y'])
+        self.canvas.my_id = tag
+
+        self.instance = vlc.Instance('--network-caching=300', '--rtsp-tcp', '--clock-jitter=0', '--sout-mux-caching=10',
+                                     '--avcodec-hw=none')
+        self.player = self.instance.media_player_new()
+        self.player.set_hwnd(self.canvas.winfo_id())
 
         # (2024.07.30) Convert Video Size Button
         self.less_img = Image.open(rf'Image\less.png')
@@ -34,13 +44,13 @@ class VideoPlayer:
             self.is_default = False
             self.size_btn = tk.Button(self.root, image=self.more_photo, bg='black', bd=0, highlightthickness=0,
                                       command=self.on_click)
-            self.size_btn.place(x=10, y=10, width=30, height=20)
+            self.size_btn.place(x=pos['x'] + 10, y=pos['y'] + 10, width=30, height=20)
             self.size_btn.image = self.more_photo
         else:
             self.is_default = True
             self.size_btn = tk.Button(self.root, image=self.less_photo, bg='black', bd=0, highlightthickness=0,
                                       command=self.on_click)
-            self.size_btn.place(x=10, y=10, width=30, height=20)
+            self.size_btn.place(x=pos['x'] + 10, y=pos['y'] + 10, width=30, height=20)
             self.size_btn.image = self.less_photo
 
         self.player.play()
@@ -71,9 +81,14 @@ class VideoPlayer:
     #         self.cap = None
 
     def __del__(self):
-        self.stop_video()
+        try:
+            if self.canvas.winfo_exists():
+                self.canvas.destroy()
+        except Exception as e:
+            print(f"Error during destruction: {e}")
 
-    # def on_closing(self):
+        # def on_closing(self):
+
     #     self.stop_video()
     #     self.root.destroy()
 
@@ -89,8 +104,13 @@ class VideoPlayer:
         self.player.play()
 
     def stop_video(self):
-        self.player.stop()
-        self.root.destroy()
+        if self.running:
+            self.running = False
+            print(f"Stopping video player for channel {self.tag}")
+
+            if self.canvas:
+                self.canvas.destroy()
+                self.canvas = None
 
     def on_closing(self):
         self.stop_video()
@@ -98,19 +118,53 @@ class VideoPlayer:
 
     # (20204.07.31): convert a windows size when player was
     def on_click(self):
-        if self.is_default:
-            self.size_btn.config(image=self.more_photo)
-            self.size_btn.image = self.more_photo
-        else:
-            self.size_btn.config(image=self.less_photo)
-            self.size_btn.image = self.less_photo
-        self.is_default = not self.is_default
+        try:
+            if self.is_default:
+                self.size_btn.config(image=self.more_photo)
+                self.size_btn.image = self.more_photo
+                self.alive_except_selected_ch()
+            else:
+                self.size_btn.config(image=self.less_photo)
+                self.size_btn.image = self.less_photo
+                self.destroy_except_selected_ch()
 
-        if self.width == 640 and self.height == 360:
-            self.width, self.height = 1280, 720
-        else:
-            self.width, self.height = 640, 360
+            self.is_default = not self.is_default
 
-        self.canvas.config(width=self.width, height=self.height)
-        self.root.update_idletasks()
-        self.player.set_hwnd(self.canvas.winfo_id())
+            if self.width == 640 and self.height == 360:
+                self.width, self.height = 1280, 720
+            else:
+                self.width, self.height = 640, 360
+
+            if self.canvas.winfo_exists():
+                self.canvas.config(width=self.width, height=self.height)
+                self.root.update_idletasks()
+                self.canvas.tkraise(self.canvas.my_id)
+                self.player.set_hwnd(self.canvas.winfo_id())
+            else:
+                print("Canvas widget does not exist anymore.")
+        except Exception as e:
+            print(f"Error during on_click: {e}")
+
+    # (2024.08.06): Destroy players except selected ch
+    def destroy_except_selected_ch(self):
+        videos = Cons.video_players
+        print(rf'videos = {videos}')
+        for key in list(videos.keys()):
+            if key != self.tag:
+                try:
+                    videos[key].stop_video()
+                except Exception as e:
+                    print(f"Error modifying canvas size for {key}: {e}")
+
+    def alive_except_selected_ch(self):
+        videos = Cons.video_players
+        print(rf'videos = {videos}')
+        for key in list(videos.keys()):
+            if key != self.tag:
+                try:
+                    if videos[key].canvas is not None:
+                        videos[key].start_video()
+                    else:
+                        print(f"Canvas for channel {key} does not exist, skipping start_video.")
+                except Exception as e:
+                    print(f"Error starting video for {key}: {e}")
