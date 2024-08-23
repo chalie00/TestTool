@@ -127,7 +127,7 @@ class SysInfo:
             interval = [1.0, 1.0, 1.0, 1.0]
 
             for title, protocol in titles:
-                Comm.send_data(protocol, title, self.root)
+                Comm.send_cmd_for_uncooled(protocol, title, self.root)
         elif Cons.selected_model == 'NYX Series':
             print('NYX Updated')
             # NYX.GET#lens_wnmm -> NYX.GET#lens_wnen

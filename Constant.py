@@ -29,8 +29,8 @@ info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 10}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
-selected_model = 'Uncooled'
-model_option = ['Uncooled', 'NYX Series']
+selected_model = 'DRS'
+model_option = ['Uncooled', 'DRS', 'NYX Series']
 
 # Command File Path
 cmd_path = rf'Command/Command.xlsx'
@@ -60,7 +60,24 @@ script_toggle_flag = None
 # ScreenShot Hex Value
 capture_hex = [255, 1, 0, 0, 0, 0, 0]
 
-# Uncooled Type Zo0m In/OPut AF Test Code
+# DRS Default Code
+
+script_hex_nyx_cmd_arrays = [[255, 0, 32, 34, 0, 0, 66], [255, 0, 32, 35, 0, 0, 67],
+                             [255, 0, 32, 36, 0, 0, 68], [255, 0, 32, 49, 0, 1, 82],
+                             [255, 0, 33, 16, 0, 10, 59], [255, 0, 33, 19, 0, 0, 52],
+                             [255, 0, 35, 0, 0, 0, 35], [255, 0, 35, 1, 0, 0, 36],
+                             [255, 0, 35, 2, 0, 98, 135], [255, 0, 33, 0, 0, 3, 36]]
+script_cmd_titles = [' Mirror Off', ' Flip Off', 'Invert Off', 'Cali Auto',
+                     'IDE 10', 'Gray', 'Temp Info Off', 'Temp User Offset 0',
+                     'Emissivity 98', 'AGC High']
+interval_arrays = [3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0, 3.0, 3.0,
+                   3.0, 3.0]
+cmd_itv_arrays = [[' Mirror Off', 3.0], [' Flip Off', 3.0], [' Invert Off', 3.0], ['Cali Auto', 3.0],
+                  ['IDE 10', 3.0], ['Gray', 3.0], ['Temp Info Off', 3.0], ['Temp User Offset 0', 3.0],
+                  ['Emissivity 98', 3.0], ['AGC High', 3.0]]
+
+# Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
 # script_hex_nyx_cmd_arrays = [[255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
 #                      [255, 1, 0, 0, 0, 0, 0],
@@ -87,30 +104,30 @@ capture_hex = [255, 1, 0, 0, 0, 0, 0]
 #                   ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
 #                   ]
 
-# NYX Series Zoom In/OPut AF Test Code
+# NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
-script_hex_nyx_cmd_arrays = [
-    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute',
-    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute',
-    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute',
-    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute'
-]
-script_cmd_titles = ['zoom narrow', 'zoom stop', 'af execute',
-                     'zoom wide', 'zoom stop', 'af execute',
-                     'focus near', 'focus stop', 'af execute',
-                     'focus far', 'focus stop', 'af execute'
-                     ]
-interval_arrays = [2.0, 1.0, 4.0,
-                   2.5, 1.0, 4.0,
-                   2.0, 1.0, 4.0,
-                   2.0, 1.0, 4.0,
-                   ]
-cmd_itv_arrays = [
-    ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0],
-    ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0],
-    ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0],
-    ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0],
-]
+# script_hex_nyx_cmd_arrays = [
+#     'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute',
+#     'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute',
+#     'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute',
+#     'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute'
+# ]
+# script_cmd_titles = ['zoom narrow', 'zoom stop', 'af execute',
+#                      'zoom wide', 'zoom stop', 'af execute',
+#                      'focus near', 'focus stop', 'af execute',
+#                      'focus far', 'focus stop', 'af execute'
+#                      ]
+# interval_arrays = [2.0, 1.0, 4.0,
+#                    2.5, 1.0, 4.0,
+#                    2.0, 1.0, 4.0,
+#                    2.0, 1.0, 4.0,
+#                    ]
+# cmd_itv_arrays = [
+#     ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0],
+#     ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0],
+#     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0],
+#     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0],
+# ]
 
 # Network Information form User Input
 data_sending = True
@@ -119,18 +136,53 @@ port: int = 0  # Default 32000
 rtsp_port: int = 0
 buf_size = 4096
 response_txt = []
+drs_response = {
+    'mirror': '', 'flip': '', 'invert': '', 'dzoom': '', 'color': '',
+    'gamma': '', 'agc_mode': '',
+    'roi_x_start_x_pos': '',
+    'roi_x_start_y_pos': '',
+    'ide': '', 'agc_frame': '',
+    'cal_mode': '', 'cal_interval_time': '',
+    'contrast': '',
+    'brightness': '',
+    'fw': '',
+    'serial': '',
+    'shutter_temp': '',
+    'roi_x_threshold_temp': '',
+    'center_temp': '',
+    'temp_info': '', 'colorbar': '', 'center_mark': '', 'min_max': '',
+    'zoom_pos': '',
+    'focus_pos': '',
+    'focal_len': '', 'TBD': '', 'zoom_move_flag': '', 'af_flag': '',
+    'frame_rate': '', 'tx_mode': '',
+    'frame_min_temp': '',
+    'frame_max_temp': '',
+    'frame_average_temp': '',
+    # Data 22 ~ 41
+    'roi0_min': '', 'roi0_max': '', 'roi1_min': '', 'roi1_max': '', 'roi2_min': '', 'roi2_max': '',
+    'roi3_min': '', 'roi3_max': '', 'roi4_min': '', 'roi4_max': '', 'roi5_min': '', 'roi5_max': '',
+    'roi6_min': '', 'roi6_max': '', 'roi7_min': '', 'roi7_max': '', 'roi8_min': '', 'roi8_max': '',
+    'roi9_min': '', 'roi9_max': '',
+    'colorbar_min': '',
+    'colorbar_max': '',
+    'emissivity': '',
+    'user_temp_offset': '',
+    'roi0': '', 'roi1': '', 'roi2': '', 'roi3': '', 'roi4': '', 'roi5': '', 'roi6': '', 'roi7': '',
+    'roi8': '', 'roi9': '', 'min_max_en': '', 'mask0': '', 'mask1': '', 'mask2': '',
+    'arm0': '', 'arm1': '', 'arm2': '', 'arm3': '', 'arm4': '', 'arm5': '',
+    'arm6': '', 'arm7': '', 'arm8': '', 'arm9': '',
+    'roi_x_end_pos': ''
+}
 
 # RTSP Information
 rtsp_url = ''
 ipc_id = ''
 ipc_pw = ''
 
-video_players = {}
 video_player_ch1 = None
 video_player_ch2 = None
 video_player_ch3 = None
 video_player_ch4 = None
-
 
 ch1_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
                  'x': 0, 'y': 0,
@@ -148,7 +200,6 @@ ch4_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_por
                  'x': ch1_rtsp_info['w'] + 5, 'y': ch1_rtsp_info['h'] + 5,
                  'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
                  }
-
 
 # PTZ/OSD Toggle Variable
 ptz_osd_toggle_flag = False
@@ -285,7 +336,7 @@ script_tb_pos = {'x': cam1_resolution['w'] * 67 / 100, 'y': treeview_pos['y'] + 
 script_column = ['Function', 'Interval']
 
 # Log Field Position and Size
-log_txt_fld_info = {'x': 0, 'y': script_tb_pos['y'],
+log_txt_fld_info = {'x': 0, 'y': WINDOWS_SIZE['y'] - lbl_size['h'] * 8 - 50,
                     'h': lbl_size['h'] * 8 + 9, 'w': lbl_size['w'] * 6,
                     'bg': my_color['spare_fir'], 'fg': my_color['bg']}
 

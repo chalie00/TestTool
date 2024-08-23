@@ -25,10 +25,18 @@ class Response:
 
     # Response Text
     def dis_response_text(self):
-        dis_txt = list(reversed(Cons.response_txt))
-        for i, txt in enumerate(dis_txt[:20]):
-            self.text_widget.insert(tk.END, txt + '\n')
-            # (2024.07.17) Move last line
-            # self.text_widget.see(tk.END)
-        self.text_widget.config(state=tk.DISABLED)
+        if Cons.selected_model in ['Uncooled', 'NYX Series']:
+            dis_txt = list(reversed(Cons.response_txt))
+            for i, txt in enumerate(dis_txt[:20]):
+                self.text_widget.insert(tk.END, txt + '\n')
+                # (2024.07.17) Move last line
+                # self.text_widget.see(tk.END)
+            self.text_widget.config(state=tk.DISABLED)
+        elif Cons.selected_model in ['DRS']:
+            dis_txt = Cons.drs_response.items()
+            for key, v in dis_txt:
+                self.text_widget.insert(tk.END, f'{key}: {v}\n')
+                # (2024.07.17) Move last line
+                # self.text_widget.see(tk.END)
+            self.text_widget.config(state=tk.DISABLED)
 

@@ -135,36 +135,41 @@ class VideoPlayer:
             else:
                 self.width, self.height = 640, 360
 
-            if self.canvas.winfo_exists():
-                self.canvas.config(width=self.width, height=self.height)
-                self.root.update_idletasks()
-                self.canvas.tkraise(self.canvas.my_id)
-                self.player.set_hwnd(self.canvas.winfo_id())
-            else:
-                print("Canvas widget does not exist anymore.")
+            self.canvas.config(width=self.width, height=self.height)
+            self.root.update_idletasks()
+
         except Exception as e:
             print(f"Error during on_click: {e}")
 
     # (2024.08.06): Destroy players except selected ch
     def destroy_except_selected_ch(self):
-        videos = Cons.video_players
-        print(rf'videos = {videos}')
-        for key in list(videos.keys()):
-            if key != self.tag:
+        videos = [Cons.video_player_ch1, Cons.video_player_ch2, Cons.video_player_ch3, Cons.video_player_ch4]
+        infos = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info, Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+        channels = ['ch1', 'ch2', 'ch3', 'ch4']
+
+        for i, channel in enumerate(channels):
+            if channel != self.tag.lower():
                 try:
-                    videos[key].stop_video()
+                    videos[i].canvas.place_forget()
+                    videos[i].size_btn.place_forget()
                 except Exception as e:
-                    print(f"Error modifying canvas size for {key}: {e}")
+                    print(f"Error during destroy_except_selected_ch for {channel}: {e}")
+            else:
+                videos[i].canvas.place(x=0, y=0)
+                videos[i].size_btn.place(x=10, y=10, width=30, height=20)
 
     def alive_except_selected_ch(self):
-        videos = Cons.video_players
-        print(rf'videos = {videos}')
-        for key in list(videos.keys()):
-            if key != self.tag:
+        videos = [Cons.video_player_ch1, Cons.video_player_ch2, Cons.video_player_ch3, Cons.video_player_ch4]
+        infos = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info, Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+        channels = ['ch1', 'ch2', 'ch3', 'ch4']
+
+        for i, channel in enumerate(channels):
+            if channel != self.tag.lower():
                 try:
-                    if videos[key].canvas is not None:
-                        videos[key].start_video()
-                    else:
-                        print(f"Canvas for channel {key} does not exist, skipping start_video.")
+                    videos[i].canvas.place(x=infos[i]['x'], y=infos[i]['y'])
+                    videos[i].size_btn.place(x=infos[i]['x'] + 10, y=infos[i]['y'] + 10, width=30, height=20)
                 except Exception as e:
-                    print(f"Error starting video for {key}: {e}")
+                    print(f"Error during alive_except_selected_ch for {channel}: {e}")
+            else:
+                videos[i].canvas.place(x=infos[i]['x'], y=infos[i]['y'])
+                videos[i].size_btn.place(x=infos[i]['x'] + 10, y=infos[i]['y'] + 10, width=30, height=20)

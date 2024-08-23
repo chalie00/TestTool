@@ -37,7 +37,7 @@ class TestTool(tk.Frame):
         self.thread = None
 
         # (2024.08.05): Called when ch button was pushed
-        def change_ch(btn, ch_name):
+        def pushed_ch_btn(btn, ch_name):
             info = getattr(Cons, f'{ch_name.lower()}_rtsp_info')
             info.update({
                 'model': sel_op.get(),
@@ -51,81 +51,51 @@ class TestTool(tk.Frame):
 
             url_patterns = {
                 'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
-                'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0'
+                'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+                'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0'
             }
             info['url'] = url_patterns.get(info['model'], 'Invalid model')
 
             btn.config(bg='green')
 
-            Cons.video_players = {}
-            ch_info_dict = {
-                'ch1': Cons.ch1_rtsp_info,
-                'ch2': Cons.ch2_rtsp_info,
-                'ch3': Cons.ch3_rtsp_info,
-                'ch4': Cons.ch4_rtsp_info
-            }
-
-            # Print channel info and instantiate video players if URL is set
-            for ch_name, ch_info in ch_info_dict.items():
-                if ch_info['url']:
-                    pos = {'x': ch_info['x'], 'y': ch_info['y'], 'w': ch_info['w'], 'h': ch_info['h']}
-                    Cons.video_players[ch_name] = Vp.VideoPlayer(self.parent, ch_info['url'], pos, ch_name.lower())
-            print(Cons.video_players)
-            print(info)
+            if ch_name.lower() == 'ch1':
+                ch_info = Cons.ch1_rtsp_info
+                pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
+                Cons.video_player_ch1 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
+            elif ch_name.lower() == 'ch2':
+                ch_info = Cons.ch2_rtsp_info
+                pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
+                Cons.video_player_ch2 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
+            elif ch_name.lower() == 'ch3':
+                ch_info = Cons.ch3_rtsp_info
+                pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
+                Cons.video_player_ch3 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
+            elif ch_name.lower() == 'ch4':
+                ch_info = Cons.ch4_rtsp_info
+                pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
+                Cons.video_player_ch4 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
 
         # Check Main Window Position
         # Open RTSP and Get the Network Information from User Input
         def open_video_window():
+            Cons.host_ip = ip_txt_fld.get()
+            Cons.port = port_txt_fld.get()
+            Cons.rtsp_port = rtsp_txt_fld.get()
+            Cons.ipc_id = ipc_id_txt_fld.get()
+            Cons.ipc_pw = ipc_pw_txt_fld.get()
             # Set CH Button to default Color
             for i in range(1, 5):
                 channel_names[f'CH{i}'].config(bg=Cons.ch1_btn_pos['bg'])
-            #
-            # # Cons.host_ip = ip_txt_fld.get()
-            # # Cons.port = port_txt_fld.get()
-            # # Cons.rtsp_port = rtsp_txt_fld.get()
-            # # Cons.ipc_id = ipc_id_txt_fld.get()
-            # # Cons.ipc_pw = ipc_pw_txt_fld.get()
-            # # Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/cam0_0'
-            # # Cons.rtsp_url = rf'rtsp://{ipc_id_txt_fld.get()}:{ipc_pw_txt_fld.get()}@{ip_txt_fld.get()}:{rtsp_txt_fld.get()}/test'
-            # # video_window = tk.Toplevel(parent)
-            # # video_window.title("RTSP Video Player")
-            #
-            videos = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info,
-                      Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+
+            videos = [Cons.video_player_ch1, Cons.video_player_ch2, Cons.video_player_ch3, Cons.video_player_ch4]
             for video in videos:
-                if video['url']:
-                    pos = {'x': video['x'], 'y': video['y'], 'w': video['w'], 'h': video['h']}
-                    video_player = Vp.VideoPlayer(parent, video['url'], pos, video['ch'])
-                    Cons.video_players[video['ch']] = video_player
-                    video_player.start_video()
-
-            # videos_info = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info, Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
-            # for video in videos_info:
-            #     if video['url'] is not '':
-
-        # Get the stream from Camera
-        # def get_stream_from_camera():
-        #     rtsp_add = Cons.rtsp_url
-        #     print(rtsp_add)
-        #     cap_file = cv2.VideoCapture(rtsp_add)
-        #     width = cap_file.get(cv2.CAP_PROP_FRAME_WIDTH)
-        #     height = cap_file.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        #     # stream_lbl = Label(parent)
-        #     # stream_lbl.grid(row=3, column=0)
-        #     _, frame = cap_file.read()
-        #     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        #     img = Image.fromarray(cv2image)
-        #     imgtk = ImageTk.PhotoImage(image=img)
-        #     self.canvas.create_image(3, 0, image=imgtk, anchor=tkinter.center)
-        #     parent.after(1, get_stream_from_camera())
-        # stream_lbl.imgtk = imgtk
-        # stream_lbl.configure(image=imgtk)
-        # stream_lbl.after(1, get_stream_from_camera)
+                if video:
+                    video.start_video()
 
         # (2024.07.19): Model Drop Down Menu function
         def model_select(event):
             current_sel = sel_op.get()
-            if current_sel in ['NYX Series', 'Uncooled']:
+            if current_sel in ['NYX Series', 'DRS', 'Uncooled']:
                 Cons.selected_model = current_sel
                 col_name = Cons.column_array
                 col_count = len(col_name)
@@ -136,7 +106,7 @@ class TestTool(tk.Frame):
                 ptz_ui.refresh_ptz()
 
         # Search a protocol which user typed text
-        def search_command():
+        def search_command(event):
             query = search_txt_fld.get().lower()
             selected_item = []
             command_data = Mf.get_data_from_csv(Cons.cmd_path)
@@ -165,7 +135,7 @@ class TestTool(tk.Frame):
 
         # (2024.07.04): Start thread with selected script
         def start_thread():
-            if not self.thread_running.isSet():
+            if not self.thread_running.is_set():
                 self.thread_running.set()
                 self.thread = threading.Thread(target=run_script)
                 self.thread.start()
@@ -176,9 +146,9 @@ class TestTool(tk.Frame):
             time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
             response_file_name = rf'{Cons.log_path}_{time_str}.txt'
             try:
-                while self.thread_running.isSet():
-                    script_run_btn.config(state='disabled')
-                    script_stop_btn.config(state='normal')
+                while self.thread_running.is_set():
+                    self.script_run_btn.config(state='disabled')
+                    self.script_stop_btn.config(state='normal')
                     Cons.data_sending = True
                     if Cons.script_toggle_flag:
                         print('run script')
@@ -186,8 +156,8 @@ class TestTool(tk.Frame):
                         repeat = int(repeat_txt_fld.get())
                         script = Cons.script_hex_nyx_cmd_arrays
                         titles = Cons.script_cmd_titles
-                        if Cons.selected_model == 'Uncooled':
-                            Comm.send_data_with_interval(interval, repeat, script, titles, parent)
+                        if Cons.selected_model in ['Uncooled', 'DRS']:
+                            Comm.send_cmd_to_ucooled_with_interval(interval, repeat, script, titles, parent)
                         elif Cons.selected_model == 'NYX Series':
                             Comm.send_cmd_to_nyx_with_interval(parent, titles, script, interval, response_file_name)
                     else:
@@ -204,21 +174,21 @@ class TestTool(tk.Frame):
                         interval = float(int(interval_txt_fld.get()) / 1000)
                         repeat = int(repeat_txt_fld.get())
                         titles = Cons.script_cmd_titles
-                        Comm.send_data_with_interval(interval, repeat, hex_protocol, titles, parent)
+                        Comm.send_cmd_to_ucooled_with_interval(interval, repeat, hex_protocol, titles, parent)
 
                         return hex_protocol
                     time.sleep(0.1)
             finally:
-                script_run_btn.config(state='normal')
-                script_stop_btn.config(state='disabled')
+                self.script_run_btn.config(state='normal')
+                self.script_stop_btn.config(state='disabled')
                 Cons.data_sending = False
                 print('stop script')
 
         # (2024.07.04): Stop Script(Threading Stop)
         def stop_script():
             Cons.data_sending = False
-            script_run_btn.config(state='normal')
-            script_stop_btn.config(state='disabled')
+            self.script_run_btn.config(state='normal')
+            self.script_stop_btn.config(state='disabled')
             print('stop script')
 
             self.thread_running.clear()
@@ -229,8 +199,8 @@ class TestTool(tk.Frame):
         # (2024.07.04): Clear the Script Table
         def clr_script():
             Cons.data_sending = False
-            script_run_btn.config(state='normal')
-            script_stop_btn.config(state='normal')
+            self.script_run_btn.config(state='normal')
+            self.script_stop_btn.config(state='normal')
             print('clear script')
             Mf.clr_table_arrays(parent)
 
@@ -246,7 +216,8 @@ class TestTool(tk.Frame):
                                                       anchor='center')
 
             channel_names[f'CH{i}'].bind('<Button-1>',
-                                         lambda event, btn=channel_names[f'CH{i}'], ch_name=btn_pos['text']: change_ch(
+                                         lambda event, btn=channel_names[f'CH{i}'],
+                                                ch_name=btn_pos['text']: pushed_ch_btn(
                                              btn, ch_name))
 
         validator = Cons.validator_lbl
@@ -268,12 +239,12 @@ class TestTool(tk.Frame):
                                     bg=model['bg'], text=model['text'], anchor='center')
 
         # (2024.07.19): Change a model entry to selectable drop down menu (NYX Series, Uncooled type)
-        # model_option = ['Uncooled', 'NYX Series']
+        # model_option = ['Uncooled', 'DRS', 'NYX Series']
         model_option = Cons.model_option
         sel_op = tk.StringVar()
         drop_down = ttk.Combobox(parent, textvariable=sel_op)
         drop_down['values'] = model_option
-        drop_down.current(0)
+        drop_down.current(1)
         drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
         drop_down.bind('<<ComboboxSelected>>', model_select)
 
@@ -284,7 +255,7 @@ class TestTool(tk.Frame):
         fw_lbl = Mf.make_element(x=fw['x'], y=fw['y'],
                                  h=fw['h'], w=fw['w'], element='Label',
                                  bg=fw['bg'], text=fw['text'], anchor='center')
-        fw_txt_fld = Mf.make_element(x=fw_txt['x'], y=fw_txt['y'],
+        self.fw_txt_fld = Mf.make_element(x=fw_txt['x'], y=fw_txt['y'],
                                      h=fw_txt['h'], w=fw_txt['w'], element='Entry',
                                      bg=fw_txt['bg'])
 
@@ -339,10 +310,10 @@ class TestTool(tk.Frame):
         ipc_pw_txt_fld.configure(show='*')
 
         self.register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
-                                       h=regi_btn['h'], w=regi_btn['w'], element='Button',
-                                       bg=regi_btn['bg'], text=regi_btn['text'],
-                                       anchor='center',
-                                       command=open_video_window)
+                                            h=regi_btn['h'], w=regi_btn['w'], element='Button',
+                                            bg=regi_btn['bg'], text=regi_btn['text'],
+                                            anchor='center',
+                                            command=open_video_window)
 
         # ===================================== Set Searching a command UI =====================================
         sear_txt = Cons.search_txt_fld_info
@@ -351,6 +322,7 @@ class TestTool(tk.Frame):
         search_txt_fld = Mf.make_element(x=sear_txt['x'], y=sear_txt['y'],
                                          h=sear_txt['h'], w=sear_txt['w'],
                                          bg=sear_txt['bg'], element='Entry')
+        search_txt_fld.bind('<Return>', search_command)
         query_txt = search_txt_fld.get()
         # search_btn = Mf.make_element(x=sear_btn['x'], y=sear_btn['y'],
         #                              h=sear_btn['h'], w=sear_btn['w'], element='Button',
@@ -358,12 +330,13 @@ class TestTool(tk.Frame):
         #                              anchor='center', command=search_command)
 
         self.search_btn = Mf.make_element(x=sear_btn['x'], y=sear_btn['y'],
-                                     h=sear_btn['h'], w=sear_btn['w'], element='Button',
-                                     bg=sear_btn['bg'], text=sear_btn['text'],
-                                     anchor='center', command=search_command)
+                                          h=sear_btn['h'], w=sear_btn['w'], element='Button',
+                                          bg=sear_btn['bg'], text=sear_btn['text'],
+                                          anchor='center', command=search_command)
 
         # For Test Code
-        test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
+        # test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
         ip_txt_fld.insert(0, test_txt['ip'])
         port_txt_fld.insert(0, test_txt['port'])
         rtsp_txt_fld.insert(0, test_txt['rtsp_port'])
@@ -437,19 +410,19 @@ class TestTool(tk.Frame):
         script_mode_ui = onoffSW.SwitchOnOff(parent, None, script_btn_id, Cons.script_mode_btn)
 
         self.script_run_btn = Mf.make_element(r_btn['x'], r_btn['y'],
-                                         r_btn['h'], r_btn['w'],
-                                         bg=r_btn['bg'], element='Button',
-                                         text=r_btn['text'], anchor='center', command=start_thread)
+                                              r_btn['h'], r_btn['w'],
+                                              bg=r_btn['bg'], element='Button',
+                                              text=r_btn['text'], anchor='center', command=start_thread)
 
         self.script_stop_btn = Mf.make_element(st_btn['x'], st_btn['y'],
-                                          st_btn['h'], st_btn['w'],
-                                          bg=st_btn['bg'], element='Button',
-                                          text=st_btn['text'], anchor='center', command=stop_script)
+                                               st_btn['h'], st_btn['w'],
+                                               bg=st_btn['bg'], element='Button',
+                                               text=st_btn['text'], anchor='center', command=stop_script)
 
         self.script_clear_btn = Mf.make_element(clr_btn['x'], clr_btn['y'],
-                                           clr_btn['h'], clr_btn['w'],
-                                           bg=clr_btn['bg'], element='Button',
-                                           text=clr_btn['text'], anchor='center', command=clr_script)
+                                                clr_btn['h'], clr_btn['w'],
+                                                bg=clr_btn['bg'], element='Button',
+                                                text=clr_btn['text'], anchor='center', command=clr_script)
 
 
 # TODO: (2024.07.19): Command File Import Function

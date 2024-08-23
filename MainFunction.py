@@ -147,15 +147,16 @@ def clicked_table_element(event, root_view, tv):
 
 # 2024.07.04: Operating script mode
 # (2024.07.25): NYX added to script mode
+# (2024.08.14): DRS Added to script mode
 def handle_script_mode(event, value, root_view):
     Cons.data_sending = True
-    if Cons.selected_model == 'Uncooled':
+    if Cons.selected_model in ['Uncooled', 'DRS']:
         hex_value = select_item(event, root_view)
         Cons.script_hex_nyx_cmd_arrays.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
         print(Cons.script_cmd_titles)
 
-        gene_interval_arrays()
+        gene_interval_arrays(value)
         script_tb = tb.Table(root_view)
         check_interval_active()
 
@@ -180,7 +181,10 @@ def handle_normal_mode(event, tags, iden, value, root_view, tv):
     if Cons.selected_model == 'Uncooled':
         hex_value = select_item(event, root_view)
         print(hex_value)
-        Comm.send_data(hex_value, value, root_view)
+        Comm.send_cmd_for_uncooled(hex_value, value, root_view)
+    elif Cons.selected_model == 'DRS':
+        hex_array = select_item(event, root_view)
+        Comm.send_cmd_for_drs(hex_array, root_view)
     elif Cons.selected_model == 'NYX Series':
         send_data_for_nyx(event, root_view)
 
@@ -223,7 +227,8 @@ def get_data_from_csv(file_path) -> [(str, str)]:
     sel_model = Cons.selected_model
     command_data = []
 
-    if sel_model in ['Uncooled', 'NYX Series']:
+    if sel_model in ['Uncooled', 'DRS', 'NYX Series']:
+        print(sel_model)
         sh = wb[f'{sel_model}']
     else:
         return command_data
