@@ -171,7 +171,8 @@ drs_response = {
     'roi8': '', 'roi9': '', 'min_max_en': '', 'mask0': '', 'mask1': '', 'mask2': '',
     'arm0': '', 'arm1': '', 'arm2': '', 'arm3': '', 'arm4': '', 'arm5': '',
     'arm6': '', 'arm7': '', 'arm8': '', 'arm9': '',
-    'roi_x_end_pos': ''
+    'roi_x_end_pos': '',
+    'check_data': ''
 }
 
 # RTSP Information
