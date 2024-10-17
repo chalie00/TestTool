@@ -1,10 +1,14 @@
+import urllib
+
 import main
 
 import binascii
 import socket
 import logging
 import time as ti
-from datetime import datetime
+import requests
+import hashlib
+import uuid
 
 import Constant as Cons
 import MainFunction as Mf
@@ -13,6 +17,8 @@ import System_Info as SysInfo
 import DRS_Response as DR_r
 
 from socket import AF_INET, SOCK_STREAM
+from requests.auth import HTTPBasicAuth
+from datetime import datetime
 
 import Dialog
 
@@ -385,9 +391,9 @@ def send_data_with_cmd_for_info(root, cmds):
 #         client.close()
 
 # (2024.08.13): Added send cmd function for DRS
-def send_cmd_for_drs(send_cmd, root_view):
-    host = Cons.host_ip
-    port = int(0) if Cons.port == '' else int(Cons.port)
+def send_cmd_for_drs(host, port, send_cmd, root_view):
+    # host = Cons.host_ip
+    # port = int(0) if Cons.port == '' else int(Cons.port)
     buf_size = Cons.buf_size
 
     client = socket.socket(AF_INET, SOCK_STREAM)
@@ -465,7 +471,6 @@ def parse_drs_reply(reply):
         48: lambda binary: update_drs_response('roi_x_end_pos', DR_r.convert_to_deci(binary)),
         49: lambda binary: update_drs_response('check_data', DR_r.convert_to_deci(binary)),
 
-
     }
 
     for i, binary_pair in enumerate(binary_pairs):
@@ -482,3 +487,159 @@ def handle_network_error(err, root_view):
     dialog_txt = f'Network Error \n Please check a network info.\n {err}'
     Dialog.DialogBox(root_view, dialog_txt)
     logging.error(err)
+
+
+# (2024.09.24): PTZ func for FT
+# (2024.10.14): Applied Http Digest
+@staticmethod
+def fine_tree_send_cgi(url, params):
+    find_ch()
+    sel_ip = Cons.selected_ch['ip']
+    base_url = rf'http://{sel_ip}{url}?'
+
+    if len(params) == 1:
+        username = Cons.selected_ch['id']
+        password = Cons.selected_ch['pw']
+
+        params_encoded = urllib.parse.urlencode(params)
+        print(f"Sending request to: {base_url} with params: {params_encoded}")
+        full_url = f'http://{sel_ip}{url}?{params_encoded}'
+        try:
+            response = requests.get(base_url, params=params_encoded, auth=HTTPBasicAuth(username, password), timeout=5)
+            if response.status_code == 200:
+                print("Request was successful!")
+                print(response.text)
+            else:
+                print(f"Failed to send request. Status code: {response.status_code}")
+        except requests.exceptions.Timeout:
+            print("The request timed out.")
+        except requests.exceptions.ConnectionError as e:
+            print(f"Connection error occurred: {e}")
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+    else:
+        if 'group' in params.keys():
+            get_url = rf'http://{sel_ip}{url}?group={params['group']}&app=get'
+            print(get_url)
+            set_url = rf'{url}?group={params["group"]}&app={params["app"]}&{list(params.keys())[2]}={list(params.values())[2]}'
+            print(set_url)
+        elif any(x in list(params.keys())[1] for x in ['restart', 'reset', 'default']):
+            print('any')
+            get_url = rf'http://{sel_ip}{url}?app=get'
+            print(get_url)
+            set_url = rf'{url}?app={params["app"]}'
+            print(set_url)
+        else:
+            print('else')
+            get_url = rf'http://{sel_ip}{url}?app=get'
+            print(get_url)
+            set_url = rf'{url}?app={params["app"]}&{list(params.keys())[1]}={list(params.values())[1]}'
+            print(set_url)
+
+        try:
+            get_auth = get_auth_parameters(sel_ip, get_url)
+            print(get_auth)
+            response = send_authenticated_request(get_auth, set_url, method='GET')
+            print(response)
+            print("Response status code:", response.status_code)
+            print("Response body:", response.text)
+        except Exception as e:
+            print("Error:", str(e))
+
+
+# (2024.09.25) Find selected model
+@staticmethod
+def find_ch():
+    model = Cons.selected_model
+    model_arrays = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info,
+                    Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+    for i, ch in enumerate(model_arrays):
+        if model == ch['model']:
+            Cons.selected_ch = model_arrays[i]
+
+
+# Test Code
+def run():
+    parms_array = [{'move': 'up'}, {'move': 'down'}, {'move': 'left'}, {'move': 'right'},
+                   {'move': 'upright'}, {'move': 'downleft'}, {'move': 'upleft'}, {'move': 'downright'}]
+    for parms in parms_array:
+        fine_tree_send_cgi(parms)
+        ti.sleep(1)
+        parm_stop = {'move': 'stop'}
+        fine_tree_send_cgi(parm_stop)
+        ti.sleep(1)
+
+
+##################################### Check a MD5  ########################################
+def md5_hexdigest(data):
+    return hashlib.md5(data.encode('utf-8')).hexdigest()
+
+
+def get_auth_parameters(host_ip, get_url):
+    # Step 1: Get the authentication parameters from the server
+    url = rf'http://{host_ip}/setup/video/image.php?group=basic&app=get'
+    response = requests.get(url)
+
+    if response.status_code == 401:
+        # Parsing the WWW-Authenticate header
+        www_authenticate = response.headers['www-authenticate']
+        print(www_authenticate)
+        params = {}
+
+        for param in www_authenticate.split(','):
+            key, value = param.strip().split('=')
+            params[key] = value.strip('"')
+
+        return params
+    else:
+        raise Exception("Failed to get authentication parameters")
+
+
+def create_digest_response(realm, nonce, qop, nc, cnonce, method, uri):
+    # Step 2: Calculate the HA1, HA2, and response
+    ha1 = md5_hexdigest(f"{Cons.selected_ch['id']}:{realm}:{Cons.selected_ch['pw']}")
+    ha2 = md5_hexdigest(f"{method}:{uri}")
+    response = md5_hexdigest(f"{ha1}:{nonce}:{nc}:{cnonce}:{qop}:{ha2}")
+
+    return response
+
+
+def send_authenticated_request(params, uri, method='GET', additional_params=None):
+    realm = params['Digest realm']
+    nonce = params['nonce']
+    qop = params['qop']
+
+    # Create a unique client nonce
+    cnonce = uuid.uuid4().hex
+    nc = '00000001'  # Nonce count (increment for each request with the same nonce)
+
+    # Create the digest response
+    response = create_digest_response(realm, nonce, qop, nc, cnonce, method, uri)
+
+    # Construct the Authorization header
+    auth_header = (
+        f'Digest realm="{realm}",'
+        f' qop="{qop}",'
+        f' nonce="{nonce}",'
+        f' opaque="{params["opaque"]}",'
+        f' username="{Cons.selected_ch['id']}",'
+        f' algorithm="MD5",'
+        f' nc={nc},'
+        f' cnonce="{cnonce}",'
+        f' response="{response}",'
+        f' uri="{uri}"'
+    )
+
+    # Step 3: Send the authenticated request
+    full_url = f"http://{Cons.selected_ch['ip']}/{uri}"
+    if additional_params:
+        full_url += '&' + '&'.join(f"{key}={value}" for key, value in additional_params.items())
+
+    headers = {
+        'Authorization': auth_header,
+        'Connection': 'close'
+    }
+
+    response = requests.request(method, full_url, headers=headers)
+
+    return response

@@ -124,9 +124,13 @@ def check_interval_active():
 
 # Called when table element was clicked
 def clicked_table_element(event, root_view, tv):
-    host = Cons.host_ip
-    input_port = Cons.port
+    Comm.find_ch()
+    print(Cons.selected_model)
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
+    print(rf'ip:{host}, port:{input_port}, port:{port}')
+
     iden = tv.identify_row(event.y)
     tags = tv.item(iden, 'tags')
     item = tv.item(iden)
@@ -142,7 +146,7 @@ def clicked_table_element(event, root_view, tv):
     if Cons.script_toggle_flag:
         handle_script_mode(event, selected_item, root_view)
     else:
-        handle_normal_mode(event, tags, iden, selected_item, root_view, tv)
+        handle_normal_mode(event, tags, iden, selected_item, root_view, tv, host, port)
 
 
 # 2024.07.04: Operating script mode
@@ -172,7 +176,7 @@ def handle_script_mode(event, value, root_view):
 
 # 2024.07.04: Operating normal mode
 # (2024.07.25): NYX added to normal mode
-def handle_normal_mode(event, tags, iden, value, root_view, tv):
+def handle_normal_mode(event, tags, iden, value, root_view, tv, host, port):
     Cons.data_sending = True
     if 'checked' in tags:
         tv.item(iden, tags='unchecked')
@@ -184,9 +188,21 @@ def handle_normal_mode(event, tags, iden, value, root_view, tv):
         Comm.send_cmd_for_uncooled(hex_value, value, root_view)
     elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
-        Comm.send_cmd_for_drs(hex_array, root_view)
+        Comm.send_cmd_for_drs(host, port, hex_array, root_view)
     elif Cons.selected_model == 'NYX Series':
         send_data_for_nyx(event, root_view)
+    elif Cons.selected_model == 'FineTree':
+        index = int(iden.split('번')[0])
+        items = Cons.fine_tree_cmd_data[index]
+        print(items)
+        url = items[2]
+        params = dict(zip(items[0], items[1]))
+        # for i, item in enumerate(items[0]):
+        #     form = {rf'{item[0][i]}': rf'{item[1][i]}'}
+        #     params.update(form)
+
+        print(params)
+        Comm.fine_tree_send_cgi(url, params)
 
 
 # (2024.07.25) Generate a interval array
@@ -227,7 +243,7 @@ def get_data_from_csv(file_path) -> [(str, str)]:
     sel_model = Cons.selected_model
     command_data = []
 
-    if sel_model in ['Uncooled', 'DRS', 'NYX Series']:
+    if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'FineTree']:
         print(sel_model)
         sh = wb[f'{sel_model}']
     else:
@@ -235,11 +251,26 @@ def get_data_from_csv(file_path) -> [(str, str)]:
 
     max_column = sh.max_column
     max_row = sh.max_row
-    for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
-        cmd_title = sh.cell(row=i, column=2).value
-        cmd_data = sh.cell(row=i, column=3).value
-        cmd_pair = (cmd_title, cmd_data)
-        command_data.append(cmd_pair)
+    if sel_model in ['Uncooled', 'DRS', 'NYX Series']:
+        for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
+            cmd_title = sh.cell(row=i, column=2).value
+            cmd_data = sh.cell(row=i, column=3).value
+            cmd_pair = (cmd_title, cmd_data)
+            command_data.append(cmd_pair)
+    elif sel_model == 'FineTree':
+        for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
+            title = sh.cell(row=i, column=2).value
+            data = sh.cell(row=i, column=3).value
+            para = sh.cell(row=i, column=4).value
+            para_arr = str(para).split(',')
+            value = sh.cell(row=i, column=5).value
+            value_arr = str(value).split(',')
+            url = sh.cell(row=i, column=6).value
+            cmd_pair = (title, data)
+            command_data.append(cmd_pair)
+
+            fine_tree_cmd_data = (para_arr, value_arr, url)
+            Cons.fine_tree_cmd_data.append(fine_tree_cmd_data)
 
     return command_data
 
@@ -280,3 +311,4 @@ def get_secondary_monitor_bbox():
                 secondary_monitor.x + secondary_monitor.width,
                 secondary_monitor.y + secondary_monitor.height)
     return None
+

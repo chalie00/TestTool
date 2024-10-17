@@ -14,6 +14,7 @@ import OnOff_Switch as onoffSW
 import Table as tb
 import Response as Res
 import System_Info as SysInfo
+import Preset as Pre
 
 from tkinter import ttk
 
@@ -37,22 +38,24 @@ class TestTool(tk.Frame):
         self.thread = None
 
         # (2024.08.05): Called when ch button was pushed
+        # (2024.09.24): Add RTSP for FT
         def pushed_ch_btn(btn, ch_name):
             info = getattr(Cons, f'{ch_name.lower()}_rtsp_info')
             info.update({
-                'model': sel_op.get(),
                 'ch': ch_name.lower(),
+                'model': sel_op.get(),
                 'ip': ip_txt_fld.get(),
-                'port': port_txt_fld.get(),
-                'rtsp_port': rtsp_txt_fld.get(),
                 'id': ipc_id_txt_fld.get(),
-                'pw': ipc_pw_txt_fld.get()
+                'pw': ipc_pw_txt_fld.get(),
+                'rtsp_port': rtsp_txt_fld.get(),
+                'port': port_txt_fld.get(),
             })
 
             url_patterns = {
                 'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
                 'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-                'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0'
+                'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+                'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1'
             }
             info['url'] = url_patterns.get(info['model'], 'Invalid model')
 
@@ -93,17 +96,21 @@ class TestTool(tk.Frame):
                     video.start_video()
 
         # (2024.07.19): Model Drop Down Menu function
+        # (2024.09.24): Add Model for FT
         def model_select(event):
             current_sel = sel_op.get()
             if current_sel in ['NYX Series', 'DRS', 'Uncooled']:
-                Cons.selected_model = current_sel
                 col_name = Cons.column_array
-                col_count = len(col_name)
-                command_data = Mf.get_data_from_csv(Cons.cmd_path)
+            elif current_sel in ['FineTree']:
+                col_name = Cons.column_array_fine_tree
 
-                Mf.make_table(parent, col_count, Cons.tree_view_size['w'], col_name,
-                              Cons.treeview_pos['x'], Cons.treeview_pos['y'], command_data)
-                ptz_ui.refresh_ptz()
+            Cons.selected_model = current_sel
+            col_count = len(col_name)
+            command_data = Mf.get_data_from_csv(Cons.cmd_path)
+
+            Mf.make_table(parent, col_count, Cons.tree_view_size['w'], col_name,
+                          Cons.treeview_pos['x'], Cons.treeview_pos['y'], command_data)
+            ptz_ui.refresh_ptz()
 
         # Search a protocol which user typed text
         def search_command(event):
@@ -142,6 +149,10 @@ class TestTool(tk.Frame):
 
         # (2024.07.04): Start thread with selected script
         def run_script() -> []:
+            # if Cons.selected_model == 'FineTree':
+            #     print('Run')
+            #     # for i in range(100000):
+            #     Comm.run()
             current_time = datetime.now()
             time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
             response_file_name = rf'{Cons.log_path}_{time_str}.txt'
@@ -204,6 +215,7 @@ class TestTool(tk.Frame):
             print('clear script')
             Mf.clr_table_arrays(parent)
 
+
         # ================================================ UI Layout ============================================
 
         # ======================================== CH Button, Input User, Model Information ================================
@@ -256,8 +268,8 @@ class TestTool(tk.Frame):
                                  h=fw['h'], w=fw['w'], element='Label',
                                  bg=fw['bg'], text=fw['text'], anchor='center')
         self.fw_txt_fld = Mf.make_element(x=fw_txt['x'], y=fw_txt['y'],
-                                     h=fw_txt['h'], w=fw_txt['w'], element='Entry',
-                                     bg=fw_txt['bg'])
+                                          h=fw_txt['h'], w=fw_txt['w'], element='Entry',
+                                          bg=fw_txt['bg'])
 
         # ============================================ Set Network Information ================================
         ip = Cons.ip_lbl_info
@@ -336,7 +348,8 @@ class TestTool(tk.Frame):
 
         # For Test Code
         # test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
-        test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.138', 'port': '32000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
         ip_txt_fld.insert(0, test_txt['ip'])
         port_txt_fld.insert(0, test_txt['port'])
         rtsp_txt_fld.insert(0, test_txt['rtsp_port'])
@@ -362,8 +375,10 @@ class TestTool(tk.Frame):
         # ========================================= Set Script Table ===========================================
         script_tb = tb.Table(parent)
 
-        # ======================== Set PTZ UI, interval, repeat, script mode, script run/stop/clear ============
+        # ============= Set PTZ UI, Preset UI, interval, repeat, script mode, script run/stop/clear ============
         ptz_ui = pt.PTZ(parent)
+        
+        preset_ui = Pre.Preset(parent)
 
         inter_lbl = Cons.interval_lbl
         inter_txt = Cons.interval_txt_fld
@@ -425,9 +440,17 @@ class TestTool(tk.Frame):
                                                 text=clr_btn['text'], anchor='center', command=clr_script)
 
 
-# TODO: (2024.07.19): Command File Import Function
-# TODO: (2024.07.19): Generate exe format
-# TODO: (2024.07.25): When script mode, need to apply repeat count
+
+
+# TODO: Command File Import Function
+# TODO: Generate exe format
+# TODO: When script mode, need to apply repeat count
+# TODO: Privacy Mask for FT
+# TODO: User Add/Delete for FT
+# TODO: Add/Delete Preset/Tour for FT
+# TODO: Config Txt for FT
+# TODO: Searching App link for FT
+# TODO: Apply PTZ Control Using KBD
 
 if __name__ == '__main__':
     root = tk.Tk()

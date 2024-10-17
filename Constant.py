@@ -7,7 +7,7 @@ import MainFunction as Mf
 SYS_RESOLUTION = {'x': 1920, 'y': 1080}
 WINDOWS_SIZE = {'x': 1850, 'y': 950}
 WINDOWS_POSITION = {"x": int((SYS_RESOLUTION['x'] - WINDOWS_SIZE['x']) / 2),
-                    "y": int((SYS_RESOLUTION['y'] - WINDOWS_SIZE['y']) / 2)}
+                    "y": int((SYS_RESOLUTION['y'] - WINDOWS_SIZE['y']) / 2) - 30}
 
 POPUP_SIZE = {'x': int(WINDOWS_SIZE['x'] / 2), 'y': int(WINDOWS_SIZE['y'] / 4)}
 POPUP_POSITION = {'x': int(WINDOWS_POSITION['x'] + WINDOWS_SIZE['x'] / 2 - POPUP_SIZE['x'] / 2),
@@ -30,7 +30,7 @@ lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
 selected_model = 'DRS'
-model_option = ['Uncooled', 'DRS', 'NYX Series']
+model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series']
 
 # Command File Path
 cmd_path = rf'Command/Command.xlsx'
@@ -40,6 +40,7 @@ log_path = rf'Log/'
 
 # Table Data
 column_array = ['Function', 'Command']
+column_array_fine_tree = ['Function', 'Parameter']
 # 0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35
 # command_array = [('Color Mode Gray', 'ff002113000034'),
 #                  ('Color Mode Rainbow', 'ff002113000135'),
@@ -49,6 +50,8 @@ column_array = ['Function', 'Command']
 
 # Command from CSV File
 command_array = Mf.get_data_from_csv(cmd_path)
+# 0: parameter, 1: value, 2: BaseUrl
+fine_tree_cmd_data = []
 
 # Script Variable
 script_toggle_flag = None
@@ -185,19 +188,21 @@ video_player_ch2 = None
 video_player_ch3 = None
 video_player_ch4 = None
 
-ch1_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+# selected ch is one of below ch(ch1_rtsp_info ....)
+selected_ch = None
+ch1_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '', 'url': '',
                  'x': 0, 'y': 0,
                  'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
                  }
-ch2_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+ch2_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '', 'url': '',
                  'x': ch1_rtsp_info['w'] + 5, 'y': 0,
                  'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
                  }
-ch3_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+ch3_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '', 'url': '',
                  'x': 0, 'y': ch1_rtsp_info['h'] + 5,
                  'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
                  }
-ch4_rtsp_info = {'ch': '', 'model': '', 'url': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '',
+ch4_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '', 'url': '',
                  'x': ch1_rtsp_info['w'] + 5, 'y': ch1_rtsp_info['h'] + 5,
                  'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
                  }
@@ -358,38 +363,83 @@ ptz_osd_mode_btn = {'x': ptz_osd_mode_lbl['x'], 'y': ptz_osd_mode_lbl['y'] + ptz
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
 
-# PTZ UI
-ptz_canvas = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'],
-              'w': 160, 'h': 160}
-ptz_up_btn = {'x': ptz_canvas['w'] / 2 + 2, 'y': ptz_canvas['h'] / 3 / 2 + 5,
-              'h': 40, 'w': 50,
+############################################## PTZ UI ############################################
+ptz_canvas = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'] - 15,
+              'w': 160, 'h': 220}
+
+# Size and Text is applied by create_button function of Ptz.py
+ptz_btn_size = 45
+ptz_up_btn = {'x': ptz_canvas['w'] / 2 + 2, 'y': ptz_canvas['h'] / 3 / 2 + 15,
+              'h': ptz_btn_size, 'w': ptz_btn_size,
               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'UP'}
-ptz_down_btn = {'x': ptz_up_btn['x'], 'y': ptz_canvas['h'] / 3 / 2 + 100 + 5,
-                'h': 40, 'w': 50,
+ptz_up_left_btn = {'x': ptz_up_btn['x'] - ptz_btn_size, 'y': ptz_up_btn['y'],
+                   'h': ptz_btn_size, 'w': ptz_btn_size,
+                   'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'UPPER\nLEFT'}
+ptz_up_right_btn = {'x': ptz_up_btn['x'] + ptz_btn_size, 'y': ptz_up_btn['y'],
+                    'h': ptz_btn_size, 'w': ptz_btn_size,
+                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'UPPER\nRIGHT'}
+
+ptz_down_btn = {'x': ptz_up_btn['x'], 'y': ptz_up_btn['y'] + ptz_btn_size * 2,
+                'h': ptz_btn_size, 'w': ptz_btn_size,
                 'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'DOWN'}
-ptz_left_btn = {'x': ptz_canvas['w'] / 3 / 2, 'y': ptz_canvas['w'] / 3 + 29,
-                'h': 50, 'w': 50,
+ptz_down_left_btn = {'x': ptz_down_btn['x'] - ptz_btn_size, 'y': ptz_down_btn['y'],
+                     'h': ptz_btn_size, 'w': ptz_btn_size,
+                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'BOTTOM\nLEFT'}
+ptz_down_right_btn = {'x': ptz_down_btn['x'] + ptz_btn_size, 'y': ptz_down_btn['y'],
+                      'h': ptz_btn_size, 'w': ptz_btn_size,
+                      'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'BOTTOM\nRIGHT'}
+
+ptz_left_btn = {'x': ptz_up_btn['x'] - ptz_btn_size, 'y': ptz_up_btn['y'] + ptz_btn_size,
+                'h': ptz_btn_size, 'w': ptz_btn_size,
                 'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'LEFT'}
-ptz_right = {'x': ptz_canvas['w'] / 3 / 2 + 100 + 7, 'y': ptz_left_btn['y'],
-             'h': 50, 'w': 50,
-             'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'RIGHT'}
-ptz_center = {'x': 53, 'y': 70,
-              'h': 50, 'w': 50,
-              'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'AF'}
+ptz_right_btn = {'x': ptz_up_btn['x'] + ptz_btn_size, 'y': ptz_left_btn['y'],
+                 'h': ptz_btn_size, 'w': ptz_btn_size,
+                 'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'RIGHT'}
+ptz_center_btn = {'x': 53, 'y':50,
+                  'h': 50, 'w': 50,
+                  'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'AF'}
 
-set_nyx = {'x': ptz_right['x'], 'y': ptz_right['y'] + 45,
-           'h': 30, 'w': 30,
-           'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Set'}
+# Size and Text is applied by refresh_ptz function of Ptz.py
+set_nyx_btn = {'x': ptz_up_btn['x'] + 3, 'y': ptz_up_btn['y'] - ptz_up_btn['h'] + 5,
+               'h': 3, 'w': 30,
+               'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Set'}
 
+############################################## Preset UI ############################################
+tour_lists = []
+
+preset_canvas = {'x': ptz_canvas['x'] + ptz_canvas['w'], 'y': ptz_canvas['y'],
+                 'w': 130, 'h': 220, 'bg': my_color['bg']}
+
+preset_lbl = {'x': ptz_canvas['x'] + ptz_canvas['w'], 'y': ptz_canvas['y'] + 5,
+              'w': 65, 'h': 20, 'bg': my_color['fg']}
+tour_lbl = {'x': preset_lbl['x'] + preset_lbl['w'] + 1, 'y': preset_lbl['y'],
+            'w': 65, 'h': 20, 'bg': my_color['fg']}
+
+preset_txt_fld = {'x': preset_lbl['x'], 'y': preset_lbl['y'] + preset_lbl['h'] + 1,
+                  'w': 65, 'h': 20, 'bg': my_color['fg']}
+tour_txt_fld = {'x': preset_txt_fld['x'] + preset_txt_fld['w'] + 1, 'y': preset_txt_fld['y'],
+                'w': 65, 'h': 20, 'bg': my_color['fg']}
+
+preset_save_btn = {'x': preset_txt_fld['x'], 'y': preset_txt_fld['y'] + preset_txt_fld['h'] + 1,
+                   'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Save'}
+preset_call_btn = {'x': preset_save_btn['x'] + preset_save_btn['w'], 'y': preset_save_btn['y'],
+                   'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Call'}
+
+tour_save_btn = {'x': tour_txt_fld['x'], 'y': tour_txt_fld['y'] + tour_txt_fld['h'] + 1,
+                 'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Save'}
+tour_call_btn = {'x': tour_save_btn['x'] + tour_save_btn['w'], 'y': tour_save_btn['y'],
+                 'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Call'}
+
+############################################## Script UI ############################################
 # Script(Repeat, interval) Position Setting
-interval_lbl = {'x': search_btn['x'] - 150, 'y': treeview_pos['y'] + tree_view_size['h'] + 10,
+interval_lbl = {'x': search_btn['x'] - 80, 'y': treeview_pos['y'] + tree_view_size['h'] - 10,
                 'h': lbl_size['h'], 'w': lbl_size['w'],
                 'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Interval(msec)'}
 interval_txt_fld = {'x': interval_lbl['x'] + interval_lbl['w'] + 10, 'y': interval_lbl['y'],
-                    'h': lbl_size['h'], 'w': lbl_size['w'],
+                    'h': lbl_size['h'], 'w': lbl_size['w'] - 30,
                     'bg': my_color['spare_fir'], 'fg': my_color['fg']}
 interval_add_btn = {'x': interval_txt_fld['x'] + interval_txt_fld['w'] + 5, 'y': interval_txt_fld['y'],
-                    'h': lbl_size['h'], 'w': lbl_size['w'] / 2,
+                    'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Add'}
 interval_button = None
 
@@ -397,7 +447,7 @@ repeat_lbl = {'x': interval_lbl['x'], 'y': interval_lbl['y'] + interval_lbl['h']
               'h': lbl_size['h'], 'w': lbl_size['w'],
               'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Repeat'}
 repeat_txt_fld = {'x': repeat_lbl['x'] + repeat_lbl['w'] + 10, 'y': repeat_lbl['y'],
-                  'h': lbl_size['h'], 'w': lbl_size['w'],
+                  'h': lbl_size['h'], 'w': lbl_size['w'] - 30,
                   'bg': my_color['spare_fir'], 'fg': my_color['fg']}
 
 script_mode_lbl = {'x': repeat_lbl['x'], 'y': repeat_lbl['y'] + repeat_lbl['h'] + 5,

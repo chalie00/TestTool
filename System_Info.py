@@ -137,5 +137,7 @@ class SysInfo:
                           'NYX.GET#isp0_dzra='
                           ]
             Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
+        elif Cons.selected_model == 'FineTree':
+            return
 
         self.root.after(100, self.update_ui)
