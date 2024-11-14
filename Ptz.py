@@ -53,10 +53,14 @@ class PTZ:
             if Cons.selected_model == 'FineTree':
                 params = {'move': 'upleft'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'upleft'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             print('Pressed Left Top')
 
     # (2024.07.19) modified so that commands sent from PTZ are also switched when model is changed
+    # (20204.11.14): Added DRS Zoom Module
     def up_zoom_in(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
             if Cons.selected_model == 'Uncooled':
@@ -69,6 +73,10 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'move': 'up'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'up'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
+
         else:
             if Cons.selected_model == 'Uncooled':
                 # PTZ Uncooled
@@ -80,12 +88,22 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'zoom': 'tele'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # Zoom In
+                hex_array = [255, 0, 34, 0, 0, 1, 35]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
 
     def right_top(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
             if Cons.selected_model == 'FineTree':
                 params = {'move': 'upright'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'upright'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             print('Pressed Right Top')
 
@@ -94,6 +112,9 @@ class PTZ:
             if Cons.selected_model == 'FineTree':
                 params = {'move': 'downleft'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'downleft'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             print('Pressed Left Bottom')
 
@@ -109,6 +130,9 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'move': 'down'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'down'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             if Cons.selected_model == 'Uncooled':
                 # Uncooled Zoom Out
@@ -120,11 +144,22 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'zoom': 'wide'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # Zoom Out
+                hex_array = [255, 0, 34, 0, 0, 2, 36]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+
     def right_down(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
             if Cons.selected_model == 'FineTree':
                 params = {'move': 'downright'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'downright'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             print('Pressed Right Bottom')
 
@@ -141,6 +176,9 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'move': 'left'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                params = {'move': 'left'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             if Cons.selected_model == 'Uncooled':
                 # Near Uncooled
@@ -152,7 +190,13 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'focus': 'near'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-
+            elif Cons.selected_model == 'DRS':
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # Near
+                hex_array = [255, 0, 34, 16, 0, 2, 52]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
 
     def right_far(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -166,6 +210,9 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'move': 'right'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model =='DRS':
+                params = {'move': 'right'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
         else:
             if Cons.selected_model == 'Uncooled':
                 # Far Uncooled
@@ -177,6 +224,13 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'focus': 'far'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # Far
+                hex_array = [255, 0, 34, 16, 0, 1, 51]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
 
     def osd_af(self, event):
         if not Cons.ptz_osd_toggle_flag:
@@ -190,7 +244,14 @@ class PTZ:
         else:
             if Cons.selected_model == 'Uncooled':
                 # AF Uncooled
+                sys_info_pos = Cons.sys_info_tab
+                sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
                 self.send_data('FF01A0110000B2')
+                if Cons.ptz_osd_toggle_flag:
+                    ti.sleep(10)
+                    sys_info.update_with_protocol()
+                else:
+                    return
             elif Cons.selected_model == 'NYX Series':
                 # AF NYX
                 af = 'NYX.SET#lens_afex=execute'
@@ -198,6 +259,13 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'focus': 'pushaf'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif Cons.selected_model == 'DRS':
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # AF
+                hex_array = [255, 0, 34, 32, 0, 0, 66]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
 
     def release_cmd(self, event):
         print("Button released")
@@ -206,21 +274,58 @@ class PTZ:
 
         sys_info_pos = Cons.sys_info_tab
         sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
+        ptz_text_arr = ['Left\nTop', 'Up', 'Right\nTop', 'Left\nDown', 'Down', 'Right\nDown', 'Left', 'Right']
 
         if Cons.selected_model == 'Uncooled':
             # All Stop
             self.send_data('FF010000000001')
+            if Cons.ptz_osd_toggle_flag:
+                ti.sleep(0.2)
+                sys_info.update_with_protocol()
+            else:
+                return
+
         elif Cons.selected_model == 'NYX Series':
             if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
                 self.zoom_focus_stop_for_nyx('zoom')
             elif btn_text in ['Near', 'Far']:
                 self.zoom_focus_stop_for_nyx('focus')
         elif Cons.selected_model == 'FineTree':
-            params = {'move': 'stop'}
-            Comm.fine_tree_send_cgi(self.ptz_url, params)
+            if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
+                print('fi zoom')
+                params = {'zoom': 'stop'}
+                Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif btn_text in ['Near', 'Far']:
+                print('fi focus')
+                params = {'focus': 'stop'}
+                Comm.fine_tree_send_cgi(self.ptz_url, params)
+            elif btn_text in ptz_text_arr:
+                print('fi PTZ')
+                params = {'move': 'stop'}
+                Comm.fine_tree_send_cgi(self.ptz_url, params)
+        elif Cons.selected_model == 'DRS':
+            if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
+                print('DRS zoom')
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # Zoom Stop
+                hex_array = [255, 0, 34, 4, 0, 0, 38]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif btn_text in ['Near', 'Far']:
+                print('DRS focus')
+                host = Cons.selected_ch['ip']
+                input_port = Cons.selected_ch['port']
+                port = int(0) if Cons.port == '' else int(input_port)
+                # Focus Stop
+                hex_array = [255, 0, 34, 19, 0, 0, 53]
+                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif btn_text in ptz_text_arr:
+                print('DRS PTZ')
+                params = {'move': 'stop'}
+                Comm.send_cmd_to_Finetree(self.ptz_url, params)
 
         ti.sleep(0.1)
-        sys_info.update_with_protocol()
 
     def zoom_focus_stop_for_nyx(self, btn_str):
         if btn_str == 'zoom':

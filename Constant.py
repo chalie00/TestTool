@@ -29,7 +29,7 @@ info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 10}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
-selected_model = 'DRS'
+selected_model = 'Uncooled'
 model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series']
 
 # Command File Path
@@ -52,6 +52,7 @@ column_array_fine_tree = ['Function', 'Parameter']
 command_array = Mf.get_data_from_csv(cmd_path)
 # 0: parameter, 1: value, 2: BaseUrl
 fine_tree_cmd_data = []
+finetree_parms_arrays = []
 
 # Script Variable
 script_toggle_flag = None
@@ -62,50 +63,82 @@ script_toggle_flag = None
 
 # ScreenShot Hex Value
 capture_hex = [255, 1, 0, 0, 0, 0, 0]
+uncooled_query_arrays = [
+    'Zoom Query', 'Focus Query', 'Lens Query', 'Comm Query',
+    'Image Query', 'Sensor Query', 'Cali. Query', 'ETC Query',
+    'Status Query', 'Version Query', 'Encoder Query'
+]
 
 # DRS Default Code
+# script_hex_nyx_cmd_arrays = [[255, 0, 32, 34, 0, 0, 66], [255, 0, 32, 35, 0, 0, 67],
+#                              [255, 0, 32, 36, 0, 0, 68], [255, 0, 32, 49, 0, 1, 82],
+#                              [255, 0, 33, 16, 0, 10, 59], [255, 0, 33, 19, 0, 0, 52],
+#                              [255, 0, 35, 0, 0, 0, 35], [255, 0, 35, 1, 0, 0, 36],
+#                              [255, 0, 35, 2, 0, 98, 135], [255, 0, 33, 0, 0, 3, 36]]
+# script_cmd_titles = [' Mirror Off', ' Flip Off', 'Invert Off', 'Cali Auto',
+#                      'IDE 10', 'Gray', 'Temp Info Off', 'Temp User Offset 0',
+#                      'Emissivity 98', 'AGC High']
+# interval_arrays = [3.0, 3.0, 3.0, 3.0,
+#                    3.0, 3.0, 3.0, 3.0,
+#                    3.0, 3.0]
+# cmd_itv_arrays = [[' Mirror Off', 3.0], [' Flip Off', 3.0], [' Invert Off', 3.0], ['Cali Auto', 3.0],
+#                   ['IDE 10', 3.0], ['Gray', 3.0], ['Temp Info Off', 3.0], ['Temp User Offset 0', 3.0],
+#                   ['Emissivity 98', 3.0], ['AGC High', 3.0]]
+script_hex_nyx_cmd_arrays = [
+    [255, 0, 34, 16, 0, 1, 51], [255, 0, 34, 19, 0, 0, 53], [255, 0, 34, 32, 0, 0, 66], [255, 1, 0, 0, 0, 0, 0],
+    [255, 0, 34, 16, 0, 2, 52], [255, 0, 34, 19, 0, 0, 53], [255, 0, 34, 32, 0, 0, 66],[255, 1, 0, 0, 0, 0, 0]
+]
+script_cmd_titles = ['Far', 'Focus Stop', 'AF', 'ScreenShot',
+                     'Near', 'Focus Stop', 'AF', 'ScreenShot']
 
-script_hex_nyx_cmd_arrays = [[255, 0, 32, 34, 0, 0, 66], [255, 0, 32, 35, 0, 0, 67],
-                             [255, 0, 32, 36, 0, 0, 68], [255, 0, 32, 49, 0, 1, 82],
-                             [255, 0, 33, 16, 0, 10, 59], [255, 0, 33, 19, 0, 0, 52],
-                             [255, 0, 35, 0, 0, 0, 35], [255, 0, 35, 1, 0, 0, 36],
-                             [255, 0, 35, 2, 0, 98, 135], [255, 0, 33, 0, 0, 3, 36]]
-script_cmd_titles = [' Mirror Off', ' Flip Off', 'Invert Off', 'Cali Auto',
-                     'IDE 10', 'Gray', 'Temp Info Off', 'Temp User Offset 0',
-                     'Emissivity 98', 'AGC High']
-interval_arrays = [3.0, 3.0, 3.0, 3.0,
-                   3.0, 3.0, 3.0, 3.0,
-                   3.0, 3.0]
-cmd_itv_arrays = [[' Mirror Off', 3.0], [' Flip Off', 3.0], [' Invert Off', 3.0], ['Cali Auto', 3.0],
-                  ['IDE 10', 3.0], ['Gray', 3.0], ['Temp Info Off', 3.0], ['Temp User Offset 0', 3.0],
-                  ['Emissivity 98', 3.0], ['AGC High', 3.0]]
+interval_arrays = [5.0, 5.0, 5.0, 5.0,
+                   5.0, 5.0, 5.0, 5.0,
+                   ]
+cmd_itv_arrays = [
+    ['Far', 5.0], ['Focus Stop', 5.0], ['AF', 5.0], ['ScreenShot', 5.0],
+    ['Near', 5.0], ['Focus Stop', 5.0], ['AF', 5.0], ['ScreenShot', 5.0]
+]
 
 # Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
-# script_hex_nyx_cmd_arrays = [[255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#                      [255, 1, 0, 0, 0, 0, 0],
-#                      [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#                      [255, 1, 0, 0, 0, 0, 0],
-#                      [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#                      [255, 1, 0, 0, 0, 0, 0],
-#                      [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#                      [255, 1, 0, 0, 0, 0, 0]
-#                      ]
-# script_cmd_titles = ['Zoom Out', 'All Stop', 'AF', 'ScreenShot',
-#                      'Zoom In', 'All Stop', 'AF', 'ScreenShot',
-#                      'Far', 'All Stop', 'AF', 'ScreenShot',
-#                      'Near', 'All Stop', 'AF', 'ScreenShot'
-#                      ]
-# interval_arrays = [2.0, 0.3, 12.0, 1.0,
-#                    2.0, 0.3, 12.0, 1.0,
-#                    2.0, 0.3, 12.0, 1.0,
-#                    2.0, 0.3, 12.0, 1.0
-#                    ]
-# cmd_itv_arrays = [['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#                   ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#                   ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#                   ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
-#                   ]
+# script_hex_nyx_cmd_arrays = [
+#     [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0]
+# ]
+# script_cmd_titles = [
+#     'Zoom Out', 'All Stop', 'AF', 'ScreenShot',
+#     'Far', 'All Stop', 'AF', 'ScreenShot',
+#     'Near', 'All Stop', 'AF', 'ScreenShot',
+#     'Zoom In', 'All Stop', 'AF', 'ScreenShot',
+#     'Far', 'All Stop', 'AF', 'ScreenShot',
+#     'Near', 'All Stop', 'AF', 'ScreenShot'
+# ]
+# interval_arrays = [
+#     2.0, 0.3, 12.0, 1.0,
+#     2.0, 0.3, 12.0, 1.0,
+#     2.0, 0.3, 12.0, 1.0,
+#     2.0, 0.3, 12.0, 1.0,
+#     2.0, 0.3, 12.0, 1.0,
+#     2.0, 0.3, 12.0, 1.0
+# ]
+# cmd_itv_arrays = [
+#     ['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#     ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#     ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#     ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#     ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+#     ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
+# ]
 
 # NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
@@ -234,7 +267,8 @@ uncooled_encoder_q = {'zoom_max': '', 'zoom_min': '', 'focus_max': '', 'focus_mi
 # position, speed, mode
 zoom_msb_lsb = [uncooled_zoom_q['zoom'], uncooled_lens_q['zoom_spd'], uncooled_image_q['dzoom'],
                 uncooled_image_q['dzoom_position']]
-focus_msb_lsb = [uncooled_focus_q['focus'], uncooled_lens_q['focus_spd'], uncooled_lens_q['af_mode']]
+focus_msb_lsb = [uncooled_focus_q['focus'], uncooled_lens_q['focus_spd'], uncooled_lens_q['af_mode']
+                 ]
 fov_msb_lsb = [uncooled_lens_q['fov_position']]
 
 # (2024.07.24): NYX Series Query Data Store
@@ -429,6 +463,8 @@ tour_save_btn = {'x': tour_txt_fld['x'], 'y': tour_txt_fld['y'] + tour_txt_fld['
                  'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Save'}
 tour_call_btn = {'x': tour_save_btn['x'] + tour_save_btn['w'], 'y': tour_save_btn['y'],
                  'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Call'}
+tour_stop_btn = {'x': tour_call_btn['x'], 'y': tour_call_btn['y'] + tour_call_btn['h'] + 1,
+                 'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Stop'}
 
 ############################################## Script UI ############################################
 # Script(Repeat, interval) Position Setting

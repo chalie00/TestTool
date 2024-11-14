@@ -18,12 +18,6 @@ class VideoPlayer:
 
         self.running = True
 
-        # self.instance = vlc.Instance(
-        #     '--network-caching=300',  # Set network caching to 300 ms
-        #     '--rtsp-frame-buffer-size=10000000',  # Adjust RTSP frame buffer size (if necessary)
-        #     '--rtsp-tcp'  # Use RTSP over T1. CP, which might help with stability (optional)
-        # )
-
         self.canvas = tk.Canvas(root, width=self.width, height=self.height, bg='black', highlightthickness=0)
         self.canvas.place(x=pos['x'], y=pos['y'])
         self.canvas.my_id = tag
@@ -55,30 +49,6 @@ class VideoPlayer:
 
         self.player.play()
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-
-    #     if self.cap is None:
-    #         self.cap = cv2.VideoCapture(self.rtsp_url)
-    #         if not self.cap.isOpened():
-    #             print("Cannot open RTSP stream")
-    #             return
-    #         self.running = True
-    #         self.update_frame()
-
-    # def update_frame(self):
-    #     if self.running:
-    #         ret, frame = self.cap.read()
-    #         if ret:
-    #             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #             self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-    #             self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
-    #         print(ret)
-    #         self.root.after(10, self.update_frame)
-
-    # def stop_video(self):
-    #     self.running = False
-    #     if self.cap is not None:
-    #         self.cap.release()
-    #         self.cap = None
 
     def __del__(self):
         try:
@@ -118,6 +88,7 @@ class VideoPlayer:
 
     # (20204.07.31): convert a windows size when player was
     def on_click(self):
+        print('on_click')
         try:
             if self.is_default:
                 self.size_btn.config(image=self.more_photo)
@@ -159,6 +130,7 @@ class VideoPlayer:
                 videos[i].size_btn.place(x=10, y=10, width=30, height=20)
 
     def alive_except_selected_ch(self):
+        print('alive')
         videos = [Cons.video_player_ch1, Cons.video_player_ch2, Cons.video_player_ch3, Cons.video_player_ch4]
         infos = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info, Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
         channels = ['ch1', 'ch2', 'ch3', 'ch4']

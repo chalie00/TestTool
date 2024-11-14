@@ -25,8 +25,10 @@ import Dialog
 
 # Sending Command with hex
 def send_cmd_for_uncooled(send_cmd, title, root_view):
-    host = Cons.host_ip
-    input_port = Cons.port
+    # print('send cmd for uncooled')
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.buf_size
     client = socket.socket(AF_INET, SOCK_STREAM)
@@ -40,21 +42,25 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
             client.send(bytes(send_cmd))
             reply = client.recv(buf_size)
             hex_data = binascii.hexlify(reply).decode('utf-8')
-            hex_data_14dig = [f'{hex_data[i:i + 14]} \n' for i in range(0, len(hex_data), 14)]
+            hex_data_14dig = [f'{hex_data[i:i + 14]}' for i in range(0, len(hex_data), 14)]
             # (2024.07.17) Add 22 blank spaces to all elements except the first one
-            hex_data_14dig_24space = [f'{line}' if i == 0 else f'{" " * 22}{line}' for i, line in
-                                      enumerate(hex_data_14dig)]
+            # hex_data_14dig_24space = [f'{line}' if i == 0 else f'{" " * 22}{line}' for i, line in
+            #                           enumerate(hex_data_14dig)]
             # print(hex_data_14dig_24space)
-
             # Store Constant for display Query
-            uncooled_store_response(root_view, title, hex_data)
+            if title in Cons.uncooled_query_arrays:
+                send_title = title
+            else:
+                send_title = 'Normal Query'
+            uncooled_store_response(root_view, send_title, hex_data)
 
             current_time = datetime.now()
             time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-            hex_with_time = fr'{time_str} : {hex_data_14dig_24space[0]}'
+            # hex_with_time = fr'{time_str} : {hex_data_14dig_24space[0]}'
+            hex_with_time = fr'{hex_data_14dig[0]} : {time_str}'
             # print(response = {hex_with_time}\n')
-            hex_data_14dig_24space[0] = hex_with_time
-            for item in hex_data_14dig_24space:
+            hex_data_14dig[0] = hex_with_time
+            for item in hex_data_14dig:
                 Cons.response_txt.append(item)
             # print(Cons.response_txt)
             log_pos = Cons.log_txt_fld_info
@@ -72,10 +78,9 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
         client.close()
 
 
-def send_cmd_to_ucooled_with_interval(interval: [float], repeat: int, send_cmds: [int], cmd_title: [str], root_view):
+def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_title: [str], root_view):
     current_time = datetime.now()
     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
-    print(time_str)
     for i, protocol in enumerate(send_cmds):
         if Cons.data_sending:
             if protocol == Cons.capture_hex:
@@ -83,11 +88,17 @@ def send_cmd_to_ucooled_with_interval(interval: [float], repeat: int, send_cmds:
                 filename = rf'{path}/{cmd_title[i - 1]}-{time_str}-{i}.png'
                 Mf.capture_image(root_view, filename)
             else:
-                title = cmd_title[i - 1]
+                if cmd_title[i - 1] in Cons.uncooled_query_arrays:
+                    title = cmd_title[i - 1]
+                else:
+                    title = 'Normal Query'
                 if Cons.selected_model == 'Uncooled':
-                    send_cmd_for_uncooled(protocol, 'Normal Query', root_view)
+                    send_cmd_for_uncooled(protocol, title, root_view)
                 elif Cons.selected_model == 'DRS':
-                    send_cmd_for_drs(protocol, root_view)
+                    find_ch()
+                    host = Cons.selected_ch['ip']
+                    port = int(Cons.selected_ch['port'])
+                    send_cmd_for_drs(host, port, protocol, root_view)
                 ti.sleep(interval[i])
         else:
             print('Protocol sending was stopped')
@@ -100,7 +111,7 @@ def uncooled_store_response(root_view, title, response):
     #     res_data = response[i:i + 14]
     #     res_arrays.append(res_data)
     res_arrays = [response[i:i + 14] for i in range(0, len(response), 14)]
-    print(res_arrays)
+    # print(rf'res_arrays is {res_arrays}')
     queries = {
         'Normal Query': (
             'uncooled_normal_q', ['normal']
@@ -140,6 +151,7 @@ def uncooled_store_response(root_view, title, response):
             'uncooled_encoder_q', ['zoom_max', 'zoom_min', 'focus_max', 'focus_min']
         )
     }
+    # print(title)
 
     if title in queries:
         attr_name, keys = queries[title]
@@ -150,12 +162,13 @@ def uncooled_store_response(root_view, title, response):
                     query_dict[key] = res_arrays[i]
                 else:
                     query_dict[key] = []
-            print(query_dict)
         else:
             print(f"Error: {attr_name} not found in Cons.")
     else:
-        print(f"Error: {title} is not a valid query title.")
-
+        print(f"{title} is not a valid query title.")
+        # Cons.uncooled_normal_q['normal'] = res_arrays
+        # print(Cons.uncooled_normal_q['normal'])
+    # print(Cons.uncooled_normal_q)
     convert_str_with_hex(root_view)
 
 
@@ -392,10 +405,8 @@ def send_data_with_cmd_for_info(root, cmds):
 
 # (2024.08.13): Added send cmd function for DRS
 def send_cmd_for_drs(host, port, send_cmd, root_view):
-    # host = Cons.host_ip
-    # port = int(0) if Cons.port == '' else int(Cons.port)
+    print('send_cmd_for_drs')
     buf_size = Cons.buf_size
-
     client = socket.socket(AF_INET, SOCK_STREAM)
     try:
         client.settimeout(3)
@@ -547,6 +558,38 @@ def fine_tree_send_cgi(url, params):
             print("Error:", str(e))
 
 
+# (2024.11.14): Sending a PTZ CMD to Finetree by DRS
+def send_cmd_to_Finetree(url, params):
+    Cons.selected_model = 'FineTree'
+    find_ch()
+    sel_ip = Cons.selected_ch['ip']
+    print(sel_ip)
+    base_url = rf'http://{sel_ip}{url}?'
+    username = Cons.selected_ch['id']
+    password = Cons.selected_ch['pw']
+
+    params_encoded = urllib.parse.urlencode(params)
+    print(f"Sending request to: {base_url} with params: {params_encoded}")
+    full_url = f'http://{sel_ip}{url}?{params_encoded}'
+    try:
+        response = requests.get(base_url, params=params_encoded, auth=HTTPBasicAuth(username, password), timeout=5)
+        if response.status_code == 200:
+            print("Request was successful!")
+            print(response.text)
+        else:
+            print(f"Failed to send request. Status code: {response.status_code}")
+    except requests.exceptions.Timeout:
+        print("The request timed out.")
+    except requests.exceptions.ConnectionError as e:
+        print(f"Connection error occurred: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+
+    Cons.selected_model = 'DRS'
+    find_ch()
+    print(rf'last model is {Cons.selected_model}')
+
+
 # (2024.09.25) Find selected model
 @staticmethod
 def find_ch():
@@ -556,6 +599,7 @@ def find_ch():
     for i, ch in enumerate(model_arrays):
         if model == ch['model']:
             Cons.selected_ch = model_arrays[i]
+            print(rf'find ch is {Cons.selected_ch}')
 
 
 # Test Code

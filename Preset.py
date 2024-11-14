@@ -1,11 +1,7 @@
 # (2024.09.30): Create preset file
 import time
 import tkinter as tk
-import Response
-import requests
-import hashlib
-
-from requests.auth import HTTPBasicAuth
+import threading
 
 import Constant as Cons
 import Communication as Comm
@@ -14,6 +10,7 @@ import Communication as Comm
 class Preset:
     def __init__(self, root):
         self.root = root
+        self.running = False
 
         self.canvas = tk.Canvas(root, width=Cons.preset_canvas['w'], height=Cons.preset_canvas['h'])
         self.canvas.place(x=Cons.preset_canvas['x'], y=Cons.preset_canvas['y'])
@@ -62,6 +59,11 @@ class Preset:
                             width=Cons.tour_call_btn['w'], height=Cons.tour_call_btn['h'])
         tour_call_btn.bind('<Button-1>', lambda event, type='call': self.send_tour_related_finetree(event, type))
 
+        tour_stop_btn = tk.Button(self.root, text=Cons.tour_stop_btn['text'], bg=Cons.tour_stop_btn['bg'])
+        tour_stop_btn.place(x=Cons.tour_stop_btn['x'], y=Cons.tour_stop_btn['y'],
+                            width=Cons.tour_stop_btn['w'], height=Cons.tour_stop_btn['h'])
+        tour_stop_btn.bind('<Button-1>', lambda event, type='stop': self.send_tour_related_finetree(event, type))
+
     # (2024.10.06): Save/Call a Preset
     def send_preset_related_finetree(self, event, type):
         print('called preset function')
@@ -90,10 +92,26 @@ class Preset:
             print('called run tour')
             tour_repeat = int(self.tour_txt_fld.get())
             self.tour_txt_fld.delete(0, tk.END)
-            tour_lists = Cons.tour_lists
-            for i in range(tour_repeat):
-                for tour_list in tour_lists:
-                    preset_url = '/cgi-bin/ptz/control.php?'
-                    params = {'preset': tour_list}
-                    Comm.fine_tree_send_cgi(preset_url, params)
-                    time.sleep(5.0)
+            self.running = True
+            thread = threading.Thread(target=self.run_tour, args=(tour_repeat,))
+            thread.start()
+
+        elif type == 'stop':
+            print('called stop tour')
+            self.running = False
+            preset_url = '/cgi-bin/ptz/control.php?'
+            params = {'move': 'stop'}
+            Comm.fine_tree_send_cgi(preset_url, params)
+
+    # (2024.11.11): seperate a tour run
+    def run_tour(self, tour_repeat):
+        for i in range(tour_repeat):
+            if not self.running:
+                break
+            for tour_list in Cons.tour_lists:
+                if not self.running:
+                    break
+                preset_url = '/cgi-bin/ptz/control.php?'
+                params = {'preset': tour_list}
+                Comm.fine_tree_send_cgi(preset_url, params)
+                time.sleep(30.0)

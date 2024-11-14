@@ -1,6 +1,8 @@
 import openpyxl
 import tkinter
 import string
+import mss
+import mss.tools
 
 import Dialog
 import Communication as Comm
@@ -137,6 +139,8 @@ def clicked_table_element(event, root_view, tv):
     # item['values'][0] is title that user was clicked
     # item['values'][1] is command
     selected_item = item['values']
+    title = selected_item[0]
+    value = selected_item[1]
 
     if not host or not port:
         print("Invalid command")
@@ -144,21 +148,24 @@ def clicked_table_element(event, root_view, tv):
         return
 
     if Cons.script_toggle_flag:
-        handle_script_mode(event, selected_item, root_view)
+        # handle_script_mode(event, iden, title, root_view)
+        handle_script_mode(event, iden, selected_item, root_view)
     else:
-        handle_normal_mode(event, tags, iden, selected_item, root_view, tv, host, port)
+        handle_normal_mode(event, tags, iden, title, root_view, tv, host, port)
 
 
 # 2024.07.04: Operating script mode
 # (2024.07.25): NYX added to script mode
 # (2024.08.14): DRS Added to script mode
-def handle_script_mode(event, value, root_view):
+# (2024.10.18): FineTree Added to script mode
+def handle_script_mode(event, iden, value, root_view):
     Cons.data_sending = True
     if Cons.selected_model in ['Uncooled', 'DRS']:
         hex_value = select_item(event, root_view)
         Cons.script_hex_nyx_cmd_arrays.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
         print(Cons.script_cmd_titles)
+        print(hex_value)
 
         gene_interval_arrays(value)
         script_tb = tb.Table(root_view)
@@ -173,10 +180,26 @@ def handle_script_mode(event, value, root_view):
         script_tb = tb.Table(root_view)
         check_interval_active()
 
+    elif Cons.selected_model == 'FineTree':
+        index = int(iden.split('번')[0])
+        # fine_tree_cmd_data = (para_arr, value_arr, url)
+        items = Cons.fine_tree_cmd_data[index]
+        # print(rf'items is {items}')
+        Cons.script_cmd_titles.append(value[0])
+        gene_interval_arrays(value)
+        script_tb = tb.Table(root_view)
+        check_interval_active()
+
+        url = items[2]
+        params = dict(zip(items[0], items[1]))
+        data_form = [url, params]
+        # print(rf'added parames = {data_form}')
+        Cons.finetree_parms_arrays.append(data_form)
+
 
 # 2024.07.04: Operating normal mode
 # (2024.07.25): NYX added to normal mode
-def handle_normal_mode(event, tags, iden, value, root_view, tv, host, port):
+def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
     Cons.data_sending = True
     if 'checked' in tags:
         tv.item(iden, tags='unchecked')
@@ -184,8 +207,8 @@ def handle_normal_mode(event, tags, iden, value, root_view, tv, host, port):
         tv.item(iden, tags='checked')
     if Cons.selected_model == 'Uncooled':
         hex_value = select_item(event, root_view)
-        print(hex_value)
-        Comm.send_cmd_for_uncooled(hex_value, value, root_view)
+        # print(hex_value)
+        Comm.send_cmd_for_uncooled(hex_value, title, root_view)
     elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
         Comm.send_cmd_for_drs(host, port, hex_array, root_view)
@@ -244,7 +267,7 @@ def get_data_from_csv(file_path) -> [(str, str)]:
     command_data = []
 
     if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'FineTree']:
-        print(sel_model)
+        print(rf'get csv {sel_model}')
         sh = wb[f'{sel_model}']
     else:
         return command_data
@@ -276,6 +299,7 @@ def get_data_from_csv(file_path) -> [(str, str)]:
 
 
 # (2024.07.05) Capture a Image from RTSP
+# (2024.10.24): change library to mss from pillow because pillow only detect main monitor
 def capture_image(root, filename):
     x = root.winfo_rootx()
     y = root.winfo_rooty()
@@ -283,9 +307,18 @@ def capture_image(root, filename):
     h = root.winfo_height()
     print(x, y, w, h)
     # bbox = (x, y, Cons.camera_resolution['w'], Cons.camera_resolution['h'])
-    bbox = (x, y, 1340, 860)
-    image = ImageGrab.grab(bbox=bbox)
-    image.save(filename)
+    # bbox = (x, y, x + 1850, 950)
+    # image = ImageGrab.grab(bbox=bbox)
+    # image.save(filename)
+    monitor = {
+        "top": y,
+        "left": x,
+        "width": w,
+        "height": h
+    }
+    with mss.mss() as sct:
+        screenshot = sct.grab(monitor)
+        mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
 
 
 def print_monitor_info():

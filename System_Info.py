@@ -1,6 +1,7 @@
 # (2024.07.15) Init
 import tkinter as tk
 import time as ti
+import threading
 
 import Constant as Cons
 import Communication as Comm
@@ -60,6 +61,9 @@ class SysInfo:
         self.update_btn = tk.Button(self.root, width=6, height=1, command=self.update_with_protocol, text='UPDATE')
         self.update_btn.place(x=update_btn_pos['x'], y=update_btn_pos['y'])
 
+        self.data_lock = threading.Lock()
+        self.data_ready = False
+
         self.update_ui()
 
     # (2024.07.24): Added for all entry text delete
@@ -78,16 +82,45 @@ class SysInfo:
     def update_ui(self):
         self.canvas.delete('all')
         self.clear_entries()
+
         if Cons.selected_model == 'Uncooled':
             self.zoom_pos_txt_fld.insert(0, Cons.zoom_msb_lsb[0])
             self.zoom_spd_txt_fld.insert(0, Cons.zoom_msb_lsb[1])
-            self.zoom_dzoom_txt_fld.insert(0, Cons.zoom_msb_lsb[2])
+            # Convert D-Zoom value to On/Off
+            if Cons.zoom_msb_lsb and len(Cons.zoom_msb_lsb) > 0:
+                try:
+                    if Cons.zoom_msb_lsb[2] == 1:
+                        self.zoom_dzoom_txt_fld.insert(0, 'On')
+                    elif Cons.zoom_msb_lsb[2] == 0:
+                        self.zoom_dzoom_txt_fld.insert(0, 'Off')
+                except ValueError:
+                    print("Invalid value in Cons.zoom_msb_lsb[2]:", Cons.zoom_msb_lsb[2])
+            else:
+                print("Cons.fov_msb_lsb is empty or not properly initialized.")
+
 
             self.focus_pos_txt_fld.insert(0, Cons.focus_msb_lsb[0])
             self.focus_spd_txt_fld.insert(0, Cons.focus_msb_lsb[1])
-            self.focus_dzoom_rate_txt_fld.insert(0, Cons.focus_msb_lsb[2])
+            # Calculate a d-Zoom rate
+            if Cons.zoom_msb_lsb and len(Cons.zoom_msb_lsb) > 0:
+                try:
+                    dzoom_rate = (float(Cons.zoom_msb_lsb[3]) + 10) / 10
+                    self.focus_dzoom_rate_txt_fld.insert(0, dzoom_rate)
+                except ValueError:
+                    print("Invalid value in Cons.zoom_msb_lsb[3]:", Cons.zoom_msb_lsb[3])
+            else:
+                print("Cons.fov_msb_lsb is empty or not properly initialized.")
 
-            self.fov_pos_txt_fld.insert(0, Cons.fov_msb_lsb[0])
+            # Calculate a FOV
+            if Cons.fov_msb_lsb and len(Cons.fov_msb_lsb) > 0:
+                try:
+                    fov_value = float(Cons.fov_msb_lsb[0]) / 100
+                    self.fov_pos_txt_fld.insert(0, fov_value)
+                except ValueError:
+                    print("Invalid value in Cons.fov_msb_lsb[0]:", Cons.fov_msb_lsb[0])
+            else:
+                print("Cons.fov_msb_lsb is empty or not properly initialized.")
+
         elif Cons.selected_model == 'NYX Series':
             self.zoom_pos_txt_fld.insert(0, Cons.cooled_lens_pos_spd[0])
             self.zoom_spd_txt_fld.insert(0, Cons.cooled_lens_pos_spd[3])
@@ -100,44 +133,98 @@ class SysInfo:
             self.fov_pos_txt_fld.insert(0, Cons.cooled_lens_pos_spd[2])
 
     # Update Information All Element
+    # def update_with_protocol(self):
+    #     self.update_btn.config(state='disabled')
+    #     if Cons.selected_model == 'Uncooled':
+    #         # Zoom Query -> Focus Query -> Lens Query -> Image Query
+    #         protocols = [
+    #             [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
+    #             [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
+    #         ]
+    #         titles = {
+    #             'Zoom Query': (
+    #                 [255, 1, 0, 85, 0, 0, 86]
+    #             ),
+    #             # 'Normal Query': (
+    #             #     [255, 1, 1, 85, 0, 0, 86]
+    #             # ),
+    #             'Focus Query': (
+    #                 # [255, 1, 161, 16, 0, 0, 87]
+    #                 [255, 1, 1, 85, 0, 0, 87]
+    #             ),
+    #             'Lens Query': (
+    #                 [255, 1, 161, 16, 0, 0, 178]
+    #             ),
+    #             'Image Query': (
+    #                 [255, 1, 161, 32, 0, 0, 194]
+    #             )
+    #         }
+    #         interval = [1.0, 1.0, 1.0, 1.0]
+    #
+    #         for title, protocol in titles.items():
+    #             # print(title)
+    #             # print(protocol)
+    #             Comm.send_cmd_for_uncooled(protocol, title, self.root)
+    #     elif Cons.selected_model == 'NYX Series':
+    #         print('NYX Updated')
+    #         # NYX.GET#lens_wnmm -> NYX.GET#lens_wnen
+    #         Cons.cooled_lens_pos_spd = []
+    #         lens_pos_q = ['NYX.GET#lens_zpos=', 'NYX.GET#lens_fpos=', 'NYX.GET#lens_cfov=',
+    #                       'NYX.GET#lens_zspd=', 'NYX.GET#lens_fspd=', 'NYX.GET#isp0_dzen=',
+    #                       'NYX.GET#isp0_dzra='
+    #                       ]
+    #         Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
+    #     elif Cons.selected_model == 'FineTree':
+    #         return
+    #
+    #     self.root.after(100, self.update_ui)
+    #     self.update_btn.config(state='normal')
+
+    ############ Caution: Update use when Query mode Off of TQM-1M #########################
     def update_with_protocol(self):
-        if Cons.selected_model == 'Uncooled':
-            # Zoom Query -> Focus Query -> Lens Query -> Image Query
-            protocols = [
-                [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
-                [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
-            ]
-            titles = {
-                'Normal Query': (
-                    [255, 1, 0, 85, 0, 0, 86]
-                ),
-                'Zoom Query': (
-                    [255, 1, 1, 85, 0, 0, 86]
-                ),
-                'Focus Query': (
-                    [255, 1, 161, 16, 0, 0, 87]
-                ),
-                'Lens Query': (
-                    [255, 1, 161, 16, 0, 0, 178]
-                ),
-                'Image Query': (
-                    [255, 1, 161, 32, 0, 0, 194]
-                )
-            }
-            interval = [1.0, 1.0, 1.0, 1.0]
+        self.update_btn.config(state='disabled')  # 버튼 비활성화
 
-            for title, protocol in titles:
-                Comm.send_cmd_for_uncooled(protocol, title, self.root)
-        elif Cons.selected_model == 'NYX Series':
-            print('NYX Updated')
-            # NYX.GET#lens_wnmm -> NYX.GET#lens_wnen
-            Cons.cooled_lens_pos_spd = []
-            lens_pos_q = ['NYX.GET#lens_zpos=', 'NYX.GET#lens_fpos=', 'NYX.GET#lens_cfov=',
-                          'NYX.GET#lens_zspd=', 'NYX.GET#lens_fspd=', 'NYX.GET#isp0_dzen=',
-                          'NYX.GET#isp0_dzra='
-                          ]
-            Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
-        elif Cons.selected_model == 'FineTree':
-            return
+        def run_commands():
+            try:
+                if Cons.selected_model == 'Uncooled':
+                    protocols = [
+                        [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
+                        [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
+                    ]
+                    titles = {
+                        'Zoom Query': [255, 1, 0, 85, 0, 0, 86],
+                        'Focus Query': [255, 1, 1, 85, 0, 0, 87],
+                        'Lens Query': [255, 1, 161, 16, 0, 0, 178],
+                        'Image Query': [255, 1, 161, 32, 0, 0, 194]
+                    }
 
-        self.root.after(100, self.update_ui)
+                    for title, protocol in titles.items():
+                        Comm.send_cmd_for_uncooled(protocol, title, self.root)
+
+                elif Cons.selected_model == 'NYX Series':
+                    print('NYX Updated')
+                    lens_pos_q = [
+                        'NYX.GET#lens_zpos=', 'NYX.GET#lens_fpos=',
+                        'NYX.GET#lens_cfov=', 'NYX.GET#lens_zspd=',
+                        'NYX.GET#lens_fspd=', 'NYX.GET#isp0_dzen=',
+                        'NYX.GET#isp0_dzra='
+                    ]
+                    Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
+
+                elif Cons.selected_model == 'FineTree':
+                    return
+
+                # 데이터 준비 완료 플래그 설정
+                with self.data_lock:
+                    self.data_ready = True
+
+            except Exception as e:
+                print(f"Error during command execution: {e}")
+
+            # UI 업데이트를 위해 메인 스레드로 돌아가기
+            self.root.after(100, self.update_ui)
+            self.update_btn.config(state='normal')
+
+        # 별도의 스레드에서 작업 실행
+        threading.Thread(target=run_commands).start()
+
