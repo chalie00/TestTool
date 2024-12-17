@@ -21,6 +21,28 @@ from tkinter import ttk
 
 channel_names = {}
 
+
+def start_videos(videos):
+    for video in videos:
+        if video:
+            print(f"Starting video player: {video}")  # 비디오 플레이어 시작
+            video.start_video()
+        else:
+            print("Video player is None")
+
+
+def generate_rtsp_url(info):
+    url_patterns = {
+        'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
+        'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+        'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+        'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1',
+        # MiniGimbal can display rtsp stream in currently
+        'MiniGimbal': rf'',
+    }
+    return url_patterns.get(info['model'], 'Invalid model')
+
+
 class TestTool(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -33,70 +55,12 @@ class TestTool(tk.Frame):
         self.thread = None
         self.video_players = {}
 
-        # # (2024.08.05): Called when ch button was pushed
-        # # (2024.09.24): Add RTSP for FT
-        # def pushed_ch_btn(btn, ch_name):
-        #     info = getattr(Cons, f'{ch_name.lower()}_rtsp_info')
-        #     info.update({
-        #         'ch': ch_name.lower(),
-        #         'model': sel_op.get(),
-        #         'ip': ip_txt_fld.get(),
-        #         'id': ipc_id_txt_fld.get(),
-        #         'pw': ipc_pw_txt_fld.get(),
-        #         'rtsp_port': rtsp_txt_fld.get(),
-        #         'port': port_txt_fld.get(),
-        #     })
-        #
-        #     url_patterns = {
-        #         'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
-        #         'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-        #         'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-        #         'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1'
-        #     }
-        #     info['url'] = url_patterns.get(info['model'], 'Invalid model')
-        #
-        #     btn.config(bg='green')
-
-            # if ch_name.lower() == 'ch1':
-            #     ch_info = Cons.ch1_rtsp_info
-            #     pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
-            #     Cons.video_player_ch1 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
-            # elif ch_name.lower() == 'ch2':
-            #     ch_info = Cons.ch2_rtsp_info
-            #     pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
-            #     Cons.video_player_ch2 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
-            # elif ch_name.lower() == 'ch3':
-            #     ch_info = Cons.ch3_rtsp_info
-            #     pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
-            #     Cons.video_player_ch3 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
-            # elif ch_name.lower() == 'ch4':
-            #     ch_info = Cons.ch4_rtsp_info
-            #     pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
-            #     Cons.video_player_ch4 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
-
-        # Check Main Window Position
-        # Open RTSP and Get the Network Information from User Input
-        # def open_video_window():
-        #     Cons.host_ip = self.ip_txt_fld.get()
-        #     Cons.port = self.port_txt_fld.get()
-        #     Cons.rtsp_port = self.rtsp_txt_fld.get()
-        #     Cons.ipc_id = self.ipc_id_txt_fld.get()
-        #     Cons.ipc_pw = self.ipc_pw_txt_fld.get()
-        #     # Set CH Button to default Color
-        #     for i in range(1, 5):
-        #         channel_names[f'CH{i}'].config(bg=Cons.ch1_btn_pos['bg'])
-        #
-        #     videos = [Cons.video_player_ch1, Cons.video_player_ch2, Cons.video_player_ch3, Cons.video_player_ch4]
-        #     for video in videos:
-        #         if video:
-        #             video.start_video()
-
         # (2024.07.19): Model Drop Down Menu function
         # (2024.09.24): Add Model for FT
         def model_select(event):
             current_sel = self.sel_op.get()
             print(current_sel)
-            if current_sel in ['NYX Series', 'DRS', 'Uncooled']:
+            if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'MiniGimbal']:
                 col_name = Cons.column_array
             elif current_sel in ['FineTree']:
                 col_name = Cons.column_array_fine_tree
@@ -126,16 +90,16 @@ class TestTool(tk.Frame):
         # Add interval to each script command
         def interval_add():
             cur_interval = float(int(interval_txt_fld.get()) / 1000)
-            Cons.interval_arrays.append(cur_interval)
-            row_cmd_title = len(Cons.script_hex_nyx_cmd_arrays)
-            col_interval = len(Cons.interval_arrays)
+            Cons.script_itv_arrs.append(cur_interval)
+            row_cmd_title = len(Cons.script_cmd_arrs)
+            col_interval = len(Cons.script_itv_arrs)
 
-            for i, cmd_list in enumerate(Cons.interval_arrays):
-                Cons.cmd_itv_arrays[i][0] = Cons.script_cmd_titles[i]
-                Cons.cmd_itv_arrays[i][1] = Cons.interval_arrays[i]
+            for i, cmd_list in enumerate(Cons.script_itv_arrs):
+                Cons.script_cmd_itv_arrs[i][0] = Cons.script_cmd_titles[i]
+                Cons.script_cmd_itv_arrs[i][1] = Cons.script_itv_arrs[i]
 
             Mf.check_interval_active()
-            print(Cons.cmd_itv_arrays)
+            print(Cons.script_cmd_itv_arrs)
             tb.Table(parent)
 
         # (2024.07.04): Start thread with selected script
@@ -143,71 +107,139 @@ class TestTool(tk.Frame):
             if not self.thread_running.is_set():
                 self.thread_running.set()
                 self.thread = threading.Thread(target=run_script)
+                Cons.data_sending = True
+
                 self.thread.start()
 
         # (2024.07.04): Start thread with selected script
         # (2024.10.18): Add a Finetree for script
         # (2024.10.18): modify threading for repeat
         def run_script() -> []:
-            # if Cons.selected_model == 'FineTree':
-            #     print('Run')
-            #     # for i in range(100000):
-            #     Comm.run()
             current_time = datetime.now()
             time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
             response_file_name = rf'{Cons.log_path}_{time_str}.txt'
             repeat = int(repeat_txt_fld.get())
+
+            def execute_model_logic():
+                interval = Cons.script_itv_arrs
+                script = Cons.script_cmd_arrs
+                titles = Cons.script_cmd_titles
+
+                if Cons.selected_model in ['Uncooled', 'DRS']:
+                    Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
+                elif Cons.selected_model == 'NYX Series':
+                    Comm.send_cmd_to_nyx_with_interval(parent, titles, script, interval, response_file_name)
+                elif Cons.selected_model == 'FineTree':
+                    print('Finetree Script Run')
+                    for i, cmd_data in enumerate(Cons.finetree_parms_arrays):
+                        Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1])
+                        file_name = rf'{Cons.capture_path["zoom"]}/{titles[i]}.png'
+                        Mf.capture_image(parent, file_name)
+                elif Cons.selected_model == 'MiniGimbal':
+                    Comm.send_to_mini_with_interval(Cons.only_socket, titles, script, interval)
+
+            def handle_custom_protocol_logic():
+                protocol_str_arr = [treeview.set(id)[2] for id in treeview.get_checked()]
+                hex_protocol = [Mf.convert_str_to_hex(protocol) for protocol in protocol_str_arr]
+                interval = float(int(interval_txt_fld.get()) / 1000)
+                titles = Cons.script_cmd_titles
+                Comm.send_cmd_to_ucooled_with_interval(interval, hex_protocol, titles, parent)
+
             try:
                 self.script_run_btn.config(state='disabled')
                 self.script_stop_btn.config(state='normal')
-                Cons.data_sending = True
 
                 for i in range(repeat):
+                    print(rf'Repeat {i + 1}')
+                    if not Cons.data_sending:
+                        return
+
                     if not self.thread_running.is_set():
                         self.thread_running.set()
+
                     if Cons.script_toggle_flag:
-                        print('run script')
-                        interval = Cons.interval_arrays
-                        script = Cons.script_hex_nyx_cmd_arrays
-                        titles = Cons.script_cmd_titles
-
-                        if Cons.selected_model in ['Uncooled', 'DRS']:
-                            Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
-                        elif Cons.selected_model in ['NYX Series']:
-                            Comm.send_cmd_to_nyx_with_interval(parent, titles, script, interval, response_file_name)
-                        elif Cons.selected_model in ['FineTree']:
-                            print('Finetree Script Run')
-                            for i, cmd_data in enumerate(Cons.finetree_parms_arrays):
-                                print(cmd_data)
-                                Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1])
-                                file_name = rf'{Cons.capture_path['zoom']}/{titles[i]}.png'
-                                Mf.capture_image(parent, file_name)
+                        execute_model_logic()
                     else:
-                        protocol_str_arr = []
-                        hex_protocol = []
-                        for id in treeview.get_checked():
-                            item = treeview.set(id)
-                            protocol_str = item[2]
-                            protocol_str_arr.append(protocol_str)
-                        for protocol in protocol_str_arr:
-                            converted_hex = Mf.convert_str_to_hex(protocol)
-                            hex_protocol.append(converted_hex)
-                        print(hex_protocol)
-                        interval = float(int(interval_txt_fld.get()) / 1000)
-                        repeat = int(repeat_txt_fld.get())
-                        titles = Cons.script_cmd_titles
-                        Comm.send_cmd_to_ucooled_with_interval(interval, hex_protocol, titles, parent)
+                        handle_custom_protocol_logic()
 
-                        return hex_protocol
                     time.sleep(0.1)
+
             except Exception as e:
                 print(f"Error: {e}")
+
             finally:
                 self.thread_running.clear()
                 self.script_run_btn.config(state='normal')
                 self.script_stop_btn.config(state='disabled')
                 Cons.data_sending = False
-                print('stop script')
+                print('Finally stop script')
+        # def run_script() -> []:
+        #     current_time = datetime.now()
+        #     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
+        #     response_file_name = rf'{Cons.log_path}_{time_str}.txt'
+        #     repeat = int(repeat_txt_fld.get())
+        #     try:
+        #         self.script_run_btn.config(state='disabled')
+        #         self.script_stop_btn.config(state='normal')
+        #
+        #         for i in range(repeat):
+        #             if Cons.data_sending:
+        #                 if not self.thread_running.is_set():
+        #                     self.thread_running.set()
+        #                 if Cons.script_toggle_flag:
+        #                     # print('run script')
+        #                     interval = Cons.script_itv_arrs
+        #                     script = Cons.script_cmd_arrs
+        #                     titles = Cons.script_cmd_titles
+        #
+        #                     if Cons.selected_model in ['Uncooled', 'DRS']:
+        #                         if Cons.data_sending:
+        #                             Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
+        #                         else: return
+        #                     elif Cons.selected_model in ['NYX Series']:
+        #                         if Cons.data_sending:
+        #                             Comm.send_cmd_to_nyx_with_interval(parent, titles, script, interval, response_file_name)
+        #                         else: return
+        #                     elif Cons.selected_model in ['FineTree']:
+        #                         print('Finetree Script Run')
+        #                         for i, cmd_data in enumerate(Cons.finetree_parms_arrays):
+        #                             if Cons.data_sending:
+        #                                 # print(cmd_data)
+        #                                 Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1])
+        #                                 file_name = rf'{Cons.capture_path['zoom']}/{titles[i]}.png'
+        #                                 Mf.capture_image(parent, file_name)
+        #                             else: return
+        #                     elif Cons.selected_model in ['MiniGimbal']:
+        #                         # print('MiniGimbal Script Run')
+        #                         Comm.send_to_mini_with_interval(Cons.only_socket, titles, script, interval)
+        #                 else:
+        #                     protocol_str_arr = []
+        #                     hex_protocol = []
+        #                     for id in treeview.get_checked():
+        #                         item = treeview.set(id)
+        #                         protocol_str = item[2]
+        #                         protocol_str_arr.append(protocol_str)
+        #                     for protocol in protocol_str_arr:
+        #                         converted_hex = Mf.convert_str_to_hex(protocol)
+        #                         hex_protocol.append(converted_hex)
+        #                     print(hex_protocol)
+        #                     interval = float(int(interval_txt_fld.get()) / 1000)
+        #                     repeat = int(repeat_txt_fld.get())
+        #                     titles = Cons.script_cmd_titles
+        #                     Comm.send_cmd_to_ucooled_with_interval(interval, hex_protocol, titles, parent)
+        #
+        #                     return hex_protocol
+        #             else:
+        #                 return
+        #         time.sleep(0.1)
+        #     except Exception as e:
+        #         print(f"Error: {e}")
+        #     finally:
+        #         self.thread_running.clear()
+        #         self.script_run_btn.config(state='normal')
+        #         self.script_stop_btn.config(state='disabled')
+        #         Cons.data_sending = False
+        #         print('Finally stop script')
 
         # (2024.07.04): Stop Script(Threading Stop)
         def stop_script():
@@ -233,7 +265,6 @@ class TestTool(tk.Frame):
 
         # ======================================== CH Button, Input User, Model Information ================================
 
-
         validator = Cons.validator_lbl
         validator_txt = Cons.validator_txt_fld
         model = Cons.model_lbl
@@ -258,7 +289,7 @@ class TestTool(tk.Frame):
         self.sel_op = tk.StringVar()
         drop_down = ttk.Combobox(parent, textvariable=self.sel_op)
         drop_down['values'] = model_option
-        drop_down.current(0)
+        drop_down.current(4)
         drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
         drop_down.bind('<<ComboboxSelected>>', model_select)
 
@@ -290,37 +321,37 @@ class TestTool(tk.Frame):
                                  h=ip['h'], w=ip['w'], element='Label',
                                  bg=ip['bg'], text=ip['text'], anchor='center')
         self.ip_txt_fld = Mf.make_element(x=ip_txt['x'], y=ip_txt['y'],
-                                     h=ip_txt['h'], w=ip_txt['w'], element='Entry',
-                                     bg=ip_txt['bg'])
+                                          h=ip_txt['h'], w=ip_txt['w'], element='Entry',
+                                          bg=ip_txt['bg'])
 
         port_lbl = Mf.make_element(x=port['x'], y=port['y'],
                                    h=port['h'], w=port['w'], element='Label',
                                    bg=port['bg'], text=port['text'], anchor='center')
         self.port_txt_fld = Mf.make_element(x=port_txt['x'], y=port_txt['y'],
-                                       h=port_txt['h'], w=port_txt['w'], element='Entry',
-                                       bg=port_txt['bg'])
+                                            h=port_txt['h'], w=port_txt['w'], element='Entry',
+                                            bg=port_txt['bg'])
 
         rtsp_lbl = Mf.make_element(x=rtsp['x'], y=rtsp['y'],
                                    h=rtsp['h'], w=rtsp['w'], element='Label',
                                    bg=rtsp['bg'], text=rtsp['text'], anchor='center')
         self.rtsp_txt_fld = Mf.make_element(x=rtsp_txt['x'], y=rtsp_txt['y'],
-                                       h=rtsp_txt['h'], w=rtsp_txt['w'], element='Entry',
-                                       bg=rtsp_txt['bg'])
+                                            h=rtsp_txt['h'], w=rtsp_txt['w'], element='Entry',
+                                            bg=rtsp_txt['bg'])
 
         ipc_id_lbl = Mf.make_element(x=ipc_id['x'], y=ipc_id['y'],
                                      h=ipc_id['h'], w=ipc_id['w'], element='Label',
                                      bg=ipc_id['bg'], text=ipc_id['text'], anchor='w')
         self.ipc_id_txt_fld = Mf.make_element(x=ipc_id_txt['x'], y=ipc_id_txt['y'],
-                                         h=ipc_id_txt['h'], w=ipc_id_txt['w'], element='Entry',
-                                         bg=ipc_id_txt['bg'])
+                                              h=ipc_id_txt['h'], w=ipc_id_txt['w'], element='Entry',
+                                              bg=ipc_id_txt['bg'])
         self.ipc_id_txt_fld.configure(show='*')
 
         ipc_pw_lbl = Mf.make_element(x=ipc_pw['x'], y=ipc_pw['y'],
                                      h=ipc_pw['h'], w=ipc_pw['w'], element='Label',
                                      bg=ipc_pw['bg'], text=ipc_pw['text'], anchor='w')
         self.ipc_pw_txt_fld = Mf.make_element(x=ipc_pw_txt['x'], y=ipc_pw_txt['y'],
-                                         h=ipc_pw_txt['h'], w=ipc_pw_txt['w'], element='Entry',
-                                         bg=ipc_pw_txt['bg'])
+                                              h=ipc_pw_txt['h'], w=ipc_pw_txt['w'], element='Entry',
+                                              bg=ipc_pw_txt['bg'])
         self.ipc_pw_txt_fld.configure(show='*')
 
         self.register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
@@ -355,7 +386,8 @@ class TestTool(tk.Frame):
         # test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
         # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
         # test_txt = {'ip': '192.168.100.138', 'port': '32000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
-        test_txt = {'ip': '192.168.100.152', 'port': '31000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'Admin1357'}
+        # test_txt = {'ip': '192.168.100.152', 'port': '31000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'Admin1357A'}
+        test_txt = {'ip': '192.168.100.130', 'port': '13000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'Admin1357A'}
         self.ip_txt_fld.insert(0, test_txt['ip'])
         self.port_txt_fld.insert(0, test_txt['port'])
         self.rtsp_txt_fld.insert(0, test_txt['rtsp_port'])
@@ -455,7 +487,6 @@ class TestTool(tk.Frame):
                              f'{Cons.WINDOWS_POSITION["x"]}+{Cons.WINDOWS_POSITION["y"]}')
         self.parent.config(padx=15, pady=15)
 
-
     def create_channel_buttons(self):
         self.channel_buttons = {}
         for i in range(1, 5):
@@ -466,7 +497,7 @@ class TestTool(tk.Frame):
 
     def pushed_ch_btn(self, ch_name):
         info = self.get_rtsp_info(ch_name)
-        info['url'] = self.generate_rtsp_url(info)
+        info['url'] = generate_rtsp_url(info)
 
         if info['url'] == 'Invalid model':
             print(f"Invalid model selected for {ch_name}")
@@ -487,15 +518,6 @@ class TestTool(tk.Frame):
             'port': self.port_txt_fld.get(),
         })
         return info
-
-    def generate_rtsp_url(self, info):
-        url_patterns = {
-            'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
-            'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-            'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-            'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1'
-        }
-        return url_patterns.get(info['model'], 'Invalid model')
 
     def start_video_player(self, ch_name, info):
         if ch_name.lower() == 'ch1':
@@ -518,6 +540,11 @@ class TestTool(tk.Frame):
     def open_video_window(self):
         Cons.selected_model = self.sel_op.get()
         Comm.find_ch()
+        print(Cons.selected_ch)
+        # Create only one socket for Minigimbal
+        if Cons.selected_model == 'MiniGimbal':
+            threading.Thread(target=self.handle_minigimbal, daemon=True).start()
+
         for i in range(1, 5):
             self.channel_buttons[f'CH{i}'].config(bg=Cons.ch1_btn_pos['bg'])
 
@@ -528,15 +555,27 @@ class TestTool(tk.Frame):
             Cons.video_player_ch4
         ]
 
-        threading.Thread(target=self.start_videos, args=(videos,)).start()
+        threading.Thread(target=start_videos, args=(videos,)).start()
 
-    def start_videos(self, videos):
-        for video in videos:
-            if video:
-                print(f"Starting video player: {video}")  # 비디오 플레이어 시작
-                video.start_video()
-            else:
-                print("Video player is None")
+    def handle_minigimbal(self):
+        Cons.only_socket = Comm.create_socket()
+        try:
+            while True:
+                data = Cons.only_socket.recv(39)
+                hex_value = [f'{bytes:02x}' for bytes in data]
+                print(rf'{datetime.now()}: {hex_value}')
+                Comm.update_res_to_cons(hex_value)
+                Comm.save_res_from_miniG_Text(data)
+                # Comm.save_res_from_miniG_CSV(data)
+                if not data:
+                    print('No data is being sent from MiniGimbal')
+                    break
+        except KeyboardInterrupt:
+            print('Keyboard interrupt received, shutting down')
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            Cons.only_socket.close()
 
 
 # TODO: Command File Import Function
@@ -549,6 +588,7 @@ class TestTool(tk.Frame):
 
 if __name__ == '__main__':
     root = tk.Tk()
+    ptz_ins = KeyBind.initialize_ptz(root)
 
     app = TestTool(root)
 

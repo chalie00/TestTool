@@ -12,8 +12,8 @@ import Table as tb
 from tkinter import *
 from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
-from PIL import ImageGrab
 from screeninfo import get_monitors
+from datetime import datetime
 
 from Communication import send_data_for_nyx
 
@@ -117,7 +117,7 @@ def select_item(event, root_view) -> []:
 def check_interval_active():
     Cons.interval_button.config(state='normal')
     cmd_title_count = len(Cons.script_cmd_titles)
-    interval_count = len(Cons.interval_arrays)
+    interval_count = len(Cons.script_itv_arrs)
     if cmd_title_count > interval_count:
         Cons.interval_button.configure(state='normal')
     else:
@@ -160,9 +160,9 @@ def clicked_table_element(event, root_view, tv):
 # (2024.10.18): FineTree Added to script mode
 def handle_script_mode(event, iden, value, root_view):
     Cons.data_sending = True
-    if Cons.selected_model in ['Uncooled', 'DRS']:
+    if Cons.selected_model in ['Uncooled', 'DRS', 'MiniGimbal']:
         hex_value = select_item(event, root_view)
-        Cons.script_hex_nyx_cmd_arrays.append(hex_value)
+        Cons.script_cmd_arrs.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
         print(Cons.script_cmd_titles)
         print(hex_value)
@@ -174,7 +174,7 @@ def handle_script_mode(event, iden, value, root_view):
     elif Cons.selected_model == 'NYX Series':
         Cons.script_cmd_titles.append(value[0])
         # converted_cmd = Comm.create_form(value[1])
-        Cons.script_hex_nyx_cmd_arrays.append(value[1])
+        Cons.script_cmd_arrs.append(value[1])
 
         gene_interval_arrays(value)
         script_tb = tb.Table(root_view)
@@ -212,6 +212,12 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
     elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
         Comm.send_cmd_for_drs(host, port, hex_array, root_view)
+    elif Cons.selected_model == 'MiniGimbal':
+        hex_array = select_item(event, root_view)
+        print(rf'{datetime.now()} : {title}')
+        # print(Cons.only_socket)
+        # print(hex_array)
+        Comm.send_to_mini(Cons.only_socket, hex_array)
     elif Cons.selected_model == 'NYX Series':
         send_data_for_nyx(event, root_view)
     elif Cons.selected_model == 'FineTree':
@@ -230,25 +236,25 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
 
 # (2024.07.25) Generate a interval array
 def gene_interval_arrays(value):
-    if not Cons.cmd_itv_arrays:
-        Cons.cmd_itv_arrays = Cons.cmd_itv_arrays or [[0] * 2 for _ in range(len(Cons.script_cmd_titles))]
+    if not Cons.script_cmd_itv_arrs:
+        Cons.script_cmd_itv_arrs = Cons.script_cmd_itv_arrs or [[0] * 2 for _ in range(len(Cons.script_cmd_titles))]
         for i, cmd_title in enumerate(Cons.script_cmd_titles):
-            Cons.cmd_itv_arrays[i][0] = cmd_title
-            print(Cons.cmd_itv_arrays[i])
+            Cons.script_cmd_itv_arrs[i][0] = cmd_title
+            print(Cons.script_cmd_itv_arrs[i])
     else:
         added = [value[0], 0]
-        Cons.cmd_itv_arrays.append(added)
+        Cons.script_cmd_itv_arrs.append(added)
         print(f'added = {added}')
-        print(Cons.cmd_itv_arrays)
-        print(Cons.script_hex_nyx_cmd_arrays)
+        print(Cons.script_cmd_itv_arrs)
+        print(Cons.script_cmd_arrs)
 
 
 # (2024.07.04): Clear the Script Arrays
 def clr_table_arrays(root):
-    Cons.script_hex_nyx_cmd_arrays = []
+    Cons.script_cmd_arrs = []
     Cons.script_cmd_titles = []
-    Cons.interval_arrays = []
-    Cons.cmd_itv_arrays = []
+    Cons.script_itv_arrs = []
+    Cons.script_cmd_itv_arrs = []
     tb.Table(root)
 
 
@@ -266,15 +272,15 @@ def get_data_from_csv(file_path) -> [(str, str)]:
     sel_model = Cons.selected_model
     command_data = []
 
-    if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'FineTree']:
-        print(rf'get csv {sel_model}')
+    if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'FineTree', 'MiniGimbal']:
+        # print(rf'get csv {sel_model}')
         sh = wb[f'{sel_model}']
     else:
         return command_data
 
     max_column = sh.max_column
     max_row = sh.max_row
-    if sel_model in ['Uncooled', 'DRS', 'NYX Series']:
+    if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'MiniGimbal']:
         for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
             cmd_title = sh.cell(row=i, column=2).value
             cmd_data = sh.cell(row=i, column=3).value
@@ -344,4 +350,3 @@ def get_secondary_monitor_bbox():
                 secondary_monitor.x + secondary_monitor.width,
                 secondary_monitor.y + secondary_monitor.height)
     return None
-

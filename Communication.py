@@ -1,6 +1,6 @@
+import os
 import urllib
-
-import main
+import threading
 
 import binascii
 import socket
@@ -19,8 +19,11 @@ import DRS_Response as DR_r
 from socket import AF_INET, SOCK_STREAM
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
+from openpyxl import Workbook, load_workbook
 
 import Dialog
+
+file_lock = threading.Lock()
 
 
 # Sending Command with hex
@@ -82,6 +85,9 @@ def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_t
     current_time = datetime.now()
     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
     for i, protocol in enumerate(send_cmds):
+        print(i)
+        print(rf'protocol is {protocol}')
+        print(datetime.now())
         if Cons.data_sending:
             if protocol == Cons.capture_hex:
                 path = Cons.capture_path['zoom']
@@ -94,7 +100,7 @@ def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_t
                     title = 'Normal Query'
                 if Cons.selected_model == 'Uncooled':
                     send_cmd_for_uncooled(protocol, title, root_view)
-                elif Cons.selected_model == 'DRS':
+                elif Cons.selected_model in ['DRS', 'MiniGimbal']:
                     find_ch()
                     host = Cons.selected_ch['ip']
                     port = int(Cons.selected_ch['port'])
@@ -342,70 +348,9 @@ def send_data_with_cmd_for_info(root, cmds):
     Cons.cooled_lens_pos_spd = responses
 
 
-# def send_cmd_for_drs(send_cmd, root_view):
-#     host = Cons.host_ip
-#     input_port = Cons.port
-#     port = int(0) if Cons.port == '' else int(input_port)
-#     buf_size = Cons.buf_size
-#     client = socket.socket(AF_INET, SOCK_STREAM)
-#     try:
-#         client.settimeout(3)
-#         client.connect((host, port))
-#         # client.send(bytearray([0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35]))
-#         # client.send(bytes([0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35]))
-#         client.send(bytes(send_cmd))
-#         reply = client.recv(buf_size)
-#         lsb = reply[::2]
-#         msb = reply[1::2]
-#         binary = [format(m, '08b') + format(l, '08b') for m, l in zip(msb, lsb)]
-#         for i, binary_pair in enumerate(binary):
-#             # print(rf'{i} = {binary_pair}')
-#             if i == 1:
-#                 DR_r.check_data01(binary_pair)
-#             elif i == 2:
-#                 DR_r.check_data02(binary_pair)
-#             elif i == 3:
-#                 position_x = DR_r.convert_to_deci(binary_pair)
-#                 Cons.drs_response['roi_x_start_x_pos'] = position_x
-#             elif i == 4:
-#                 position_y = DR_r.convert_to_deci(binary_pair)
-#                 Cons.drs_response['roi_x_start_y_pos'] = position_y
-#             elif i == 5:
-#                 DR_r.check_data05(binary_pair)
-#             elif i == 6:
-#                 DR_r.check_data06(binary_pair)
-#             elif i == 7:
-#                 contrast = DR_r.convert_to_deci(binary_pair)
-#                 Cons.drs_response['contrast'] = contrast
-#             elif i == 8:
-#                 brightness = DR_r.convert_to_deci(binary_pair)
-#                 Cons.drs_response['brightness'] = brightness
-#             elif i == 9:
-#                 DR_r.check_data09(binary_pair)
-#             elif i == 10:
-#                 serial = DR_r.convert_to_deci(binary_pair)
-#                 serial_hex = format(serial, 'x')
-#                 Cons.drs_response['serial'] = serial_hex
-#             elif i == 11:
-#                 shutter_temp = DR_r.convert_to_deci(binary_pair)
-#                 cal_shutter_temp = (shutter_temp - 27300) / 100
-#                 Cons.drs_response['shutter_temp'] = cal_shutter_temp
-#
-#         log_pos = Cons.log_txt_fld_info
-#         log_fld = Res.Response(root_view, log_pos)
-#         # print(Cons.drs_response)
-#
-#     except socket.error as err:
-#         print(f'network error:{err}')
-#         dialog_txt = f'Network Error \n Please check a network info.\n {err}'
-#         Dialog.DialogBox(root_view, dialog_txt)
-#         logging.error(err)
-#     finally:
-#         client.close()
-
 # (2024.08.13): Added send cmd function for DRS
 def send_cmd_for_drs(host, port, send_cmd, root_view):
-    print('send_cmd_for_drs')
+    # print('send_cmd_for_drs')
     buf_size = Cons.buf_size
     client = socket.socket(AF_INET, SOCK_STREAM)
     try:
@@ -413,9 +358,13 @@ def send_cmd_for_drs(host, port, send_cmd, root_view):
         client.connect((host, port))
         client.send(bytes(send_cmd))
         reply = client.recv(buf_size)
+        # print(reply)
 
-        # 데이터 파싱 함수 호출
-        parse_drs_reply(reply)
+        if Cons.selected_model == 'DRS':
+            # 데이터 파싱 함수 호출
+            parse_drs_reply(reply)
+        else:
+            return
 
         # 로그 창에 응답 표시
         log_pos = Cons.log_txt_fld_info
@@ -599,7 +548,164 @@ def find_ch():
     for i, ch in enumerate(model_arrays):
         if model == ch['model']:
             Cons.selected_ch = model_arrays[i]
-            print(rf'find ch is {Cons.selected_ch}')
+            # print(rf'find ch is {Cons.selected_ch}')
+
+
+##################################### Regarding Create Only One Socket  ########################
+# (2024.12.06) Create Only One Socket
+def create_socket() -> socket.socket:
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    int_port = int(Cons.selected_ch['port'])
+    client_socket.connect((Cons.selected_ch['ip'], int_port))
+
+    # Receive Data from Mini Gimbal at 20mm interval each
+    # try:
+    #     while True:
+    #         data = client_socket.recv(1024)
+    #         # logging.info(data)
+    #         if not data:
+    #             print('No data is being sent from MiniGimbal')
+    #             break
+    # except KeyboardInterrupt:
+    #     print('Keyboard interrupt received, shutting down')
+    # finally:
+    #     client_socket.close()
+
+    return client_socket
+
+
+def send_to_mini(sock: socket.socket, cmd):
+    try:
+        sock.send(bytes(cmd))
+        # reply = sock.recv(78)
+        # print(reply)
+        #
+        # return reply
+    except Exception as e:
+        print("error while sending cmd to mini :", str(e))
+
+
+def close_socket(sock: socket.socket):
+    print('socket was closed')
+    sock.close()
+
+
+def send_to_mini_with_interval(sock: socket.socket, titles, cmds, intervals):
+    for i, protocol in enumerate(cmds):
+        if Cons.data_sending:
+            print(rf'{datetime.now()}: {titles[i]}')
+            try:
+                sock.send(bytes(protocol))
+                reply = sock.recv(39)
+                print(reply)
+            except Exception as e:
+                print("error while sending cmd to mini :", str(e))
+            ti.sleep(intervals[i])
+        else:
+            return
+
+
+# (2024.12.10) Save a mini gimbal response to text file
+def save_res_from_miniG_Text(response):
+    res_arrs = []
+    # parser = [int.from_bytes(reply[i:i+1], byteorder='big') for i in range(0, len(reply))]
+    hex_value = [f'{bytes:02x}' for bytes in response]
+    # print(hex_value)
+    for i, value in enumerate(hex_value):
+        if i != 38 and i != 77:
+            if value == 'ff' and hex_value[i + 1] == '01' and hex_value[i + 2] == '23':
+                if len(hex_value) == 39:
+                    res_arrs = hex_value[i:i + 39]
+
+                    # print(res_arrs)
+                    # update_res_to_cons(res_arrs)
+                    file_path = rf'Log/mini_gimbal.txt'
+                    try:
+                        with open(file_path, "r") as file:
+                            existing_data = file.readlines()
+                    except FileNotFoundError:
+                        existing_data = []
+
+                    with open(file_path, "w") as file:
+                        file.write(rf'{datetime.now()}: ' + ' '.join(res_arrs) + '\n')
+                        file.writelines(existing_data)
+
+
+# (2024.12.11) Save a mini gimbal response to csv file
+# I don't know why csv file was not applied when received a response
+def save_res_from_miniG_CSV(response):
+    column_title = Cons.miniG_res_row
+    # res_arrs = []
+    hex_value = [f'{bytes:02x}' for bytes in response]
+    file_path = rf'Log/mini_gimbal.xlsx'
+
+    with file_lock:
+        if os.path.exists(file_path):
+            wb = load_workbook(file_path)
+            ws = wb.active
+        else:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = 'Mini Gimbal Response'
+
+            # Add the header
+            for i, title in enumerate(column_title, start=1):
+                ws.cell(row=1, column=i + 5, value=title)
+
+        for i, value in enumerate(hex_value):
+            # print(hex_value)
+            if i != 38 and i != 77:
+                if value == 'ff' and hex_value[i + 1] == '01' and hex_value[i + 2] == '23':
+                    if len(hex_value) >= 39:
+                        res_arrs = hex_value[i:i + 39]
+                        print(rf'{datetime.now()}: {res_arrs}')
+
+                        next_row = ws.max_row + 1
+                        for col_index, data in enumerate(res_arrs):
+                            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+                            ws.cell(row=next_row, column=1, value=current_time)
+                            ws.cell(row=next_row, column=col_index + 2, value=data)
+                            wb.save(f'{file_path}')
+
+
+def update_res_to_cons(res_arrs):
+    Cons.miniG_res_payload.update({
+        'roll_en_hi': res_arrs[4],
+        'roll_en_lo': res_arrs[5],
+        'pitch_en_hi': res_arrs[6],
+        'pitch_en_lo': res_arrs[7],
+        'yaw_en_h': res_arrs[8],
+        'yaw_en_l': res_arrs[9],
+        'cam_status': res_arrs[10],
+        'fan_heater_sta': res_arrs[11],
+        'motor_bd': res_arrs[12],
+        'temp': res_arrs[13],
+        'drift_offset_h': res_arrs[14],
+        'drift_offset_l': res_arrs[15],
+        'stabilizer_mode': res_arrs[16],
+        '17': res_arrs[17],
+        'eo_dzoom': res_arrs[18],
+        'eo_wdr': res_arrs[19],
+        'eo_blc': res_arrs[20],
+        'eo_dis': res_arrs[21],
+        'eo_dn': res_arrs[22],
+        '23': res_arrs[23],
+        '24': res_arrs[24],
+        'eo_defog': res_arrs[25],
+        'eo_op_zoom_h': res_arrs[26],
+        'eo_op_zoom_l': res_arrs[27],
+        'eo_d_zoom': res_arrs[28],
+        'eo_bri': res_arrs[29],
+        'eo_sharp': res_arrs[30],
+        'ir_dzoom': res_arrs[31],
+        'ir_pale': res_arrs[32],
+        'ir_agc_mode': res_arrs[33],
+        'ir_dde': res_arrs[34],
+        '35': res_arrs[35],
+        'fw_h': res_arrs[36],
+        'fw_l': res_arrs[37],
+    })
+    print(rf'{datetime.now()}: {Cons.miniG_res_payload}')
 
 
 # Test Code

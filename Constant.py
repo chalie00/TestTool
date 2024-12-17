@@ -29,8 +29,10 @@ info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 10}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
-selected_model = 'Uncooled'
-model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series']
+selected_model = 'MiniGimbal'
+model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal']
+
+only_socket = None
 
 # Command File Path
 cmd_path = rf'Command/Command.xlsx'
@@ -68,6 +70,54 @@ uncooled_query_arrays = [
     'Image Query', 'Sensor Query', 'Cali. Query', 'ETC Query',
     'Status Query', 'Version Query', 'Encoder Query'
 ]
+# MiniGimbal
+script_itv_arrs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                   0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                   0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                   0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+                   0.5, 0.5]
+script_cmd_arrs = [
+    [255, 0, 177, 0, 0, 1, 178], [255, 0, 192, 0, 0, 1, 193], [255, 0, 177, 0, 0, 0, 177], [255, 0, 192, 0, 0, 2, 194],
+    [255, 0, 178, 0, 0, 1, 179],
+    [255, 0, 192, 0, 0, 3, 195], [255, 0, 178, 0, 0, 0, 178], [255, 0, 192, 0, 0, 4, 196], [255, 0, 179, 0, 0, 1, 180],
+    [255, 0, 192, 0, 0, 5, 197],
+    [255, 0, 179, 0, 0, 0, 179], [255, 0, 192, 0, 0, 6, 198], [255, 0, 180, 0, 0, 0, 180], [255, 0, 192, 0, 0, 7, 199],
+    [255, 0, 180, 0, 0, 1, 181],
+    [255, 0, 192, 0, 0, 8, 200], [255, 0, 180, 0, 0, 2, 182], [255, 0, 193, 0, 0, 0, 193], [255, 0, 181, 0, 0, 0, 181],
+    [255, 0, 193, 0, 0, 1, 194],
+    [255, 0, 181, 0, 0, 5, 186], [255, 0, 193, 0, 0, 2, 195], [255, 0, 181, 0, 0, 10, 191], [255, 0, 193, 0, 0, 3, 196],
+    [255, 0, 183, 0, 0, 0, 183],
+    [255, 0, 193, 0, 0, 4, 197], [255, 0, 183, 0, 0, 5, 188], [255, 0, 193, 0, 0, 5, 198], [255, 0, 183, 0, 0, 10, 193],
+    [255, 0, 193, 0, 0, 6, 199],
+    [255, 0, 184, 0, 0, 1, 185], [255, 0, 193, 0, 0, 7, 200], [255, 0, 184, 0, 0, 0, 184], [255, 0, 193, 0, 0, 8, 201],
+    [255, 0, 193, 0, 0, 9, 202],
+    [255, 0, 176, 0, 0, 1, 177], [255, 0, 194, 0, 0, 0, 194], [255, 0, 176, 0, 0, 0, 176], [255, 0, 194, 0, 0, 1, 195],
+    [255, 0, 195, 0, 0, 1, 196],
+    [255, 0, 195, 0, 0, 0, 195], [255, 0, 196, 0, 0, 0, 196]
+]
+
+script_cmd_titles = [
+    'WDR On', 'IR D-Zoom x1', 'WDR Off', 'IR D-Zoom x2', 'BLC On',
+    'IR D-Zoom x3', 'BLC Off', 'IR D-Zoom x4', 'DIS On', 'IR D-Zoom x5',
+    'DIS Off', 'IR D-Zoom x6', 'DN Day', 'IR D-Zoom x7', 'DN Night',
+    'IR D-Zoom x8', 'DN Auto', 'White', 'Brighteness 0', 'Black',
+    'Brighteness 5', 'Rainbow', 'Brighteness 10', 'Rainbow HC', 'Sharpness 0',
+    'Iron', 'Sharpness 5', 'Lava', 'Sharpness 10', 'Sky',
+    'Defog On', 'Medium Gray', 'Defog Off', 'Gray-Red', 'Purple Orange',
+    'EO D-Zoom On', 'AGC Auto 1', 'EO D-Zoom Off', 'AGC Auto 2', 'DDE On',
+    'DDE Off', 'Calibration Exe'
+]
+
+script_cmd_itv_arrs = [
+    ['WDR On', 0.5], ['IR D-Zoom x1', 0.5], ['WDR Off', 0.5], ['IR D-Zoom x2', 0.5], ['BLC On', 0.5],
+    ['IR D-Zoom x3', 0.5], ['BLC Off', 0.5], ['IR D-Zoom x4', 0.5], ['DIS On', 0.5], ['IR D-Zoom x5', 0.5],
+    ['DIS Off', 0.5], ['IR D-Zoom x6', 0.5], ['DN Day', 0.5], ['IR D-Zoom x7', 0.5], ['DN Night', 0.5],
+    ['IR D-Zoom x8', 0.5], ['DN Auto', 0.5], ['White', 0.5], ['Brighteness 0', 0.5], ['Black', 0.5],
+    ['Brighteness 5', 0.5], ['Rainbow', 0.5], ['Brighteness 10', 0.5], ['Rainbow HC', 0.5], ['Sharpness 0', 0.5],
+    ['Iron', 0.5], ['Sharpness 5', 0.5], ['Lava', 0.5], ['Sharpness 10', 0.5], ['Sky', 0.5],
+    ['Defog On', 0.5], ['Medium Gray', 0.5], ['Defog Off', 0.5], ['Gray-Red', 0.5], ['Purple Orange', 0.5],
+    ['EO D-Zoom On', 0.5], ['AGC Auto 1', 0.5], ['EO D-Zoom Off', 0.5], ['AGC Auto 2', 0.5], ['DDE On', 0.5],
+    ['DDE Off', 0.5], ['Calibration Exe', 0.5]]
 
 # DRS Default Code
 # script_hex_nyx_cmd_arrays = [[255, 0, 32, 34, 0, 0, 66], [255, 0, 32, 35, 0, 0, 67],
@@ -84,20 +134,20 @@ uncooled_query_arrays = [
 # cmd_itv_arrays = [[' Mirror Off', 3.0], [' Flip Off', 3.0], [' Invert Off', 3.0], ['Cali Auto', 3.0],
 #                   ['IDE 10', 3.0], ['Gray', 3.0], ['Temp Info Off', 3.0], ['Temp User Offset 0', 3.0],
 #                   ['Emissivity 98', 3.0], ['AGC High', 3.0]]
-script_hex_nyx_cmd_arrays = [
-    [255, 0, 34, 16, 0, 1, 51], [255, 0, 34, 19, 0, 0, 53], [255, 0, 34, 32, 0, 0, 66], [255, 1, 0, 0, 0, 0, 0],
-    [255, 0, 34, 16, 0, 2, 52], [255, 0, 34, 19, 0, 0, 53], [255, 0, 34, 32, 0, 0, 66],[255, 1, 0, 0, 0, 0, 0]
-]
-script_cmd_titles = ['Far', 'Focus Stop', 'AF', 'ScreenShot',
-                     'Near', 'Focus Stop', 'AF', 'ScreenShot']
-
-interval_arrays = [5.0, 5.0, 5.0, 5.0,
-                   5.0, 5.0, 5.0, 5.0,
-                   ]
-cmd_itv_arrays = [
-    ['Far', 5.0], ['Focus Stop', 5.0], ['AF', 5.0], ['ScreenShot', 5.0],
-    ['Near', 5.0], ['Focus Stop', 5.0], ['AF', 5.0], ['ScreenShot', 5.0]
-]
+# script_hex_nyx_cmd_arrays = [
+#     [255, 0, 34, 16, 0, 1, 51], [255, 0, 34, 19, 0, 0, 53], [255, 0, 34, 32, 0, 0, 66], [255, 1, 0, 0, 0, 0, 0],
+#     [255, 0, 34, 16, 0, 2, 52], [255, 0, 34, 19, 0, 0, 53], [255, 0, 34, 32, 0, 0, 66],[255, 1, 0, 0, 0, 0, 0]
+# ]
+# script_cmd_titles = ['Far', 'Focus Stop', 'AF', 'ScreenShot',
+#                      'Near', 'Focus Stop', 'AF', 'ScreenShot']
+#
+# interval_arrays = [5.0, 5.0, 5.0, 5.0,
+#                    5.0, 5.0, 5.0, 5.0,
+#                    ]
+# cmd_itv_arrays = [
+#     ['Far', 5.0], ['Focus Stop', 5.0], ['AF', 5.0], ['ScreenShot', 5.0],
+#     ['Near', 5.0], ['Focus Stop', 5.0], ['AF', 5.0], ['ScreenShot', 5.0]
+# ]
 
 # Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
@@ -171,6 +221,8 @@ host_ip: str = ""
 port: int = 0  # Default 32000
 rtsp_port: int = 0
 buf_size = 4096
+
+###################################################### DRS Response ###################################################
 response_txt = []
 drs_response = {
     'mirror': '', 'flip': '', 'invert': '', 'dzoom': '', 'color': '',
@@ -210,6 +262,26 @@ drs_response = {
     'roi_x_end_pos': '',
     'check_data': ''
 }
+
+###################################################### Mini Gimbal Response ###################################################
+miniG_response = []
+miniG_res_payload = {
+    'roll_en_hi': '', 'roll_en_lo': '', 'pitch_en_hi': '', 'pitch_en_lo': '', 'yaw_en_h': '', 'yaw_en_l': '',
+    'cam_status': '', 'fan_heater_sta': '', 'motor_bd': '', 'temp': '', 'drift_offset_h': '', 'drift_offset_l': '','stabilizer_mode': '',
+    '17': '', 'eo_dzoom': '', 'eo_wdr': '', 'eo_blc': '', 'eo_dis': '', 'eo_dn': '',
+    '23': '', '24': '', 'eo_defog': '', 'eo_op_zoom_h': '', 'eo_op_zoom_l': '', 'eo_d_zoom': '', 'eo_bri': '', 'eo_sharp': '',
+    'ir_dzoom': '', 'ir_pale': '', 'ir_agc_mode': '', 'ir_dde': '', '35': '', 'fw_h': '', 'fw_l': ''
+}
+
+miniG_res_row = [
+    'roll_en_hi', 'roll_en_lo', 'pitch_en_hi', 'pitch_en_lo', 'yaw_en_h', 'yaw_en_l',
+'cam_status', 'fan_heater_sta', 'motor_bd', 'temp', 'drift_offset_h', 'drift_offset_l', 'stabilizer_mode',
+'17', 'eo_dzoom', 'eo_wdr', 'eo_blc', 'eo_dis', 'eo_dn',
+'23', '24', 'eo_defog', 'eo_op_zoom_h', 'eo_op_zoom_l', 'eo_d_zoom', 'eo_bri', 'eo_sharp',
+'ir_dzoom', 'ir_pale', 'ir_agc_mode', 'ir_dde', '35', 'fw_h', 'fw_l'
+]
+
+
 
 # RTSP Information
 rtsp_url = ''
@@ -429,7 +501,7 @@ ptz_left_btn = {'x': ptz_up_btn['x'] - ptz_btn_size, 'y': ptz_up_btn['y'] + ptz_
 ptz_right_btn = {'x': ptz_up_btn['x'] + ptz_btn_size, 'y': ptz_left_btn['y'],
                  'h': ptz_btn_size, 'w': ptz_btn_size,
                  'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'RIGHT'}
-ptz_center_btn = {'x': 53, 'y':50,
+ptz_center_btn = {'x': 53, 'y': 50,
                   'h': 50, 'w': 50,
                   'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'AF'}
 

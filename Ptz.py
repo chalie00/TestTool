@@ -1,5 +1,6 @@
 import tkinter as tk
 import time as ti
+import threading
 
 import Communication as Comm
 import Constant as Cons
@@ -24,17 +25,9 @@ class PTZ:
         self.ptz_osd_mode_ui = onoffSW.SwitchOnOff(self, self.canvas, btn_id, ptz_osd_mode_btn)
 
         self.ptz_url = '/cgi-bin/ptz/control.php?'
+        self.ft_sending_flag = False
 
         self.refresh_ptz()
-
-    # def create_button(self, text, push_cmd, release_cmd, x, y):
-    #     if not Cons.ptz_osd_toggle_flag:
-    #         btn = tk.Button(self.canvas, text=text, width=6, height=2, bg=Cons.my_color['bg'], command=push_cmd)
-    #     else:
-    #         btn = tk.Button(self.canvas, text=text, width=6, height=2, bg=Cons.my_color['bg'])
-    #         btn.bind('<ButtonPress-1>', lambda event: push_cmd(event))
-    #         btn.bind('<ButtonRelease-1>', lambda event: release_cmd(event))
-    #     self.canvas.create_window(x, y, window=btn)
 
     def create_button(self, text, push_cmd, release_cmd, x, y):
         btn = tk.Button(self.canvas, text=text, bg=Cons.my_color['bg'])
@@ -56,6 +49,9 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'upleft'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                self.send_miniGimbal('up_left')
+
         else:
             print('Pressed Left Top')
 
@@ -76,6 +72,9 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'up'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Move Up
+                self.send_miniGimbal('up')
 
         else:
             if Cons.selected_model == 'Uncooled':
@@ -90,11 +89,13 @@ class PTZ:
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
             elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
+                port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Zoom In
                 hex_array = [255, 0, 34, 0, 0, 1, 35]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Optical Zoom In
+                self.send_miniGimbal('op_zoom_in')
 
     def right_top(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -104,6 +105,8 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'upright'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                self.send_miniGimbal('up_right')
         else:
             print('Pressed Right Top')
 
@@ -115,6 +118,8 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'downleft'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                self.send_miniGimbal('down_left')
         else:
             print('Pressed Left Bottom')
 
@@ -133,6 +138,9 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'down'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Move Down
+                self.send_miniGimbal('down')
         else:
             if Cons.selected_model == 'Uncooled':
                 # Uncooled Zoom Out
@@ -146,11 +154,13 @@ class PTZ:
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
             elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
+                port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Zoom Out
                 hex_array = [255, 0, 34, 0, 0, 2, 36]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Optical Zoom Out
+                self.send_miniGimbal('op_zoom_out')
 
     def right_down(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -160,11 +170,22 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'downright'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                self.send_miniGimbal('down_right')
         else:
             print('Pressed Right Bottom')
 
+    # (2024.11.15) Send finetree focus cmd every 1 second
+    def send_ft_command_periodically(self, ptz_url, params, interval=0.1):
+        def send_command():
+            if self.ft_sending_flag:
+                Comm.fine_tree_send_cgi(self.ptz_url, params)
+                threading.Timer(interval, send_command).start()
+
+        send_command()
+
     def left_near(self, event=None):
-        print("Left button pressed")
+        # print("Left button pressed")
         if not Cons.ptz_osd_toggle_flag:
             if Cons.selected_model == 'Uncooled':
                 # OSD Uncooled
@@ -179,6 +200,9 @@ class PTZ:
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'left'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Move Left
+                self.send_miniGimbal('left')
         else:
             if Cons.selected_model == 'Uncooled':
                 # Near Uncooled
@@ -188,15 +212,18 @@ class PTZ:
                 near = 'NYX.SET#lens_fctl=near'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, near)
             elif Cons.selected_model == 'FineTree':
-                params = {'focus': 'near'}
-                Comm.fine_tree_send_cgi(self.ptz_url, params)
+                self.ft_sending_flag = True
+                params = {'focus': 'near_step'}
+                self.send_ft_command_periodically(self.ptz_url, params)
             elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
+                port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Near
                 hex_array = [255, 0, 34, 16, 0, 2, 52]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Near
+                self.send_miniGimbal('op_near')
 
     def right_far(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -210,9 +237,12 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'move': 'right'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model =='DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'right'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Move Right
+                self.send_miniGimbal('right')
         else:
             if Cons.selected_model == 'Uncooled':
                 # Far Uncooled
@@ -222,15 +252,18 @@ class PTZ:
                 far = 'NYX.SET#lens_fctl=far'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, far)
             elif Cons.selected_model == 'FineTree':
-                params = {'focus': 'far'}
-                Comm.fine_tree_send_cgi(self.ptz_url, params)
+                self.ft_sending_flag = True
+                params = {'focus': 'far_step'}
+                self.send_ft_command_periodically(self.ptz_url, params)
             elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
+                port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Far
                 hex_array = [255, 0, 34, 16, 0, 1, 51]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Far
+                self.send_miniGimbal('op_far')
 
     def osd_af(self, event):
         if not Cons.ptz_osd_toggle_flag:
@@ -261,19 +294,19 @@ class PTZ:
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
             elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
+                port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # AF
                 hex_array = [255, 0, 34, 32, 0, 0, 66]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+            elif Cons.selected_model == 'MiniGimbal':
+                # Far
+                self.send_miniGimbal('op_af')
 
     def release_cmd(self, event):
-        print("Button released")
+        # print("Button released")
         btn = event.widget
         btn_text = btn.cget('text')
 
-        sys_info_pos = Cons.sys_info_tab
-        sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
         ptz_text_arr = ['Left\nTop', 'Up', 'Right\nTop', 'Left\nDown', 'Down', 'Right\nDown', 'Left', 'Right']
 
         if Cons.selected_model == 'Uncooled':
@@ -281,51 +314,46 @@ class PTZ:
             self.send_data('FF010000000001')
             if Cons.ptz_osd_toggle_flag:
                 ti.sleep(0.2)
+                sys_info_pos = Cons.sys_info_tab
+                sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
                 sys_info.update_with_protocol()
-            else:
-                return
 
-        elif Cons.selected_model == 'NYX Series':
+        elif Cons.selected_model in ['NYX Series', 'FineTree', 'DRS', 'MiniGimbal']:
             if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
-                self.zoom_focus_stop_for_nyx('zoom')
+                self.stop_zoom_focus(Cons.selected_model, 'zoom')
             elif btn_text in ['Near', 'Far']:
-                self.zoom_focus_stop_for_nyx('focus')
-        elif Cons.selected_model == 'FineTree':
-            if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
-                print('fi zoom')
-                params = {'zoom': 'stop'}
-                Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif btn_text in ['Near', 'Far']:
-                print('fi focus')
-                params = {'focus': 'stop'}
-                Comm.fine_tree_send_cgi(self.ptz_url, params)
+                self.ft_sending_flag = False
+                self.stop_zoom_focus(Cons.selected_model, 'focus')
             elif btn_text in ptz_text_arr:
-                print('fi PTZ')
-                params = {'move': 'stop'}
-                Comm.fine_tree_send_cgi(self.ptz_url, params)
-        elif Cons.selected_model == 'DRS':
-            if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
-                print('DRS zoom')
-                host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
-                # Zoom Stop
-                hex_array = [255, 0, 34, 4, 0, 0, 38]
-                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif btn_text in ['Near', 'Far']:
-                print('DRS focus')
-                host = Cons.selected_ch['ip']
-                input_port = Cons.selected_ch['port']
-                port = int(0) if Cons.port == '' else int(input_port)
-                # Focus Stop
-                hex_array = [255, 0, 34, 19, 0, 0, 53]
-                Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif btn_text in ptz_text_arr:
-                print('DRS PTZ')
-                params = {'move': 'stop'}
-                Comm.send_cmd_to_Finetree(self.ptz_url, params)
+                self.stop_ptz(Cons.selected_model)
 
-        ti.sleep(0.1)
+    def stop_zoom_focus(self, model, command_type):
+        if model == 'NYX Series':
+            self.zoom_focus_stop_for_nyx(command_type)
+        elif model == 'FineTree':
+            params = {command_type: 'stop'}
+            Comm.fine_tree_send_cgi(self.ptz_url, params)
+        elif model == 'DRS':
+            host = Cons.selected_ch['ip']
+            port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
+            hex_array = [255, 0, 34, 4, 0, 0, 38] if command_type == 'zoom' else [255, 0, 34, 19, 0, 0, 53]
+            Comm.send_cmd_for_drs(host, port, hex_array, self.root)
+        elif Cons.selected_model == 'MiniGimbal':
+            if command_type == 'zoom':
+                self.send_miniGimbal('op_zoom_stop')
+            elif command_type == 'focus':
+                self.send_miniGimbal('op_focus_stop')
+
+    def stop_ptz(self, model):
+        if model == 'FineTree':
+            params = {'move': 'stop'}
+            Comm.fine_tree_send_cgi(self.ptz_url, params)
+        elif model == 'DRS':
+            params = {'move': 'stop'}
+            Comm.send_cmd_to_Finetree(self.ptz_url, params)
+        elif model == 'MiniGimbal':
+            # Move Stop
+            self.send_miniGimbal('stop')
 
     def zoom_focus_stop_for_nyx(self, btn_str):
         if btn_str == 'zoom':
@@ -342,6 +370,27 @@ class PTZ:
     def send_data(self, cmd):
         hex_array = [int(cmd[i:i + 2], 16) for i in range(0, len(cmd), 2)]
         Th.send_cmd_for_uncooled(hex_array, 'Normal Query', self.root)
+
+    # (2024.12.03): Send the CMD to Minigimbal
+    def send_miniGimbal(self, dir_str):
+        host = Cons.selected_ch['ip']
+        port = int(Cons.selected_ch['port'])
+        ptz_cmd = {'up': 'FF00000800FF07', 'down': 'FF00001000FF0F',
+                   'right': 'FF000002FF0001', 'left': 'FF000004FF0003',
+                   'up_left': 'FF00000C7F3FCA', 'up_right': 'FF00000A7F3FC8',
+                   'down_left': 'FF0000147F3FD2', 'down_right': 'FF0000127F3FD0',
+                   'stop': 'FF000000000000',
+
+                   'op_zoom_in': 'FF00BA000010CA', 'op_zoom_out': 'FF00BA000020DA',
+                   'op_zoom_stop': 'FF00BA000000BA',
+
+                   'op_af': 'FF00BF000000BF',
+                   'op_near': 'FF00BB000010CB', 'op_far': 'FF00BB000020DB',
+                   'op_focus_stop': 'FF00BB000000BB',
+                   }
+        send_cmd = [int(ptz_cmd[dir_str][i:i + 2], 16) for i in range(0, len(ptz_cmd[dir_str]), 2)]
+        # Comm.send_cmd_for_drs(host, port, send_cmd, self.root)
+        Comm.send_to_mini(Cons.only_socket, send_cmd)
 
     def create_circle_button(self, x, y, r, color, text, command):
         oval = self.canvas.create_oval(x - r + 5, y - r - 12, x + r, y + r - 14, fill=color, outline=color)

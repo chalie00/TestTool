@@ -24,7 +24,7 @@ class Table:
         column = [i + 1 for i in range(column_num)]
         dis_column = [str(n) for n in column]
         # cmd_data = Cons.script_cmd_titles
-        cmd_data = Cons.cmd_itv_arrays
+        cmd_data = Cons.script_cmd_itv_arrs
         tv = CheckboxTreeview(self.inner_frame, height=7, columns=dis_column, displaycolumns=dis_column)
         self.style = ttk.Style()
         self.style.configure('script Table', background='lightgray')
