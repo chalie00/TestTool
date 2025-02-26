@@ -284,14 +284,14 @@ class TestTool(tk.Frame):
                                     bg=model['bg'], text=model['text'], anchor='center')
 
         # (2024.07.19): Change a model entry to selectable drop down menu (NYX Series, Uncooled type)
-        # model_option = ['Uncooled', 'DRS', 'NYX Series']
+        # model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal']
         model_option = Cons.model_option
         self.sel_op = tk.StringVar()
-        drop_down = ttk.Combobox(parent, textvariable=self.sel_op)
-        drop_down['values'] = model_option
-        drop_down.current(4)
-        drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
-        drop_down.bind('<<ComboboxSelected>>', model_select)
+        self.drop_down = ttk.Combobox(parent, textvariable=self.sel_op)
+        self.drop_down['values'] = model_option
+        self.drop_down.current(0)
+        self.drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
+        self.drop_down.bind('<<ComboboxSelected>>', model_select)
 
         # model_txt_fld = Mf.make_element(x=model_txt['x'], y=model_txt['y'],
         #                                 h=model_txt['h'], w=model_txt['w'], element='Entry',
@@ -383,11 +383,11 @@ class TestTool(tk.Frame):
         self.search_btn.bind("<Button-1>", search_command)
 
         # For Test Code
-        # test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
+        # test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'} #NYX
         # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
         # test_txt = {'ip': '192.168.100.138', 'port': '32000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
-        # test_txt = {'ip': '192.168.100.152', 'port': '31000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'Admin1357A'}
-        test_txt = {'ip': '192.168.100.130', 'port': '13000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'Admin1357A'}
+        test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred
+
         self.ip_txt_fld.insert(0, test_txt['ip'])
         self.port_txt_fld.insert(0, test_txt['port'])
         self.rtsp_txt_fld.insert(0, test_txt['rtsp_port'])
@@ -540,6 +540,7 @@ class TestTool(tk.Frame):
     def open_video_window(self):
         Cons.selected_model = self.sel_op.get()
         Comm.find_ch()
+        Cons.selected_model = Cons.selected_ch['model']
         print(Cons.selected_ch)
         # Create only one socket for Minigimbal
         if Cons.selected_model == 'MiniGimbal':
@@ -563,9 +564,9 @@ class TestTool(tk.Frame):
             while True:
                 data = Cons.only_socket.recv(39)
                 hex_value = [f'{bytes:02x}' for bytes in data]
-                print(rf'{datetime.now()}: {hex_value}')
+                # print(rf'{datetime.now()}: {hex_value}')
                 Comm.update_res_to_cons(hex_value)
-                Comm.save_res_from_miniG_Text(data)
+                # Comm.save_res_from_miniG_Text(data)
                 # Comm.save_res_from_miniG_CSV(data)
                 if not data:
                     print('No data is being sent from MiniGimbal')

@@ -96,7 +96,7 @@ def convert_str_to_hex(hex_str_arr) -> []:
         hex_str = '0x' + hex_str_arr[i:i + 2]
         hex_int = int(hex_str, 16)
         hex_array.append(hex_int)
-
+    print('hex here')
     return hex_array
 
 
@@ -122,7 +122,6 @@ def check_interval_active():
         Cons.interval_button.configure(state='normal')
     else:
         Cons.interval_button.configure(state='disabled')
-
 
 # Called when table element was clicked
 def clicked_table_element(event, root_view, tv):
@@ -233,8 +232,6 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         print(params)
         Comm.fine_tree_send_cgi(url, params)
 
-
-# (2024.07.25) Generate a interval array
 def gene_interval_arrays(value):
     if not Cons.script_cmd_itv_arrs:
         Cons.script_cmd_itv_arrs = Cons.script_cmd_itv_arrs or [[0] * 2 for _ in range(len(Cons.script_cmd_titles))]

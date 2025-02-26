@@ -35,6 +35,7 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
     port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.buf_size
     client = socket.socket(AF_INET, SOCK_STREAM)
+
     try:
         client.settimeout(3)
         # -*- coding: utf-8 -*-
@@ -91,7 +92,7 @@ def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_t
         if Cons.data_sending:
             if protocol == Cons.capture_hex:
                 path = Cons.capture_path['zoom']
-                filename = rf'{path}/{cmd_title[i - 1]}-{time_str}-{i}.png'
+                filename = rf'{path}/{str(cmd_title[i - 1])}-{time_str}-{i}.png'
                 Mf.capture_image(root_view, filename)
             else:
                 if cmd_title[i - 1] in Cons.uncooled_query_arrays:
@@ -211,8 +212,9 @@ def convert_str_with_hex(root_view):
 
 # (2024.07.19): Open socket and send cmd to nyx
 def send_cmd_to_nyx(root, cmd):
-    host = Cons.host_ip
-    input_port = Cons.port
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
     send_port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.buf_size
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -232,8 +234,9 @@ def send_cmd_to_nyx(root, cmd):
 
 # (2024.07.24): Open socket and store to Constant after send cmd with interval
 def send_cmd_to_nyx_with_interval(root, titles, cmds, intervals_sec, response_file_name):
-    host = Cons.host_ip
-    input_port = Cons.port
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
     send_port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.buf_size
 
@@ -593,14 +596,14 @@ def close_socket(sock: socket.socket):
 def send_to_mini_with_interval(sock: socket.socket, titles, cmds, intervals):
     for i, protocol in enumerate(cmds):
         if Cons.data_sending:
-            print(rf'{datetime.now()}: {titles[i]}')
+            # print(rf'{datetime.now()}: {titles[i]}')
             try:
                 sock.send(bytes(protocol))
+                ti.sleep(intervals[i])
                 reply = sock.recv(39)
-                print(reply)
+                # print(reply)
             except Exception as e:
                 print("error while sending cmd to mini :", str(e))
-            ti.sleep(intervals[i])
         else:
             return
 
@@ -618,7 +621,7 @@ def save_res_from_miniG_Text(response):
                     res_arrs = hex_value[i:i + 39]
 
                     # print(res_arrs)
-                    # update_res_to_cons(res_arrs)
+                    update_res_to_cons(res_arrs)
                     file_path = rf'Log/mini_gimbal.txt'
                     try:
                         with open(file_path, "r") as file:
@@ -706,7 +709,28 @@ def update_res_to_cons(res_arrs):
         'fw_l': res_arrs[37],
     })
     print(rf'{datetime.now()}: {Cons.miniG_res_payload}')
+    roll = convert_angle(res_arrs[4], res_arrs[5])
+    pitch = convert_angle(res_arrs[6], res_arrs[7])
+    yaw = convert_angle(res_arrs[8], res_arrs[9])
+    print(rf'roll is {roll}')
+    print(rf'pitch is {pitch}')
+    print(rf'yaw is {yaw}')
 
+
+# TODO(2024.12.30): added convert a angle from hex data
+def convert_angle(high, low) -> float:
+    high = int(high, 16)
+    low = int(low, 16)
+    raw = (high << 8) + low
+    angle = 0.0
+    if raw & 0x8000:
+        deci_raw = 0x10000 - raw
+        angle = (deci_raw * 180) / -32767
+        # print(algel)
+    else:
+        angle = (raw * 180) / 32767
+        # print(angle)
+    return angle
 
 # Test Code
 def run():
