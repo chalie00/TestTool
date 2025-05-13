@@ -29,7 +29,9 @@ info_start_pos = {'x': cam1_resolution['w'] + 30, 'y': 10}
 lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
-selected_model = 'Uncooled'
+#  !import (2025.04.29): When was selected FineTree at first, It will be crash,
+#   because FineTree needs to collect another arrays
+selected_model = 'NYX Series'
 model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal']
 
 only_socket = None
@@ -70,7 +72,7 @@ script_toggle_flag = None
 # script_cmd_itv_arrs = []
 
 # ScreenShot Hex Value
-capture_hex = [255, 1, 0, 0, 0, 0, 0]
+capture_hex = [255, 1, 0, 0, 0, 0, 1]
 uncooled_query_arrays = [
     'Zoom Query', 'Focus Query', 'Lens Query', 'Comm Query',
     'Image Query', 'Sensor Query', 'Cali. Query', 'ETC Query',
@@ -178,20 +180,23 @@ uncooled_query_arrays = [
 
 # Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
+# capture_hex = [255, 1, 0, 0, 0, 0, 0]
 script_cmd_arrs = [
     [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 0, 0, 0, 1],
     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 0, 0, 0, 1],
     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 0, 0, 0, 1],
     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 0, 0, 0, 1],
     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 0, 0, 0, 1],
     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 0]
+    [255, 1, 0, 0, 0, 0, 1]
 ]
+
+
 script_cmd_titles = [
     'Zoom Out', 'All Stop', 'AF', 'ScreenShot',
     'Far', 'All Stop', 'AF', 'ScreenShot',

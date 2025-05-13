@@ -176,7 +176,9 @@ def uncooled_store_response(root_view, title, response):
         # Cons.uncooled_normal_q['normal'] = res_arrays
         # print(Cons.uncooled_normal_q['normal'])
     # print(Cons.uncooled_normal_q)
-    convert_str_with_hex(root_view)
+
+    #### 2025년 제공을 위해 기능을 OFF함###################################################
+    #convert_str_with_hex(root_view)
 
 
 # (2024.07.15) Convert to String from hex Data
@@ -230,6 +232,25 @@ def send_cmd_to_nyx(root, cmd):
         Cons.response_txt.append(response_with_time)
         log_pos = Cons.log_txt_fld_info
         log_fld = Res.Response(root, log_pos)
+
+
+def send_cmd_to_nyx_without_root(cmd):
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
+    send_port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((host, send_port))
+        s.sendall(cmd.encode('utf-8'))
+        response = s.recv(1024)
+
+        current_time = datetime.now()
+        time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
+
+        print(f"Received response: {response.decode('utf-8')}")
+        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+        Cons.response_txt.append(response_with_time)
 
 
 # (2024.07.24): Open socket and store to Constant after send cmd with interval
@@ -328,6 +349,13 @@ def send_data_with_cmd_for_nyx_ptz(root, cmd):
     print(f'value = {value}')
     form = create_form(value)
     send_cmd_to_nyx(root, form)
+
+
+def send_data_with_cmd_for_nyx_ptz_without_root(cmd):
+    value = cmd
+    print(f'value = {value}')
+    form = create_form(value)
+    send_cmd_to_nyx_without_root(form)
 
 
 # (2024.07.30): query for information
@@ -457,7 +485,10 @@ def handle_network_error(err, root_view):
 @staticmethod
 def fine_tree_send_cgi(url, params):
     find_ch()
-    sel_ip = Cons.selected_ch['ip']
+    # 2025.04.29: Was Applied Port No (FineTree needs Web Port No for Controlling)
+    sel_ip = Cons.selected_ch['ip'] + f':{Cons.selected_ch['port']}'
+    print(rf'sel ip is {sel_ip}')
+
     base_url = rf'http://{sel_ip}{url}?'
 
     if len(params) == 1:
@@ -495,7 +526,7 @@ def fine_tree_send_cgi(url, params):
         else:
             print('else')
             get_url = rf'http://{sel_ip}{url}?app=get'
-            print(get_url)
+            print(rf'get url is {get_url}')
             set_url = rf'{url}?app={params["app"]}&{list(params.keys())[1]}={list(params.values())[1]}'
             print(set_url)
 
@@ -516,7 +547,7 @@ def send_cmd_to_Finetree(url, params):
     find_ch()
     sel_ip = Cons.selected_ch['ip']
     print(sel_ip)
-    base_url = rf'http://{sel_ip}{url}?'
+    base_url = rf'http://{sel_ip}:{Cons.selected_ch['port']}{url}?'
     username = Cons.selected_ch['id']
     password = Cons.selected_ch['pw']
 
@@ -717,7 +748,7 @@ def update_res_to_cons(res_arrs):
     print(rf'yaw is {yaw}')
 
 
-# TODO(2024.12.30): added convert a angle from hex data
+# 2024.12.30: added convert a angle from hex data
 def convert_angle(high, low) -> float:
     high = int(high, 16)
     low = int(low, 16)
@@ -731,6 +762,7 @@ def convert_angle(high, low) -> float:
         angle = (raw * 180) / 32767
         # print(angle)
     return angle
+
 
 # Test Code
 def run():
@@ -805,7 +837,7 @@ def send_authenticated_request(params, uri, method='GET', additional_params=None
     )
 
     # Step 3: Send the authenticated request
-    full_url = f"http://{Cons.selected_ch['ip']}/{uri}"
+    full_url = f"http://{Cons.selected_ch['ip']}:{Cons.selected_ch['port']}/{uri}"
     if additional_params:
         full_url += '&' + '&'.join(f"{key}={value}" for key, value in additional_params.items())
 

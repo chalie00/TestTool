@@ -308,7 +308,7 @@ def capture_image(root, filename):
     y = root.winfo_rooty()
     w = root.winfo_width()
     h = root.winfo_height()
-    print(x, y, w, h)
+    print(rf'capture position is {x}, {y}, {w}, {h}')
     # bbox = (x, y, Cons.camera_resolution['w'], Cons.camera_resolution['h'])
     # bbox = (x, y, x + 1850, 950)
     # image = ImageGrab.grab(bbox=bbox)

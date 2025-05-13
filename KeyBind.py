@@ -28,11 +28,11 @@ def initialize_ptz(root):
     ptz_ins = Ptz.PTZ(root)
 
 
-# (2024.10.17): Add keyboard direction key function when key was pushed
+# (2024.10.17): Add keyboard direction key function when key was
+# 2025.05.13: Added keymap for NYX (Zoom In/Out, insert: near, delete: far, Direction: OSD, Home: OSD Set)
 # noinspection PyUnresolvedReferences
 def pressed_kbd_direction(event):
     try:
-
         if Cons.selected_model == 'FineTree':
             if event.keysym == 'Up':
                 params = {'move': 'up'}
@@ -92,6 +92,37 @@ def pressed_kbd_direction(event):
                 ptz_ins.send_miniGimbal('op_zoom_out')
             elif event.keysym == 'End':
                 ptz_ins.send_miniGimbal('op_af')
+        if Cons.selected_model == 'NYX Series':
+            if event.keysym == 'Up':
+                up_cmd = 'NYX.SET#isp0_guic=up'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(up_cmd)
+            elif event.keysym == 'Down':
+                down_cmd = 'NYX.SET#isp0_guic=down'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(down_cmd)
+            elif event.keysym == 'Left':
+                left_cmd = 'NYX.SET#isp0_guic=left'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(left_cmd)
+            elif event.keysym == 'Right':
+                right_cmd = 'NYX.SET#isp0_guic=right'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(right_cmd)
+            elif event.keysym == 'Prior':
+                narrow = 'NYX.SET#lens_zctl=narrow'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(narrow)
+            elif event.keysym == 'Next':
+                wide = 'NYX.SET#lens_zctl=wide'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(wide)
+            elif event.keysym == 'Insert':
+                near = 'NYX.SET#lens_fctl=near'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(near)
+            elif event.keysym == 'Delete':
+                far = 'NYX.SET#lens_fctl=far'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(far)
+            elif event.keysym == 'End':
+                af = 'NYX.SET#lens_afex=execute'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(af)
+            elif event.keysym == 'Home':
+                set_cmd = 'NYX.SET#isp0_guic=set'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(set_cmd)
     except Exception as e:
         logging.error(f"Error in pressed_kbd_direction: {e}")
 
@@ -124,6 +155,13 @@ def release_stop(event, type):
                 ptz_ins.send_miniGimbal('stop')
             elif type in ['Zoom']:
                 ptz_ins.send_miniGimbal('op_zoom_stop')
+        elif Cons.selected_model == 'NYX Series':
+            if type in ['Focus']:
+                focus_stop = 'NYX.SET#lens_fctl=stop'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(focus_stop)
+            elif type in ['Zoom']:
+                zoom_stop = 'NYX.SET#lens_zctl=stop'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(zoom_stop)
         else:
             print('stop cmd was not sent because model is not finetree')
             return
@@ -161,6 +199,15 @@ def bind_system_kbd(root):
     root.bind("<KeyPress-Next>", pressed_kbd_direction)
     root.bind("<KeyRelease-Prior>", lambda event, type='Zoom': release_stop(event, type))
     root.bind("<KeyRelease-Next>", lambda event, type='Zoom': release_stop(event, type))
+
+    # for NYX (Fopcus near / far)
+    root.bind("<KeyPress-Insert>", pressed_kbd_direction)
+    root.bind("<KeyPress-Delete>", pressed_kbd_direction)
+    root.bind("<KeyRelease-Insert>", lambda event, type='Focus': release_stop(event, type))
+    root.bind("<KeyRelease-Delete>", lambda event, type='Focus': release_stop(event, type))
+
+    # for NYX OSD Set
+    root.bind("<KeyRelease-Home>", pressed_kbd_direction)
 
     # AF
     root.bind("<KeyPress-End>", pressed_kbd_direction)

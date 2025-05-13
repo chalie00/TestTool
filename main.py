@@ -31,14 +31,19 @@ def start_videos(videos):
             print("Video player is None")
 
 
+# 2025.04.15: Added RTSP Address of TMS-20
+
 def generate_rtsp_url(info):
     url_patterns = {
         'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
         'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
         'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
         'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1',
-        # MiniGimbal can display rtsp stream in currently
+        # MiniGimbal can not display rtsp stream in currently
         'MiniGimbal': rf'',
+        # EO Video Port: 20100, IR Video Port: 30100
+        'TMS_20_EO': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net0',
+        'TMS_20_IR': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net1',
     }
     return url_patterns.get(info['model'], 'Invalid model')
 
@@ -289,7 +294,7 @@ class TestTool(tk.Frame):
         self.sel_op = tk.StringVar()
         self.drop_down = ttk.Combobox(parent, textvariable=self.sel_op)
         self.drop_down['values'] = model_option
-        self.drop_down.current(0)
+        self.drop_down.current(3)
         self.drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
         self.drop_down.bind('<<ComboboxSelected>>', model_select)
 
@@ -383,10 +388,10 @@ class TestTool(tk.Frame):
         self.search_btn.bind("<Button-1>", search_command)
 
         # For Test Code
-        # test_txt = {'ip': '192.168.100.153', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'} #NYX
+        test_txt = {'ip': '192.168.100.158', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'} #NYX
         # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
-        # test_txt = {'ip': '192.168.100.138', 'port': '32000', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
-        test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred
+        # test_txt = {'ip': '192.168.100.152', 'port': '8081', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
+        # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred
 
         self.ip_txt_fld.insert(0, test_txt['ip'])
         self.port_txt_fld.insert(0, test_txt['port'])

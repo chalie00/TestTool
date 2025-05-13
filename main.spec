@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('Capture/', 'Capture'), ('Command/', 'Command'), ('Design/', 'Design'), ('Image/', 'Image'), ('Log/*', 'Log')],
+    datas=[('Capture\\\\', 'Capture'), ('Command\\\\', 'Command'), ('Design\\\\', 'Design'), ('Image\\\\', 'Image'), ('Log\\\\*', 'Log')],
     hiddenimports=['mss', 'requests', 'screeninfo', 'vlc'],
     hookspath=[],
     hooksconfig={},

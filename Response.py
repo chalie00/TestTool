@@ -15,7 +15,7 @@ class Response:
         self.canvas = tk.Canvas(self.root, width=pos['w'] - 30, height=pos['h'] + 15, bg=pos['bg'])
         self.canvas.place(x=pos['x'], y=pos['y'] + 5)
 
-        # Create Lof Field
+        # Create Log Field
         self.text_widget = tk.Text(self.canvas, bg='lightgray', width=88, height=15)
         self.text_widget.place(x=0, y=0)
         self.text_font = font.Font(size=8)
