@@ -253,8 +253,33 @@ def send_cmd_to_nyx_without_root(cmd):
         Cons.response_txt.append(response_with_time)
 
 
-# (2024.07.24): Open socket and store to Constant after send cmd with interval
-def send_cmd_to_nyx_with_interval(root, titles, cmds, intervals_sec, response_file_name):
+# 2025.05.22: Added to press registerBTN in main
+def click_register_button(app_instance):
+    """main.py에서 만든 register_btn을 눌러주는 함수"""
+    try:
+        app_instance.register_btn.invoke()
+        print("register_btn 버튼을 눌렀습니다.")
+    except AttributeError:
+        print("register_btn이 정의되지 않았습니다.")
+
+# 2025.05.22: Added to wait until NYX is accessible
+def wait_for_nyx_ready(host, port, retries=10, delay=5):
+    for _ in range(retries):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as test_socket:
+                test_socket.settimeout(3)
+                test_socket.connect((host, port))
+                print("NYX 장비에 다시 연결되었습니다.")
+                return True
+        except:
+            print("NYX 아직 부팅 중... 다시 시도합니다.")
+            ti.sleep(delay)
+    return False
+
+
+# 2024.07.24: Open socket and store to Constant after send cmd with interval
+# 2025.05.22: Retry Connect to NYX after send Reboot CMD for NYX
+def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, response_file_name):
     find_ch()
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
@@ -266,43 +291,67 @@ def send_cmd_to_nyx_with_interval(root, titles, cmds, intervals_sec, response_fi
     for cmd in cmds:
         send_cmd = create_form(cmd)
         send_cmds.append(send_cmd)
+
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, send_port))
             for i, s_cmd in enumerate(send_cmds):
-                s.sendall(s_cmd.encode('utf-8'))
-                response = s.recv(1024)
+                print(f'1 is {s_cmd}')
                 current_time = datetime.now()
                 time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
-
-                if response_file_name:
-                    # Open file in write mode (creates a new file)
-                    with open(response_file_name, 'a') as a:
-                        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-                        a.write(response_with_time + '\n')
+                print(i)
+                if titles[i] == Cons.capture_hex:
+                    path = Cons.capture_path['zoom']
+                    filename = rf'{path}/{str(titles[i - 3])}-{time_str}-{i}.png'
+                    Mf.capture_image(root, filename)
+                elif s_cmd.startswith('NYX.SET#syst_exec=reboot'):
+                    print('reboot')
+                    s.sendall(s_cmd.encode('utf-8'))
+                    ti.sleep(10)
+                    if wait_for_nyx_ready(host, send_port):
+                        s = create_socket()
+                        click_register_button(app)
+                        ti.sleep(100)
+                    else:
+                        print("NYX 장비 재접속 실패")
+                        return
                 else:
-                    with open(response_file_name, 'w') as w:
+                    print(s_cmd)
+                    s.sendall(s_cmd.encode('utf-8'))
+                    ti.sleep(0.1)
+                    try:
+                        response = s.recv(1024)
+                    except socket.timeout:
+                        print('Socket recv timed out')
+                        response = b''
+
+                    if response_file_name:
+                        # Open file in write mode (creates a new file)
+                        with open(response_file_name, 'a') as a:
+                            response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+                            a.write(response_with_time + '\n')
+                    else:
+                        with open(response_file_name, 'w') as w:
+                            response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+                            w.write(response_with_time + '\n')
+
+                    print(f"Received response: {response.decode('utf-8')}")
+
+                    if (
+                            'NYX.ACK#syst_stat=standby&lens_fpos' not in response.decode('utf-8') or
+                            'NYX.ACK#lens_zpos=' not in response.decode('utf-8') or
+                            'NYX.ACK#lens_fpos=' not in response.decode('utf-8') or
+                            'NYX.ACK#lens_zctl=' not in response.decode('utf-8') or
+                            'NYX.ACK#lens_fctl=' not in response.decode('utf-8')
+                    ):
+                        response_with_time = fr'{time_str} : {(response.decode('utf-8').split('\n'))[0]}'
+                    else:
                         response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-                        w.write(response_with_time + '\n')
 
-                print(f"Received response: {response.decode('utf-8')}")
-
-                if (
-                        'NYX.ACK#syst_stat=standby&lens_fpos' not in response.decode('utf-8') or
-                        'NYX.ACK#lens_zpos=' not in response.decode('utf-8') or
-                        'NYX.ACK#lens_fpos=' not in response.decode('utf-8') or
-                        'NYX.ACK#lens_zctl=' not in response.decode('utf-8') or
-                        'NYX.ACK#lens_fctl=' not in response.decode('utf-8')
-                ):
-                    response_with_time = fr'{time_str} : {(response.decode('utf-8').split('\n'))[0]}'
-                else:
-                    response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-
-                Cons.response_txt.append(response_with_time)
-                log_pos = Cons.log_txt_fld_info
-                ti.sleep(intervals_sec[i])
-                log_fld = Res.Response(root, log_pos)
-
+                    Cons.response_txt.append(response_with_time)
+                    log_pos = Cons.log_txt_fld_info
+                    ti.sleep(intervals_sec[i])
+                    log_fld = Res.Response(root, log_pos)
     except Exception as e:
         print(f"An error occurred: {e}")
     ti.sleep(3)

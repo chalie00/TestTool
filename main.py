@@ -133,7 +133,7 @@ class TestTool(tk.Frame):
                 if Cons.selected_model in ['Uncooled', 'DRS']:
                     Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
                 elif Cons.selected_model == 'NYX Series':
-                    Comm.send_cmd_to_nyx_with_interval(parent, titles, script, interval, response_file_name)
+                    Comm.send_cmd_to_nyx_with_interval(app, parent, titles, script, interval, response_file_name)
                 elif Cons.selected_model == 'FineTree':
                     print('Finetree Script Run')
                     for i, cmd_data in enumerate(Cons.finetree_parms_arrays):
@@ -178,6 +178,7 @@ class TestTool(tk.Frame):
                 self.script_stop_btn.config(state='disabled')
                 Cons.data_sending = False
                 print('Finally stop script')
+
         # def run_script() -> []:
         #     current_time = datetime.now()
         #     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
@@ -359,6 +360,11 @@ class TestTool(tk.Frame):
                                               bg=ipc_pw_txt['bg'])
         self.ipc_pw_txt_fld.configure(show='*')
 
+        # self.register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
+        #                                     h=regi_btn['h'], w=regi_btn['w'], element='Button',
+        #                                     bg=regi_btn['bg'], text=regi_btn['text'],
+        #                                     anchor='center',
+        #                                     command=self.open_video_window)
         self.register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
                                             h=regi_btn['h'], w=regi_btn['w'], element='Button',
                                             bg=regi_btn['bg'], text=regi_btn['text'],
@@ -388,7 +394,7 @@ class TestTool(tk.Frame):
         self.search_btn.bind("<Button-1>", search_command)
 
         # For Test Code
-        test_txt = {'ip': '192.168.100.158', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'} #NYX
+        test_txt = {'ip': '192.168.100.158', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}  #NYX
         # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
         # test_txt = {'ip': '192.168.100.152', 'port': '8081', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
         # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred
@@ -545,7 +551,8 @@ class TestTool(tk.Frame):
     def open_video_window(self):
         Cons.selected_model = self.sel_op.get()
         Comm.find_ch()
-        Cons.selected_model = Cons.selected_ch['model']
+        # Cons.selected_model = Cons.selected_ch['model']
+        Cons.selected_model = Cons.selected_ch['model'] if Cons.selected_ch else 'UNKNOWN_MODEL'
         print(Cons.selected_ch)
         # Create only one socket for Minigimbal
         if Cons.selected_model == 'MiniGimbal':
@@ -597,5 +604,8 @@ if __name__ == '__main__':
     ptz_ins = KeyBind.initialize_ptz(root)
 
     app = TestTool(root)
+    app.pack()
+
+    Comm.click_register_button(app)
 
     root.mainloop()
