@@ -60,7 +60,7 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
 
             current_time = datetime.now()
             time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-            # hex_with_time = fr'{time_str} : {hex_data_14dig_24space[0]}'
+            # hex_with_time = rf'{time_str} : {hex_data_14dig_24space[0]}'
             hex_with_time = fr'{hex_data_14dig[0]} : {time_str}'
             # print(response = {hex_with_time}\n')
             hex_data_14dig[0] = hex_with_time
@@ -118,7 +118,6 @@ def uncooled_store_response(root_view, title, response):
     #     res_data = response[i:i + 14]
     #     res_arrays.append(res_data)
     res_arrays = [response[i:i + 14] for i in range(0, len(response), 14)]
-    # print(rf'res_arrays is {res_arrays}')
     queries = {
         'Normal Query': (
             'uncooled_normal_q', ['normal']
@@ -177,7 +176,7 @@ def uncooled_store_response(root_view, title, response):
         # print(Cons.uncooled_normal_q['normal'])
     # print(Cons.uncooled_normal_q)
 
-    #### 2025년 제공을 위해 기능을 OFF함###################################################
+# ==================================  2025년 제공을 위해 기능을 OFF ==================================================
     #convert_str_with_hex(root_view)
 
 
@@ -255,12 +254,12 @@ def send_cmd_to_nyx_without_root(cmd):
 
 # 2025.05.22: Added to press registerBTN in main
 def click_register_button(app_instance):
-    """main.py에서 만든 register_btn을 눌러주는 함수"""
     try:
         app_instance.register_btn.invoke()
-        print("register_btn 버튼을 눌렀습니다.")
+        print("register_btn was pressed.")
     except AttributeError:
-        print("register_btn이 정의되지 않았습니다.")
+        print("register_btn was not defined")
+
 
 # 2025.05.22: Added to wait until NYX is accessible
 def wait_for_nyx_ready(host, port, retries=10, delay=5):
@@ -269,10 +268,10 @@ def wait_for_nyx_ready(host, port, retries=10, delay=5):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as test_socket:
                 test_socket.settimeout(3)
                 test_socket.connect((host, port))
-                print("NYX 장비에 다시 연결되었습니다.")
+                print('NYX was connected.')
                 return True
         except:
-            print("NYX 아직 부팅 중... 다시 시도합니다.")
+            print('NYX is booting retry')
             ti.sleep(delay)
     return False
 
@@ -300,7 +299,7 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                 current_time = datetime.now()
                 time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
                 print(i)
-                if titles[i] == Cons.capture_hex:
+                if titles[i] == Cons.capture_title:
                     path = Cons.capture_path['zoom']
                     filename = rf'{path}/{str(titles[i - 3])}-{time_str}-{i}.png'
                     Mf.capture_image(root, filename)
@@ -631,10 +630,9 @@ def find_ch():
     for i, ch in enumerate(model_arrays):
         if model == ch['model']:
             Cons.selected_ch = model_arrays[i]
-            # print(rf'find ch is {Cons.selected_ch}')
 
 
-##################################### Regarding Create Only One Socket  ########################
+# ========================================= Regarding Create Only One Socket ===========================================
 # (2024.12.06) Create Only One Socket
 def create_socket() -> socket.socket:
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -797,7 +795,7 @@ def update_res_to_cons(res_arrs):
     print(rf'yaw is {yaw}')
 
 
-# 2024.12.30: added convert a angle from hex data
+# 2024.12.30: added convert an angle from hex data
 def convert_angle(high, low) -> float:
     high = int(high, 16)
     low = int(low, 16)
@@ -806,10 +804,8 @@ def convert_angle(high, low) -> float:
     if raw & 0x8000:
         deci_raw = 0x10000 - raw
         angle = (deci_raw * 180) / -32767
-        # print(algel)
     else:
         angle = (raw * 180) / 32767
-        # print(angle)
     return angle
 
 
@@ -825,7 +821,7 @@ def run():
         ti.sleep(1)
 
 
-##################################### Check a MD5  ########################################
+# ================================================= Check a MD5 ========================================================
 def md5_hexdigest(data):
     return hashlib.md5(data.encode('utf-8')).hexdigest()
 

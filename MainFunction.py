@@ -55,7 +55,7 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
     tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
     # set the treeview scroll
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
-    vsb.place(x=width * column_num + 100 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'])
+    vsb.place(x=width * column_num + 105 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'] - 30)
     # tv = tkinter.ttk.Treeview(root, columns=column, displaycolumns=dis_column)
     # Treeview의 width, height 글자 수로 정해 진다.
     # tv.configure(height=len(Cons.command_array) + 1)
@@ -122,6 +122,7 @@ def check_interval_active():
         Cons.interval_button.configure(state='normal')
     else:
         Cons.interval_button.configure(state='disabled')
+
 
 # Called when table element was clicked
 def clicked_table_element(event, root_view, tv):
@@ -231,6 +232,7 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
 
         print(params)
         Comm.fine_tree_send_cgi(url, params)
+
 
 def gene_interval_arrays(value):
     if not Cons.script_cmd_itv_arrs:

@@ -1,6 +1,3 @@
-import array
-from tkinter import *
-
 import MainFunction as Mf
 
 # Set the Application Size, Position with System Resolution
@@ -108,8 +105,8 @@ uncooled_query_arrays = [
 #     'WDR On', 'IR D-Zoom x1', 'WDR Off', 'IR D-Zoom x2', 'BLC On',
 #     'IR D-Zoom x3', 'BLC Off', 'IR D-Zoom x4', 'DIS On', 'IR D-Zoom x5',
 #     'DIS Off', 'IR D-Zoom x6', 'DN Day', 'IR D-Zoom x7', 'DN Night',
-#     'IR D-Zoom x8', 'DN Auto', 'White', 'Brighteness 0', 'Black',
-#     'Brighteness 5', 'Rainbow', 'Brighteness 10', 'Rainbow HC', 'Sharpness 0',
+#     'IR D-Zoom x8', 'DN Auto', 'White', 'Brightness 0', 'Black',
+#     'Brightness 5', 'Rainbow', 'Brightness 10', 'Rainbow HC', 'Sharpness 0',
 #     'Iron', 'Sharpness 5', 'Lava', 'Sharpness 10', 'Sky',
 #     'Defog On', 'Medium Gray', 'Defog Off', 'Gray-Red', 'Purple Orange',
 #     'EO D-Zoom On', 'AGC Auto 1', 'EO D-Zoom Off', 'AGC Auto 2', 'DDE On',
@@ -120,8 +117,8 @@ uncooled_query_arrays = [
 #     ['WDR On', 0.5], ['IR D-Zoom x1', 0.5], ['WDR Off', 0.5], ['IR D-Zoom x2', 0.5], ['BLC On', 0.5],
 #     ['IR D-Zoom x3', 0.5], ['BLC Off', 0.5], ['IR D-Zoom x4', 0.5], ['DIS On', 0.5], ['IR D-Zoom x5', 0.5],
 #     ['DIS Off', 0.5], ['IR D-Zoom x6', 0.5], ['DN Day', 0.5], ['IR D-Zoom x7', 0.5], ['DN Night', 0.5],
-#     ['IR D-Zoom x8', 0.5], ['DN Auto', 0.5], ['White', 0.5], ['Brighteness 0', 0.5], ['Black', 0.5],
-#     ['Brighteness 5', 0.5], ['Rainbow', 0.5], ['Brighteness 10', 0.5], ['Rainbow HC', 0.5], ['Sharpness 0', 0.5],
+#     ['IR D-Zoom x8', 0.5], ['DN Auto', 0.5], ['White', 0.5], ['Brightness 0', 0.5], ['Black', 0.5],
+#     ['Brightness 5', 0.5], ['Rainbow', 0.5], ['Brightness 10', 0.5], ['Rainbow HC', 0.5], ['Sharpness 0', 0.5],
 #     ['Iron', 0.5], ['Sharpness 5', 0.5], ['Lava', 0.5], ['Sharpness 10', 0.5], ['Sky', 0.5],
 #     ['Defog On', 0.5], ['Medium Gray', 0.5], ['Defog Off', 0.5], ['Gray-Red', 0.5], ['Purple Orange', 0.5],
 #     ['EO D-Zoom On', 0.5], ['AGC Auto 1', 0.5], ['EO D-Zoom Off', 0.5], ['AGC Auto 2', 0.5], ['DDE On', 0.5],
@@ -224,12 +221,16 @@ uncooled_query_arrays = [
 
 # NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
-capture_hex = 'Capture NYX'
+capture_title = 'Capture NYX'
 script_cmd_arrs = [
-    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX', 'NYX.SET#syst_exec=reboot',
-    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX', 'NYX.SET#syst_exec=reboot',
-    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX', 'NYX.SET#syst_exec=reboot',
-    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX', 'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
 ]
 script_cmd_titles = ['zoom narrow', 'zoom stop', 'af execute', 'Capture NYX', 'reboot',
                      'zoom wide', 'zoom stop', 'af execute', 'Capture NYX', 'reboot',
@@ -255,7 +256,8 @@ port: int = 0  # Default 32000
 rtsp_port: int = 0
 buf_size = 4096
 
-###################################################### DRS Response ###################################################
+
+# =================================================== DRS Response =====================================================
 response_txt = []
 drs_response = {
     'mirror': '', 'flip': '', 'invert': '', 'dzoom': '', 'color': '',
@@ -296,13 +298,15 @@ drs_response = {
     'check_data': ''
 }
 
-###################################################### Mini Gimbal Response ###################################################
+# ======================================== Mini Gimbal Response ========================================================
 miniG_response = []
 miniG_res_payload = {
     'roll_en_hi': '', 'roll_en_lo': '', 'pitch_en_hi': '', 'pitch_en_lo': '', 'yaw_en_h': '', 'yaw_en_l': '',
-    'cam_status': '', 'fan_heater_sta': '', 'motor_bd': '', 'temp': '', 'drift_offset_h': '', 'drift_offset_l': '','stabilizer_mode': '',
+    'cam_status': '', 'fan_heater_sta': '', 'motor_bd': '', 'temp': '', 'drift_offset_h': '', 'drift_offset_l': '',
+    'stabilizer_mode': '',
     '17': '', 'eo_dzoom': '', 'eo_wdr': '', 'eo_blc': '', 'eo_dis': '', 'eo_dn': '',
-    '23': '', '24': '', 'eo_defog': '', 'eo_op_zoom_h': '', 'eo_op_zoom_l': '', 'eo_d_zoom': '', 'eo_bri': '', 'eo_sharp': '',
+    '23': '', '24': '', 'eo_defog': '', 'eo_op_zoom_h': '', 'eo_op_zoom_l': '', 'eo_d_zoom': '', 'eo_bri': '',
+    'eo_sharp': '',
     'ir_dzoom': '', 'ir_pale': '', 'ir_agc_mode': '', 'ir_dde': '', '35': '', 'fw_h': '', 'fw_l': ''
 }
 
@@ -314,7 +318,15 @@ miniG_res_row = [
     'ir_dzoom', 'ir_pale', 'ir_agc_mode', 'ir_dde', '35', 'fw_h', 'fw_l'
 ]
 
+# CH Object
+channel_buttons = {}
 
+# validator_txt, model_txt, fw_txt
+model_obj = {'model_name': selected_model}
+# ip_txt, port_txt, rtsp_txt, ipc_id_txt, ipc_pw_txt
+network_obj = {}
+# inter_txt, repe_txt
+etc_obj = {}
 
 # RTSP Information
 rtsp_url = ''
@@ -410,52 +422,55 @@ ch4_btn_pos = {'x': ch3_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
 
 validator_lbl = {'x': info_start_pos['x'], 'y': info_start_pos['y'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
-                 'bg': my_color['fg'], 'text': 'Validator'}
+                 'bg': my_color['fg'], 'text': 'Validator', 'type': 'Label'}
 validator_txt_fld = {'x': validator_lbl['x'] + validator_lbl['w'], 'y': validator_lbl['y'],
-                     'h': validator_lbl['h'], 'w': validator_lbl['w'] * 1.5, 'bg': my_color['spare_fir']}
+                     'h': validator_lbl['h'], 'w': validator_lbl['w'] * 1.5, 'bg': my_color['spare_fir'],
+                     'type': 'Entry'}
 
 model_lbl = {'x': validator_lbl['x'], 'y': validator_lbl['y'] + validator_lbl['h'],
              'h': validator_lbl['h'], 'w': validator_lbl['w'],
-             'bg': my_color['fg'], 'text': 'Model'}
+             'bg': my_color['fg'], 'text': 'Model', 'type': 'Label'}
 model_txt_fld = {'x': model_lbl['x'] + model_lbl['w'], 'y': model_lbl['y'],
-                 'h': model_lbl['h'], 'w': model_lbl['w'] * 1.5, 'bg': my_color['spare_fir']}
+                 'h': model_lbl['h'], 'w': model_lbl['w'] * 1.5, 'bg': my_color['spare_fir'], 'type': 'Entry'}
 
 fw_lbl = {'x': model_lbl['x'], 'y': model_lbl['y'] + model_lbl['h'],
           'h': model_lbl['h'], 'w': model_lbl['w'],
-          'bg': my_color['fg'], 'text': 'FW Info'}
+          'bg': my_color['fg'], 'text': 'FW Info', 'type': 'Label'}
 fw_txt_fld = {'x': fw_lbl['x'] + fw_lbl['w'], 'y': fw_lbl['y'],
-              'h': fw_lbl['h'], 'w': fw_lbl['w'] * 1.5, 'bg': my_color['spare_fir']}
+              'h': fw_lbl['h'], 'w': fw_lbl['w'] * 1.5, 'bg': my_color['spare_fir'], 'type': 'Entry'}
 
 # Network Information
 ip_lbl_info = {'x': validator_txt_fld['x'] + validator_txt_fld['w'], 'y': validator_txt_fld['y'],
                'h': lbl_size['h'], 'w': lbl_size['w'],
-               'bg': my_color['fg'], 'text': 'IP Address'}
+               'bg': my_color['fg'], 'text': 'IP Address', 'type': 'Label'}
 ip_txt_fld_info = {'x': ip_lbl_info['x'] + ip_lbl_info['w'], 'y': ip_lbl_info['y'],
-                   'h': lbl_size['h'], 'w': lbl_size['w'] * 1.5, 'bg': my_color['spare_fir']}
+                   'h': lbl_size['h'], 'w': lbl_size['w'] * 1.5, 'bg': my_color['spare_fir'], 'type': 'Entry'}
 
 port_lbl_info = {'x': ip_lbl_info['x'], 'y': ip_lbl_info['y'] + ip_lbl_info['h'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
-                 'bg': my_color['fg'], 'text': 'Port No'}
+                 'bg': my_color['fg'], 'text': 'Port No', 'type': 'Label'}
 port_txt_fld_info = {'x': ip_txt_fld_info['x'], 'y': ip_txt_fld_info['y'] + ip_txt_fld_info['h'],
-                     'h': lbl_size['h'], 'w': lbl_size['w'] * 1.5, 'bg': my_color['spare_fir']}
+                     'h': lbl_size['h'], 'w': lbl_size['w'] * 1.5, 'bg': my_color['spare_fir'], 'type': 'Entry'}
 
 rtsp_lbl_info = {'x': port_lbl_info['x'], 'y': port_lbl_info['y'] + port_lbl_info['h'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
-                 'bg': my_color['fg'], 'text': 'RTSP Port'}
+                 'bg': my_color['fg'], 'text': 'RTSP Port', 'type': 'Label'}
 rtsp_txt_fld_info = {'x': port_txt_fld_info['x'], 'y': port_txt_fld_info['y'] + port_txt_fld_info['h'],
-                     'h': lbl_size['h'], 'w': lbl_size['w'] * 1.5, 'bg': my_color['spare_fir']}
+                     'h': lbl_size['h'], 'w': lbl_size['w'] * 1.5, 'bg': my_color['spare_fir'], 'type': 'Entry'}
 
 # Camera ID, PW Information
 ipc_id_info = {'x': fw_lbl['x'], 'y': fw_lbl['y'] + fw_lbl['h'] + 10,
-               'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['fg'], 'text': 'Camera ID'}
+               'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['fg'], 'text': 'Camera ID', 'type': 'Label'}
 ipc_id_txt_fld_info = {'x': ipc_id_info['x'] + ipc_id_info['w'], 'y': ipc_id_info['y'],
-                       'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['spare_fir']}
+                       'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['spare_fir'], 'type': 'Entry',
+                       'security': True}
 
 ipc_pw_info = {'x': ipc_id_txt_fld_info['x'] + ipc_id_txt_fld_info['w'] + 2,
                'y': rtsp_lbl_info['y'] + rtsp_txt_fld_info['h'] + 10,
-               'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['fg'], 'text': 'Camera PW'}
+               'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['fg'], 'text': 'Camera PW', 'type': 'Label'}
 ipc_pw_txt_fld_info = {'x': ipc_pw_info['x'] + ipc_pw_info['w'], 'y': ipc_pw_info['y'],
-                       'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['spare_fir']}
+                       'h': lbl_size['h'], 'w': lbl_size['w'], 'bg': my_color['spare_fir'], 'type': 'Entry',
+                       'security': True}
 
 register_btn = {'x': ipc_pw_txt_fld_info['x'] + ipc_pw_txt_fld_info['w'] + 5, 'y': ipc_id_info['y'] - 2,
                 'h': lbl_size['h'] + 2, 'w': lbl_size['w'] - 7,
@@ -464,7 +479,7 @@ register_btn = {'x': ipc_pw_txt_fld_info['x'] + ipc_pw_txt_fld_info['w'] + 5, 'y
 # Searching UI element position and size
 search_txt_fld_info = {'x': info_start_pos['x'], 'y': register_btn['y'] + register_btn['h'] + 10,
                        'h': lbl_size['h'], 'w': lbl_size['w'] * 4,
-                       'bg': my_color['spare_fir']}
+                       'bg': my_color['spare_fir'], 'type': 'Entry'}
 
 search_btn = {'x': register_btn['x'], 'y': search_txt_fld_info['y'] - 2,
               'h': lbl_size['h'] + 2, 'w': lbl_size['w'] - 7,
@@ -483,7 +498,7 @@ script_column = ['Function', 'Interval']
 # Log Field Position and Size
 log_txt_fld_info = {'x': 0, 'y': WINDOWS_SIZE['y'] - lbl_size['h'] * 8 - 50,
                     'h': lbl_size['h'] * 8 + 9, 'w': lbl_size['w'] * 6,
-                    'bg': my_color['spare_fir'], 'fg': my_color['bg']}
+                    'bg': my_color['spare_fir'], 'fg': my_color['bg'], 'type': 'Entry'}
 
 # (2024.07.15): System Information Position and Size
 sys_info_tab = {'x': log_txt_fld_info['x'] + log_txt_fld_info['w'] + 5, 'y': log_txt_fld_info['y'] + 8,
@@ -497,12 +512,13 @@ sys_info_update_btn = {'x': sys_info_tab['x'] + sys_info_tab['w'] - 50, 'y': sys
 # (2024.07.10) PTZ/OSD Mode Toggle
 ptz_osd_mode_lbl = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'],
                     'h': lbl_size['h'] * 2, 'w': lbl_size['w'] / 2,
-                    'bg': my_color['fg'], 'text': 'PTZ\nMode'}
+                    'bg': my_color['fg'], 'text': 'PTZ\nMode', 'type': 'Label'}
 ptz_osd_mode_btn = {'x': ptz_osd_mode_lbl['x'], 'y': ptz_osd_mode_lbl['y'] + ptz_osd_mode_lbl['h'],
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
 
-############################################## PTZ UI ############################################
+
+# =============================================== PTZ UI ===============================================================
 ptz_canvas = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'] - 15,
               'w': 160, 'h': 220}
 
@@ -543,21 +559,21 @@ set_nyx_btn = {'x': ptz_up_btn['x'] + 3, 'y': ptz_up_btn['y'] - ptz_up_btn['h'] 
                'h': 3, 'w': 30,
                'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Set'}
 
-############################################## Preset UI ############################################
+# ==================================================== Preset UI =======================================================
 tour_lists = []
 
 preset_canvas = {'x': ptz_canvas['x'] + ptz_canvas['w'], 'y': ptz_canvas['y'],
                  'w': 130, 'h': 220, 'bg': my_color['bg']}
 
 preset_lbl = {'x': ptz_canvas['x'] + ptz_canvas['w'], 'y': ptz_canvas['y'] + 5,
-              'w': 65, 'h': 20, 'bg': my_color['fg']}
+              'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Label'}
 tour_lbl = {'x': preset_lbl['x'] + preset_lbl['w'] + 1, 'y': preset_lbl['y'],
-            'w': 65, 'h': 20, 'bg': my_color['fg']}
+            'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Label'}
 
 preset_txt_fld = {'x': preset_lbl['x'], 'y': preset_lbl['y'] + preset_lbl['h'] + 1,
-                  'w': 65, 'h': 20, 'bg': my_color['fg']}
+                  'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Entry'}
 tour_txt_fld = {'x': preset_txt_fld['x'] + preset_txt_fld['w'] + 1, 'y': preset_txt_fld['y'],
-                'w': 65, 'h': 20, 'bg': my_color['fg']}
+                'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Entry'}
 
 preset_save_btn = {'x': preset_txt_fld['x'], 'y': preset_txt_fld['y'] + preset_txt_fld['h'] + 1,
                    'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Save'}
@@ -571,14 +587,14 @@ tour_call_btn = {'x': tour_save_btn['x'] + tour_save_btn['w'], 'y': tour_save_bt
 tour_stop_btn = {'x': tour_call_btn['x'], 'y': tour_call_btn['y'] + tour_call_btn['h'] + 1,
                  'w': 32, 'h': 20, 'bg': my_color['bg'], 'text': 'Stop'}
 
-############################################## Script UI ############################################
+# ======================================================== Script UI ===================================================
 # Script(Repeat, interval) Position Setting
 interval_lbl = {'x': search_btn['x'] - 80, 'y': treeview_pos['y'] + tree_view_size['h'] - 10,
                 'h': lbl_size['h'], 'w': lbl_size['w'],
-                'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Interval(msec)'}
+                'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Interval(msec)', 'type': 'Label'}
 interval_txt_fld = {'x': interval_lbl['x'] + interval_lbl['w'] + 10, 'y': interval_lbl['y'],
                     'h': lbl_size['h'], 'w': lbl_size['w'] - 30,
-                    'bg': my_color['spare_fir'], 'fg': my_color['fg']}
+                    'bg': my_color['spare_fir'], 'fg': my_color['fg'], 'type': 'Entry'}
 interval_add_btn = {'x': interval_txt_fld['x'] + interval_txt_fld['w'] + 5, 'y': interval_txt_fld['y'],
                     'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Add'}
@@ -586,14 +602,14 @@ interval_button = None
 
 repeat_lbl = {'x': interval_lbl['x'], 'y': interval_lbl['y'] + interval_lbl['h'] + 5,
               'h': lbl_size['h'], 'w': lbl_size['w'],
-              'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Repeat'}
+              'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Repeat', 'type': 'Label'}
 repeat_txt_fld = {'x': repeat_lbl['x'] + repeat_lbl['w'] + 10, 'y': repeat_lbl['y'],
                   'h': lbl_size['h'], 'w': lbl_size['w'] - 30,
-                  'bg': my_color['spare_fir'], 'fg': my_color['fg']}
+                  'bg': my_color['spare_fir'], 'fg': my_color['fg'], 'type': 'Entry'}
 
 script_mode_lbl = {'x': repeat_lbl['x'], 'y': repeat_lbl['y'] + repeat_lbl['h'] + 5,
                    'h': lbl_size['h'], 'w': lbl_size['w'],
-                   'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
+                   'bg': my_color['fg'], 'fg': my_color['fg'], 'text': 'Script Mode', 'type': 'Label'}
 script_mode_btn = {'x': script_mode_lbl['x'] + script_mode_lbl['w'] + 5, 'y': script_mode_lbl['y'],
                    'h': lbl_size['h'], 'w': lbl_size['w'],
                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
