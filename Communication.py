@@ -176,8 +176,9 @@ def uncooled_store_response(root_view, title, response):
         # print(Cons.uncooled_normal_q['normal'])
     # print(Cons.uncooled_normal_q)
 
+
 # ==================================  2025년 제공을 위해 기능을 OFF ==================================================
-    #convert_str_with_hex(root_view)
+#convert_str_with_hex(root_view)
 
 
 # (2024.07.15) Convert to String from hex Data
@@ -283,7 +284,6 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     send_port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
 
     send_cmds = []
 
@@ -295,7 +295,7 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, send_port))
             for i, s_cmd in enumerate(send_cmds):
-                print(f'1 is {s_cmd}')
+                print(f'{i} is {s_cmd}')
                 current_time = datetime.now()
                 time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
                 print(i)
@@ -309,10 +309,11 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                     ti.sleep(10)
                     if wait_for_nyx_ready(host, send_port):
                         s = create_socket()
+                        ti.sleep(3)
                         click_register_button(app)
                         ti.sleep(100)
                     else:
-                        print("NYX 장비 재접속 실패")
+                        print("NYX reconnect fail")
                         return
                 else:
                     print(s_cmd)

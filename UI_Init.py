@@ -41,6 +41,13 @@ def Init_Info(root, parent):
         button.place(x=btn_pos['x'], y=btn_pos['y'], width=btn_pos['w'], height=btn_pos['h'])
         Cons.channel_buttons[f'CH{i}'] = button
 
+    te_btn = Cons.test_btn
+    test_btn = Mf.make_element(x=te_btn['x'], y=te_btn['y'],
+                               h=te_btn['h'], w=te_btn['w'], element='Button',
+                               bg=te_btn['bg'], text=te_btn['text'],
+                               anchor='center',
+                               command= lambda:  test_code())
+
     validator = Cons.validator_lbl
     validator_txt = Cons.validator_txt_fld
     model = Cons.model_lbl
@@ -113,10 +120,10 @@ def Init_Search(root, parent, app):
 
     regi_btn = Cons.register_btn
     register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],
-                    h=regi_btn['h'], w=regi_btn['w'], element='Button',
-                    bg=regi_btn['bg'], text=regi_btn['text'],
-                    anchor='center',
-                    command=Vr.open_video_window)
+                                   h=regi_btn['h'], w=regi_btn['w'], element='Button',
+                                   bg=regi_btn['bg'], text=regi_btn['text'],
+                                   anchor='center',
+                                   command=Vr.open_video_window)
     register_btn.pack()
     app.register_btn = register_btn
 
@@ -156,8 +163,9 @@ def Init_Ptz_Preset_Script(root, parent, app, treeview):
                                      r_btn['h'], r_btn['w'],
                                      bg=r_btn['bg'], element='Button',
                                      text=r_btn['text'], anchor='center',
-                                     command=lambda: Ufn.start_thread(parent, app, repe_txt, inter_txt,
-                                                                      treeview, script_run_btn, script_stop_btn))
+                                     command=lambda: Ufn.start_thread(parent, app, Cons.etc_obj['repe_txt'],
+                                                                      Cons.etc_obj['inter_txt'], treeview, script_run_btn,
+                                                                      script_stop_btn))
 
     script_stop_btn = Mf.make_element(st_btn['x'], st_btn['y'],
                                       st_btn['h'], st_btn['w'],
@@ -206,8 +214,8 @@ def test_code():
     # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     # test_txt = {'ip': '192.168.100.152', 'port': '8081', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
     # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred
-    Cons.model_obj['ip_txt'].insert(test_txt['ip'], test_txt['port'])
-    Cons.model_obj['port_txt'].insert(test_txt['port'], test_txt['rtsp_port'])
-    Cons.model_obj['rtsp_txt'].insert(test_txt['rtsp_port'], test_txt['ipc_id'])
-    Cons.model_obj['ipc_id_txt'].insert(test_txt['ipc_id'], test_txt['ipc_pw'])
-    Cons.model_obj['ipc_pw_txt'].insert(test_txt['ipc_pw'], test_txt['ipc_pw'])
+    Cons.network_obj['ip_txt'].insert(0, test_txt['ip'])
+    Cons.network_obj['port_txt'].insert(0, test_txt['port'])
+    Cons.network_obj['rtsp_txt'].insert(0, test_txt['rtsp_port'])
+    Cons.network_obj['ipc_id_txt'].insert(0, test_txt['ipc_id'])
+    Cons.network_obj['ipc_pw_txt'].insert(0, test_txt['ipc_pw'])

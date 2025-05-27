@@ -272,8 +272,6 @@ class TestTool(tk.Frame):
         # ================================================ UI Layout ============================================
         ui_initializer = UI_init.UIInit(root, parent, self)
 
-
-        test_txt = {'ip': '192.168.100.158', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}  #NYX
         # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
         # test_txt = {'ip': '192.168.100.152', 'port': '8081', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
         # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred

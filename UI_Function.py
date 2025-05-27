@@ -68,8 +68,9 @@ def start_thread(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script
     global thread
     if not thread_running.is_set():
         thread_running.set()
-        thread = threading.Thread(target=run_script(parent, app, repeat_txt_fld, interval_txt_fld,
-                                                    treeview, script_start_btn, script_stop_btn))
+        # target에 함수 이름만 넘기고 인자는 별도로 설정 해야함
+        thread = threading.Thread(target=run_script, args=(parent, app, repeat_txt_fld, interval_txt_fld,
+                                                           treeview, script_start_btn, script_stop_btn))
         Cons.data_sending = True
 
         thread.start()

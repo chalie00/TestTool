@@ -419,6 +419,10 @@ ch3_btn_pos = {'x': ch2_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
 ch4_btn_pos = {'x': ch3_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
                'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH4'}
+test_btn = {'x': ch4_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+            'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
+            'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'TEST'}
+
 
 validator_lbl = {'x': info_start_pos['x'], 'y': info_start_pos['y'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],
