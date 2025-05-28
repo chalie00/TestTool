@@ -1,6 +1,7 @@
 import threading
 import time
 from datetime import datetime
+from tkinter import ttk
 
 import Constant as Cons
 import MainFunction as Mf
@@ -82,11 +83,9 @@ def stop_script(script_start_btn, script_stop_btn):
     script_start_btn.config(state='normal')
     script_stop_btn.config(state='disabled')
     print('stop script')
+    ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj]
+    set_ui_state(ui_obj, 'normal')
 
-    # thread_running.clear()
-    # if thread and thread.is_alive():
-    #     thread.join(timeout=1)  # Allow GUI to process events while waiting
-    #     thread = None
     thread_running.clear()
 
     if thread is not None and thread.is_alive():
@@ -110,6 +109,9 @@ def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_s
     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
     response_file_name = rf'{Cons.log_path}_{time_str}.txt'
     repeat = int(repeat_txt_fld.get())
+    ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj]
+    # 2025.05.28: Disable some UI(model, network, etc), but must be modified PTZ, Preset, Tour, Script Stop
+    set_ui_state(ui_obj, 'disable')
 
     try:
         script_start_btn.config(state='disabled')
@@ -166,3 +168,19 @@ def handle_custom_protocol_logic(parent, treeview, interval_txt_fld):
     interval = float(int(interval_txt_fld.get()) / 1000)
     titles = Cons.script_cmd_titles
     Comm.send_cmd_to_ucooled_with_interval(interval, hex_protocol, titles, parent)
+
+
+# 2025.05.28: Disable some UI
+def set_ui_state(ui_obj, state):
+    print('State')
+    for ui_array in ui_obj:
+        for ui_item in ui_array.values():
+            try:
+                if isinstance(ui_item, str):
+                    continue
+                Cons.drop_down_obj.config(state='disabled' if state == 'disable' else 'normal')
+                if isinstance(ui_item, ttk.Combobox):
+                    ui_item.config(state='disabled' if state == 'disable' else 'normal')
+                ui_item.config(state=state)
+            except Exception as e:
+                print(rf'Failed to change the {ui_item}: {e}')

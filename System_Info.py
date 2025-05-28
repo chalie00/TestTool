@@ -186,7 +186,7 @@ class SysInfo:
 
         def run_commands():
             try:
-                if Cons.selected_model == 'Uncooled':
+                if Cons.selected_model_obj == 'Uncooled':
                     protocols = [
                         [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
                         [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
@@ -201,7 +201,7 @@ class SysInfo:
                     for title, protocol in titles.items():
                         Comm.send_cmd_for_uncooled(protocol, title, self.root)
 
-                elif Cons.selected_model == 'NYX Series':
+                elif Cons.selected_model_obj == 'NYX Series':
                     print('NYX Updated')
                     lens_pos_q = [
                         'NYX.GET#lens_zpos=', 'NYX.GET#lens_fpos=',
@@ -211,7 +211,7 @@ class SysInfo:
                     ]
                     Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
 
-                elif Cons.selected_model == 'FineTree':
+                elif Cons.selected_model_obj == 'FineTree':
                     return
 
                 # 데이터 준비 완료 플래그 설정

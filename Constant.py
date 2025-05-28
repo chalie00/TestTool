@@ -28,6 +28,7 @@ lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
 #  !import (2025.04.29): When was selected FineTree at first, It will be crash,
 #   because FineTree needs to collect another arrays
+
 selected_model = 'NYX Series'
 model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal']
 
@@ -323,6 +324,7 @@ channel_buttons = {}
 
 # validator_txt, model_txt, fw_txt
 model_obj = {'model_name': selected_model}
+drop_down_obj = None
 # ip_txt, port_txt, rtsp_txt, ipc_id_txt, ipc_pw_txt
 network_obj = {}
 # inter_txt, repe_txt
@@ -398,14 +400,6 @@ cooled_lens_pos_spd = [0, 0, 0, 0, 0, 0, 0]
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
 right_text_fd_size = int(WINDOWS_SIZE['x'] * 0.01875)
 
-# rtsp_ch1_pos = {'x': 0, 'y': 0,
-#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
-# rtsp_ch2_pos = {'x': rtsp_ch1_pos['w'] + 5, 'y': 0,
-#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
-# rtsp_ch3_pos = {'x': 0, 'y': rtsp_ch1_pos['h'] + 5,
-#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
-# rtsp_ch4_pos = {'x': rtsp_ch1_pos['w'] + 5, 'y': rtsp_ch1_pos['h'] + 5,
-#                 'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2}
 
 ch1_btn_pos = {'x': info_start_pos['x'] + lbl_size['w'] * 2.5, 'y': info_start_pos['y'] - 20,
                'h': lbl_size['h'], 'w': lbl_size['w'] / 3,

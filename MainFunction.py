@@ -127,7 +127,7 @@ def check_interval_active():
 # Called when table element was clicked
 def clicked_table_element(event, root_view, tv):
     Comm.find_ch()
-    print(Cons.selected_model)
+    print(Cons.selected_model_obj)
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
@@ -160,7 +160,7 @@ def clicked_table_element(event, root_view, tv):
 # (2024.10.18): FineTree Added to script mode
 def handle_script_mode(event, iden, value, root_view):
     Cons.data_sending = True
-    if Cons.selected_model in ['Uncooled', 'DRS', 'MiniGimbal']:
+    if Cons.selected_model_obj in ['Uncooled', 'DRS', 'MiniGimbal']:
         hex_value = select_item(event, root_view)
         Cons.script_cmd_arrs.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
@@ -171,7 +171,7 @@ def handle_script_mode(event, iden, value, root_view):
         script_tb = tb.Table(root_view)
         check_interval_active()
 
-    elif Cons.selected_model == 'NYX Series':
+    elif Cons.selected_model_obj == 'NYX Series':
         Cons.script_cmd_titles.append(value[0])
         # converted_cmd = Comm.create_form(value[1])
         Cons.script_cmd_arrs.append(value[1])
@@ -180,7 +180,7 @@ def handle_script_mode(event, iden, value, root_view):
         script_tb = tb.Table(root_view)
         check_interval_active()
 
-    elif Cons.selected_model == 'FineTree':
+    elif Cons.selected_model_obj == 'FineTree':
         index = int(iden.split('번')[0])
         # fine_tree_cmd_data = (para_arr, value_arr, url)
         items = Cons.fine_tree_cmd_data[index]
@@ -205,22 +205,22 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         tv.item(iden, tags='unchecked')
     else:
         tv.item(iden, tags='checked')
-    if Cons.selected_model == 'Uncooled':
+    if Cons.selected_model_obj == 'Uncooled':
         hex_value = select_item(event, root_view)
         # print(hex_value)
         Comm.send_cmd_for_uncooled(hex_value, title, root_view)
-    elif Cons.selected_model == 'DRS':
+    elif Cons.selected_model_obj == 'DRS':
         hex_array = select_item(event, root_view)
         Comm.send_cmd_for_drs(host, port, hex_array, root_view)
-    elif Cons.selected_model == 'MiniGimbal':
+    elif Cons.selected_model_obj == 'MiniGimbal':
         hex_array = select_item(event, root_view)
         print(rf'{datetime.now()} : {title}')
         # print(Cons.only_socket)
         # print(hex_array)
         Comm.send_to_mini(Cons.only_socket, hex_array)
-    elif Cons.selected_model == 'NYX Series':
+    elif Cons.selected_model_obj == 'NYX Series':
         send_data_for_nyx(event, root_view)
-    elif Cons.selected_model == 'FineTree':
+    elif Cons.selected_model_obj == 'FineTree':
         index = int(iden.split('번')[0])
         items = Cons.fine_tree_cmd_data[index]
         print(items)

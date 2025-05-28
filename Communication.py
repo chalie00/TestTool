@@ -295,6 +295,10 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, send_port))
             for i, s_cmd in enumerate(send_cmds):
+                if not Cons.data_sending:
+                    print('Data sending stopped by user. Exiting loop.')
+                    return
+
                 print(f'{i} is {s_cmd}')
                 current_time = datetime.now()
                 time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
@@ -307,11 +311,26 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                     print('reboot')
                     s.sendall(s_cmd.encode('utf-8'))
                     ti.sleep(10)
+
+                    if not Cons.data_sending:
+                        print('Stopped during reboot wait.')
+                        return
+
                     if wait_for_nyx_ready(host, send_port):
                         s = create_socket()
                         ti.sleep(3)
+
+                        if not Cons.data_sending:
+                            print('Stopped during reboot wait.')
+                            return
+
                         click_register_button(app)
                         ti.sleep(100)
+
+                        if not Cons.data_sending:
+                            print('Stopped during reboot wait.')
+                            return
+
                     else:
                         print("NYX reconnect fail")
                         return
@@ -352,6 +371,11 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                     log_pos = Cons.log_txt_fld_info
                     ti.sleep(intervals_sec[i])
                     log_fld = Res.Response(root, log_pos)
+
+                    if not Cons.data_sending:
+                        print('Stopped during reboot wait.')
+                        return
+
     except Exception as e:
         print(f"An error occurred: {e}")
     ti.sleep(3)
@@ -639,19 +663,6 @@ def create_socket() -> socket.socket:
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     int_port = int(Cons.selected_ch['port'])
     client_socket.connect((Cons.selected_ch['ip'], int_port))
-
-    # Receive Data from Mini Gimbal at 20mm interval each
-    # try:
-    #     while True:
-    #         data = client_socket.recv(1024)
-    #         # logging.info(data)
-    #         if not data:
-    #             print('No data is being sent from MiniGimbal')
-    #             break
-    # except KeyboardInterrupt:
-    #     print('Keyboard interrupt received, shutting down')
-    # finally:
-    #     client_socket.close()
 
     return client_socket
 

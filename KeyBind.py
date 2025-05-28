@@ -33,7 +33,7 @@ def initialize_ptz(root):
 # noinspection PyUnresolvedReferences
 def pressed_kbd_direction(event):
     try:
-        if Cons.selected_model == 'FineTree':
+        if Cons.selected_model_obj == 'FineTree':
             if event.keysym == 'Up':
                 params = {'move': 'up'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
@@ -55,7 +55,7 @@ def pressed_kbd_direction(event):
             elif event.keysym == 'End':
                 params = {'focus': 'pushaf'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
-        elif Cons.selected_model == 'DRS':
+        elif Cons.selected_model_obj == 'DRS':
             if event.keysym == 'Up':
                 params = {'move': 'up'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
@@ -77,7 +77,7 @@ def pressed_kbd_direction(event):
             elif event.keysym == 'End':
                 params = {'focus': 'pushaf'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
-        elif Cons.selected_model == 'MiniGimbal':
+        elif Cons.selected_model_obj == 'MiniGimbal':
             if event.keysym == 'Up':
                 ptz_ins.send_miniGimbal('up')
             elif event.keysym == 'Down':
@@ -92,7 +92,7 @@ def pressed_kbd_direction(event):
                 ptz_ins.send_miniGimbal('op_zoom_out')
             elif event.keysym == 'End':
                 ptz_ins.send_miniGimbal('op_af')
-        if Cons.selected_model == 'NYX Series':
+        if Cons.selected_model_obj == 'NYX Series':
             if event.keysym == 'Up':
                 up_cmd = 'NYX.SET#isp0_guic=up'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(up_cmd)
@@ -131,7 +131,7 @@ def pressed_kbd_direction(event):
 # noinspection PyUnresolvedReferences
 def release_stop(event, type):
     try:
-        if Cons.selected_model == 'FineTree':
+        if Cons.selected_model_obj == 'FineTree':
             if type in ['PTZ']:
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'move': 'stop'}
@@ -140,7 +140,7 @@ def release_stop(event, type):
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'zoom': 'stop'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
-        elif Cons.selected_model == 'DRS':
+        elif Cons.selected_model_obj == 'DRS':
             if type in ['PTZ']:
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'move': 'stop'}
@@ -149,13 +149,13 @@ def release_stop(event, type):
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'zoom': 'stop'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
-        elif Cons.selected_model == 'MiniGimbal':
+        elif Cons.selected_model_obj == 'MiniGimbal':
             if type in ['PTZ']:
                 logging.info('PTZ Stop')
                 ptz_ins.send_miniGimbal('stop')
             elif type in ['Zoom']:
                 ptz_ins.send_miniGimbal('op_zoom_stop')
-        elif Cons.selected_model == 'NYX Series':
+        elif Cons.selected_model_obj == 'NYX Series':
             if type in ['Focus']:
                 focus_stop = 'NYX.SET#lens_fctl=stop'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(focus_stop)

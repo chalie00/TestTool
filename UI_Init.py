@@ -64,10 +64,10 @@ def Init_Info(root, parent):
     sel_op = tk.StringVar()
     drop_down = ttk.Combobox(parent, textvariable=sel_op)
     drop_down['values'] = model_option
-    current_model = drop_down.current(3)
+    drop_down.current(3)
     drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
     drop_down.bind('<<ComboboxSelected>>', lambda event: Ufn.model_select(event, parent, sel_op))
-
+    Cons.drop_down_obj = drop_down
 
 # ============================================ Set Network Information =================================================
 def Init_Network(root, parent):
@@ -208,6 +208,7 @@ def makeUI_Groups(ui_groups: [], type: str):
                 Cons.etc_obj[rf'{etc_name[i]}'] = entry
 
 
+# 2025.05.28: Write Test Code
 def test_code():
     # Test Code
     test_txt = {'ip': '192.168.100.158', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}  # NYX
@@ -217,5 +218,5 @@ def test_code():
     Cons.network_obj['ip_txt'].insert(0, test_txt['ip'])
     Cons.network_obj['port_txt'].insert(0, test_txt['port'])
     Cons.network_obj['rtsp_txt'].insert(0, test_txt['rtsp_port'])
-    Cons.network_obj['ipc_id_txt'].insert(0, test_txt['ipc_id'])
-    Cons.network_obj['ipc_pw_txt'].insert(0, test_txt['ipc_pw'])
+    Cons.network_obj['ipc_id_txt'].insert(0, test_txt['id'])
+    Cons.network_obj['ipc_pw_txt'].insert(0, test_txt['pw'])
