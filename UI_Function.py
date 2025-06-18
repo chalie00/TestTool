@@ -1,7 +1,9 @@
 import threading
 import time
+
 from datetime import datetime
 from tkinter import ttk
+from icecream import ic
 
 import Constant as Cons
 import MainFunction as Mf
@@ -83,7 +85,7 @@ def stop_script(script_start_btn, script_stop_btn):
     script_start_btn.config(state='normal')
     script_stop_btn.config(state='disabled')
     print('stop script')
-    ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj]
+    ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj, Cons.etc_btn_obj]
     set_ui_state(ui_obj, 'normal')
 
     thread_running.clear()
@@ -109,7 +111,7 @@ def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_s
     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
     response_file_name = rf'{Cons.log_path}_{time_str}.txt'
     repeat = int(repeat_txt_fld.get())
-    ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj]
+    ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj, Cons.etc_btn_obj]
     # 2025.05.28: Disable some UI(model, network, etc), but must be modified PTZ, Preset, Tour, Script Stop
     set_ui_state(ui_obj, 'disable')
 
@@ -118,7 +120,7 @@ def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_s
         script_stop_btn.config(state='normal')
 
         for i in range(repeat):
-            print(rf'Repeat {i + 1}')
+            ic(rf'Repeat {i + 1}')
             if not Cons.data_sending:
                 return
 
@@ -131,6 +133,8 @@ def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_s
                 handle_custom_protocol_logic(parent, treeview, interval_txt_fld)
 
             time.sleep(0.1)
+
+        set_ui_state(ui_obj, 'normal')
 
     except Exception as e:
         print(f"Error: {e}")
@@ -178,7 +182,6 @@ def set_ui_state(ui_obj, state):
             try:
                 if isinstance(ui_item, str):
                     continue
-                Cons.drop_down_obj.config(state='disabled' if state == 'disable' else 'normal')
                 if isinstance(ui_item, ttk.Combobox):
                     ui_item.config(state='disabled' if state == 'disable' else 'normal')
                 ui_item.config(state=state)

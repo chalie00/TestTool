@@ -1,12 +1,9 @@
 # (2024.07.15) Init
 import tkinter as tk
-import time as ti
 import threading
 
 import Constant as Cons
 import Communication as Comm
-
-from tkinter import ttk
 
 
 class SysInfo:
@@ -98,7 +95,6 @@ class SysInfo:
             else:
                 print("Cons.fov_msb_lsb is empty or not properly initialized.")
 
-
             self.focus_pos_txt_fld.insert(0, Cons.focus_msb_lsb[0])
             self.focus_spd_txt_fld.insert(0, Cons.focus_msb_lsb[1])
             # Calculate a d-Zoom rate
@@ -180,13 +176,13 @@ class SysInfo:
     #     self.root.after(100, self.update_ui)
     #     self.update_btn.config(state='normal')
 
-    ############ Caution: Update use when Query mode Off of TQM-1M #########################
+    # ================================= Caution: Update use when Query mode Off of TQM-1M ==============================
     def update_with_protocol(self):
-        self.update_btn.config(state='disabled')  # 버튼 비활성화
+        self.update_btn.config(state='disabled')
 
         def run_commands():
             try:
-                if Cons.selected_model_obj == 'Uncooled':
+                if Cons.selected_model == 'Uncooled':
                     protocols = [
                         [255, 1, 0, 85, 0, 0, 86], [255, 1, 1, 85, 0, 0, 87],
                         [255, 1, 161, 16, 0, 0, 178], [255, 1, 161, 32, 0, 0, 194]
@@ -201,7 +197,7 @@ class SysInfo:
                     for title, protocol in titles.items():
                         Comm.send_cmd_for_uncooled(protocol, title, self.root)
 
-                elif Cons.selected_model_obj == 'NYX Series':
+                elif Cons.selected_model == 'NYX Series':
                     print('NYX Updated')
                     lens_pos_q = [
                         'NYX.GET#lens_zpos=', 'NYX.GET#lens_fpos=',
@@ -211,7 +207,7 @@ class SysInfo:
                     ]
                     Comm.send_data_with_cmd_for_info(self.root, lens_pos_q)
 
-                elif Cons.selected_model_obj == 'FineTree':
+                elif Cons.selected_model == 'FineTree':
                     return
 
                 # 데이터 준비 완료 플래그 설정
@@ -227,4 +223,3 @@ class SysInfo:
 
         # 별도의 스레드에서 작업 실행
         threading.Thread(target=run_commands).start()
-

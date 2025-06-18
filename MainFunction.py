@@ -3,11 +3,13 @@ import tkinter
 import string
 import mss
 import mss.tools
+import time as ti
 
 import Dialog
 import Communication as Comm
 import Constant as Cons
 import Table as tb
+import KeyBind as Kb
 
 from tkinter import *
 from tkinter import ttk
@@ -18,7 +20,7 @@ from datetime import datetime
 from Communication import send_data_for_nyx
 
 
-# Set element(label, text field, button) as specified position and size
+# Set element (label, text field, button) as specified position and size
 def make_element(x, y, h, w, element, *args, **kwargs):
     f = Frame(height=h, width=w)
     f.pack_propagate(0)  # don't shrink
@@ -53,6 +55,15 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
     column = [i + 1 for i in range(column_num)]
     dis_column = [str(n) for n in column]
     tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
+
+    # 2025.06.13: Pgup/Pgdn Direction key prevent
+    tv.bind("<Prior>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<Next>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_direction(e))
+
     # set the treeview scroll
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
     vsb.place(x=width * column_num + 105 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'] - 30)
@@ -127,7 +138,7 @@ def check_interval_active():
 # Called when table element was clicked
 def clicked_table_element(event, root_view, tv):
     Comm.find_ch()
-    print(Cons.selected_model_obj)
+    print(Cons.selected_model)
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
@@ -160,7 +171,7 @@ def clicked_table_element(event, root_view, tv):
 # (2024.10.18): FineTree Added to script mode
 def handle_script_mode(event, iden, value, root_view):
     Cons.data_sending = True
-    if Cons.selected_model_obj in ['Uncooled', 'DRS', 'MiniGimbal']:
+    if Cons.selected_model in ['Uncooled', 'DRS', 'MiniGimbal']:
         hex_value = select_item(event, root_view)
         Cons.script_cmd_arrs.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
@@ -171,7 +182,7 @@ def handle_script_mode(event, iden, value, root_view):
         script_tb = tb.Table(root_view)
         check_interval_active()
 
-    elif Cons.selected_model_obj == 'NYX Series':
+    elif Cons.selected_model == 'NYX Series':
         Cons.script_cmd_titles.append(value[0])
         # converted_cmd = Comm.create_form(value[1])
         Cons.script_cmd_arrs.append(value[1])
@@ -180,7 +191,7 @@ def handle_script_mode(event, iden, value, root_view):
         script_tb = tb.Table(root_view)
         check_interval_active()
 
-    elif Cons.selected_model_obj == 'FineTree':
+    elif Cons.selected_model == 'FineTree':
         index = int(iden.split('번')[0])
         # fine_tree_cmd_data = (para_arr, value_arr, url)
         items = Cons.fine_tree_cmd_data[index]
@@ -205,22 +216,22 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         tv.item(iden, tags='unchecked')
     else:
         tv.item(iden, tags='checked')
-    if Cons.selected_model_obj == 'Uncooled':
+    if Cons.selected_model == 'Uncooled':
         hex_value = select_item(event, root_view)
         # print(hex_value)
         Comm.send_cmd_for_uncooled(hex_value, title, root_view)
-    elif Cons.selected_model_obj == 'DRS':
+    elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
         Comm.send_cmd_for_drs(host, port, hex_array, root_view)
-    elif Cons.selected_model_obj == 'MiniGimbal':
+    elif Cons.selected_model == 'MiniGimbal':
         hex_array = select_item(event, root_view)
         print(rf'{datetime.now()} : {title}')
         # print(Cons.only_socket)
         # print(hex_array)
         Comm.send_to_mini(Cons.only_socket, hex_array)
-    elif Cons.selected_model_obj == 'NYX Series':
+    elif Cons.selected_model == 'NYX Series':
         send_data_for_nyx(event, root_view)
-    elif Cons.selected_model_obj == 'FineTree':
+    elif Cons.selected_model == 'FineTree':
         index = int(iden.split('번')[0])
         items = Cons.fine_tree_cmd_data[index]
         print(items)
@@ -303,27 +314,37 @@ def get_data_from_csv(file_path) -> [(str, str)]:
     return command_data
 
 
-# (2024.07.05) Capture a Image from RTSP
-# (2024.10.24): change library to mss from pillow because pillow only detect main monitor
+# 2025.06.17: Added check whether the wininfo is exist
+# (2024.07.05) Capture an Image from RTSP
+# (2024.10.24): change a library to mss from pillow because pillow only detects the main monitor
 def capture_image(root, filename):
-    x = root.winfo_rootx()
-    y = root.winfo_rooty()
-    w = root.winfo_width()
-    h = root.winfo_height()
-    print(rf'capture position is {x}, {y}, {w}, {h}')
-    # bbox = (x, y, Cons.camera_resolution['w'], Cons.camera_resolution['h'])
-    # bbox = (x, y, x + 1850, 950)
-    # image = ImageGrab.grab(bbox=bbox)
-    # image.save(filename)
-    monitor = {
-        "top": y,
-        "left": x,
-        "width": w,
-        "height": h
-    }
-    with mss.mss() as sct:
-        screenshot = sct.grab(monitor)
-        mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
+    ti.sleep(1)
+    try:
+        if not root.winfo_exists():
+            print('root not exists')
+            return
+
+        x = root.winfo_rootx()
+        y = root.winfo_rooty()
+        w = root.winfo_width()
+        h = root.winfo_height()
+        print(rf'capture position is {x}, {y}, {w}, {h}')
+
+        if w <= 0 or h <= 0:
+            print('width or height is 0')
+            return
+
+        monitor = {
+            "top": y,
+            "left": x,
+            "width": w,
+            "height": h
+        }
+        with mss.mss() as sct:
+            screenshot = sct.grab(monitor)
+            mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
+    except Exception as e:
+        print(f'capture image error: {e}')
 
 
 def print_monitor_info():

@@ -6,6 +6,7 @@ from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
 
 import Constant as Cons
+import KeyBind as Kb
 
 
 class Table:
@@ -26,6 +27,14 @@ class Table:
         # cmd_data = Cons.script_cmd_titles
         cmd_data = Cons.script_cmd_itv_arrs
         tv = CheckboxTreeview(self.inner_frame, height=7, columns=dis_column, displaycolumns=dis_column)
+        # 2025.06.13: Pgup/Pgdn key prevent
+        tv.bind("<Prior>", lambda e: Kb.pressed_kbd_direction(e))
+        tv.bind("<Next>", lambda e: Kb.pressed_kbd_direction(e))
+        tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_direction(e))
+        tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_direction(e))
+        tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_direction(e))
+        tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_direction(e))
+
         self.style = ttk.Style()
         self.style.configure('script Table', background='lightgray')
         # tv.grid(row=0, column=0, columnspan=column_num, sticky='nsew')

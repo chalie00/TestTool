@@ -19,12 +19,12 @@ class Preset:
 
     # (2024.10.02): Initialize a Preset UI
     def init_ui(self):
-        preset_lbl = tk.Label(self.root, text='Preset', bg=Cons.preset_lbl['bg'])
-        preset_lbl.place(x=Cons.preset_lbl['x'], y=Cons.preset_lbl['y'],
-                         width=Cons.preset_lbl['w'], height=Cons.preset_lbl['h'])
-        tour_lbl = tk.Label(self.root, text='Tour', bg=Cons.tour_lbl['bg'])
-        tour_lbl.place(x=Cons.tour_lbl['x'], y=Cons.tour_lbl['y'],
-                       width=Cons.tour_lbl['w'], height=Cons.tour_lbl['h'])
+        self.preset_lbl = tk.Label(self.root, text='Preset', bg=Cons.preset_lbl['bg'])
+        self.preset_lbl.place(x=Cons.preset_lbl['x'], y=Cons.preset_lbl['y'],
+                              width=Cons.preset_lbl['w'], height=Cons.preset_lbl['h'])
+        self.tour_lbl = tk.Label(self.root, text='Tour', bg=Cons.tour_lbl['bg'])
+        self.tour_lbl.place(x=Cons.tour_lbl['x'], y=Cons.tour_lbl['y'],
+                            width=Cons.tour_lbl['w'], height=Cons.tour_lbl['h'])
 
         self.preset_txt_fld = tk.Entry(self.root, justify='center')
         self.preset_txt_fld.place(x=Cons.preset_txt_fld['x'], y=Cons.preset_txt_fld['y'],
@@ -36,33 +36,35 @@ class Preset:
                                 width=Cons.tour_txt_fld['w'], height=Cons.tour_txt_fld['h'])
         self.tour_txt_fld.bind('<Return>', lambda event, type='call': self.send_tour_related_finetree(event, type))
 
-        preset_save_btn = tk.Button(self.root, text=Cons.preset_save_btn['text'], bg=Cons.preset_save_btn['bg'])
-        preset_save_btn.place(x=Cons.preset_save_btn['x'], y=Cons.preset_save_btn['y'],
-                              width=Cons.preset_save_btn['w'], height=Cons.preset_save_btn['h'])
+        self.preset_save_btn = tk.Button(self.root, text=Cons.preset_save_btn['text'], bg=Cons.preset_save_btn['bg'])
+        self.preset_save_btn.place(x=Cons.preset_save_btn['x'], y=Cons.preset_save_btn['y'],
+                                   width=Cons.preset_save_btn['w'], height=Cons.preset_save_btn['h'])
         save_params = {'presetsave': rf'{self.preset_txt_fld.get()}'}
-        preset_save_btn.bind('<Button-1>', lambda event, type='save': self.send_preset_related_finetree(event, type))
+        self.preset_save_btn.bind('<Button-1>',
+                                  lambda event, type='save': self.send_preset_related_finetree(event, type))
         # preset_save_btn.bind('<Button-1>', self.send_save_preset_finetree)
 
-        preset_call_btn = tk.Button(self.root, text=Cons.preset_call_btn['text'], bg=Cons.preset_call_btn['bg'])
-        preset_call_btn.place(x=Cons.preset_call_btn['x'], y=Cons.preset_call_btn['y'],
-                              width=Cons.preset_call_btn['w'], height=Cons.preset_call_btn['h'])
+        self.preset_call_btn = tk.Button(self.root, text=Cons.preset_call_btn['text'], bg=Cons.preset_call_btn['bg'])
+        self.preset_call_btn.place(x=Cons.preset_call_btn['x'], y=Cons.preset_call_btn['y'],
+                                   width=Cons.preset_call_btn['w'], height=Cons.preset_call_btn['h'])
         call_params = {'preset': rf'{self.preset_txt_fld.get()}'}
-        preset_call_btn.bind('<Button-1>', lambda event, type='call': self.send_preset_related_finetree(event, type))
+        self.preset_call_btn.bind('<Button-1>',
+                                  lambda event, type='call': self.send_preset_related_finetree(event, type))
 
-        tour_save_btn = tk.Button(self.root, text=Cons.tour_save_btn['text'], bg=Cons.tour_save_btn['bg'])
-        tour_save_btn.place(x=Cons.tour_save_btn['x'], y=Cons.tour_save_btn['y'],
-                            width=Cons.tour_save_btn['w'], height=Cons.tour_save_btn['h'])
-        tour_save_btn.bind('<Button-1>', lambda event, type='save': self.send_tour_related_finetree(event, type))
+        self.tour_save_btn = tk.Button(self.root, text=Cons.tour_save_btn['text'], bg=Cons.tour_save_btn['bg'])
+        self.tour_save_btn.place(x=Cons.tour_save_btn['x'], y=Cons.tour_save_btn['y'],
+                                 width=Cons.tour_save_btn['w'], height=Cons.tour_save_btn['h'])
+        self.tour_save_btn.bind('<Button-1>', lambda event, type='save': self.send_tour_related_finetree(event, type))
 
-        tour_call_btn = tk.Button(self.root, text=Cons.tour_call_btn['text'], bg=Cons.tour_call_btn['bg'])
-        tour_call_btn.place(x=Cons.tour_call_btn['x'], y=Cons.tour_call_btn['y'],
-                            width=Cons.tour_call_btn['w'], height=Cons.tour_call_btn['h'])
-        tour_call_btn.bind('<Button-1>', lambda event, type='call': self.send_tour_related_finetree(event, type))
+        self.tour_call_btn = tk.Button(self.root, text=Cons.tour_call_btn['text'], bg=Cons.tour_call_btn['bg'])
+        self.tour_call_btn.place(x=Cons.tour_call_btn['x'], y=Cons.tour_call_btn['y'],
+                                 width=Cons.tour_call_btn['w'], height=Cons.tour_call_btn['h'])
+        self.tour_call_btn.bind('<Button-1>', lambda event, type='call': self.send_tour_related_finetree(event, type))
 
-        tour_stop_btn = tk.Button(self.root, text=Cons.tour_stop_btn['text'], bg=Cons.tour_stop_btn['bg'])
-        tour_stop_btn.place(x=Cons.tour_stop_btn['x'], y=Cons.tour_stop_btn['y'],
-                            width=Cons.tour_stop_btn['w'], height=Cons.tour_stop_btn['h'])
-        tour_stop_btn.bind('<Button-1>', lambda event, type='stop': self.send_tour_related_finetree(event, type))
+        self.tour_stop_btn = tk.Button(self.root, text=Cons.tour_stop_btn['text'], bg=Cons.tour_stop_btn['bg'])
+        self.tour_stop_btn.place(x=Cons.tour_stop_btn['x'], y=Cons.tour_stop_btn['y'],
+                                 width=Cons.tour_stop_btn['w'], height=Cons.tour_stop_btn['h'])
+        self.tour_stop_btn.bind('<Button-1>', lambda event, type='stop': self.send_tour_related_finetree(event, type))
 
     # (2024.10.06): Save/Call a Preset
     def send_preset_related_finetree(self, event, type):
@@ -115,3 +117,12 @@ class Preset:
                 params = {'preset': tour_list}
                 Comm.fine_tree_send_cgi(preset_url, params)
                 time.sleep(30.0)
+
+# 2025.05.28: for UI enable/disable
+    def get_all_UI(self):
+        return {
+            'preset_txt': self.preset_txt_fld, 'tour_txt':self.tour_txt_fld,
+            'preset_save': self.preset_save_btn, 'preset_call': self.preset_call_btn,
+            'tour_save': self.tour_save_btn, 'tour_call': self.tour_call_btn,
+            'tour_stop': self.tour_stop_btn
+    }

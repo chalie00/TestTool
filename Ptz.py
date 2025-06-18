@@ -27,6 +27,8 @@ class PTZ:
         self.ptz_url = '/cgi-bin/ptz/control.php?'
         self.ft_sending_flag = False
 
+        self.buttons = {}
+
         self.refresh_ptz()
 
     def create_button(self, text, push_cmd, release_cmd, x, y):
@@ -43,13 +45,13 @@ class PTZ:
     # (2024.09.26) Add diagonal direction Button
     def left_top(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'FineTree':
+            if Cons.selected_model == 'FineTree':
                 params = {'move': 'upleft'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'upleft'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('up_left')
 
         else:
@@ -59,118 +61,118 @@ class PTZ:
     # (20204.11.14): Added DRS Zoom Module
     def up_zoom_in(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # OSD Uncooled
                 self.send_data('FF01E024000005')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 up_cmd = 'NYX.SET#isp0_guic=up'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, up_cmd)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'move': 'up'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'up'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Move Up
                 self.send_miniGimbal('up')
 
         else:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # PTZ Uncooled
                 self.send_data('FF010020000021')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # Zoom In NYX
                 zoom_in = 'NYX.SET#lens_zctl=narrow'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, zoom_in)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'zoom': 'tele'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
                 port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Zoom In
                 hex_array = [255, 0, 34, 0, 0, 1, 35]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Optical Zoom In
                 self.send_miniGimbal('op_zoom_in')
 
     def right_top(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'FineTree':
+            if Cons.selected_model == 'FineTree':
                 params = {'move': 'upright'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'upright'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('up_right')
         else:
             print('Pressed Right Top')
 
     def left_down(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'FineTree':
+            if Cons.selected_model == 'FineTree':
                 params = {'move': 'downleft'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'downleft'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('down_left')
         else:
             print('Pressed Left Bottom')
 
     def down_zoom_out(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # OSD Uncooled
                 self.send_data('FF01E025000006')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 down_cmd = 'NYX.SET#isp0_guic=down'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, down_cmd)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'move': 'down'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'down'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Move Down
                 self.send_miniGimbal('down')
         else:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # Uncooled Zoom Out
                 self.send_data('FF010040000041')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # Zoom Out NYX
                 zoom_out = 'NYX.SET#lens_zctl=wide'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, zoom_out)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'zoom': 'wide'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
                 port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Zoom Out
                 hex_array = [255, 0, 34, 0, 0, 2, 36]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Optical Zoom Out
                 self.send_miniGimbal('op_zoom_out')
 
     def right_down(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'FineTree':
+            if Cons.selected_model == 'FineTree':
                 params = {'move': 'downright'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'downright'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('down_right')
         else:
             print('Pressed Right Bottom')
@@ -187,95 +189,95 @@ class PTZ:
     def left_near(self, event=None):
         # print("Left button pressed")
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # OSD Uncooled
                 self.send_data('FF01E022000003')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 left_cmd = 'NYX.SET#isp0_guic=left'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, left_cmd)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'move': 'left'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'left'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Move Left
                 self.send_miniGimbal('left')
         else:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # Near Uncooled
                 self.send_data('FF010100000002')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # Near NYX
                 near = 'NYX.SET#lens_fctl=near'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, near)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 self.ft_sending_flag = True
                 params = {'focus': 'near_step'}
                 self.send_ft_command_periodically(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
                 port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Near
                 hex_array = [255, 0, 34, 16, 0, 2, 52]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Near
                 self.send_miniGimbal('op_near')
 
     def right_far(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # OSD Uncooled
                 self.send_data('FF01E023000004')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 right_cmd = 'NYX.SET#isp0_guic=right'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, right_cmd)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'move': 'right'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 params = {'move': 'right'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Move Right
                 self.send_miniGimbal('right')
         else:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # Far Uncooled
                 self.send_data('FF010080000081')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # Far NYX
                 far = 'NYX.SET#lens_fctl=far'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, far)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 self.ft_sending_flag = True
                 params = {'focus': 'far_step'}
                 self.send_ft_command_periodically(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
                 port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # Far
                 hex_array = [255, 0, 34, 16, 0, 1, 51]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Far
                 self.send_miniGimbal('op_far')
 
     def osd_af(self, event):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # OSD Uncooled
                 self.send_data('FF01E021000002')
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # OSD NYX
                 osd_cmd = 'NYX.SET#isp0_guie=on'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, osd_cmd)
         else:
-            if Cons.selected_model_obj == 'Uncooled':
+            if Cons.selected_model == 'Uncooled':
                 # AF Uncooled
                 sys_info_pos = Cons.sys_info_tab
                 sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
@@ -285,20 +287,20 @@ class PTZ:
                     sys_info.update_with_protocol()
                 else:
                     return
-            elif Cons.selected_model_obj == 'NYX Series':
+            elif Cons.selected_model == 'NYX Series':
                 # AF NYX
                 af = 'NYX.SET#lens_afex=execute'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, af)
-            elif Cons.selected_model_obj == 'FineTree':
+            elif Cons.selected_model == 'FineTree':
                 params = {'focus': 'pushaf'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
-            elif Cons.selected_model_obj == 'DRS':
+            elif Cons.selected_model == 'DRS':
                 host = Cons.selected_ch['ip']
                 port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
                 # AF
                 hex_array = [255, 0, 34, 32, 0, 0, 66]
                 Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-            elif Cons.selected_model_obj == 'MiniGimbal':
+            elif Cons.selected_model == 'MiniGimbal':
                 # Far
                 self.send_miniGimbal('op_af')
 
@@ -309,7 +311,7 @@ class PTZ:
 
         ptz_text_arr = ['Left\nTop', 'Up', 'Right\nTop', 'Left\nDown', 'Down', 'Right\nDown', 'Left', 'Right']
 
-        if Cons.selected_model_obj == 'Uncooled':
+        if Cons.selected_model == 'Uncooled':
             # All Stop
             self.send_data('FF010000000001')
             if Cons.ptz_osd_toggle_flag:
@@ -318,14 +320,14 @@ class PTZ:
                 sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
                 sys_info.update_with_protocol()
 
-        elif Cons.selected_model_obj in ['NYX Series', 'FineTree', 'DRS', 'MiniGimbal']:
+        elif Cons.selected_model in ['NYX Series', 'FineTree', 'DRS', 'MiniGimbal']:
             if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
-                self.stop_zoom_focus(Cons.selected_model_obj, 'zoom')
+                self.stop_zoom_focus(Cons.selected_model, 'zoom')
             elif btn_text in ['Near', 'Far']:
                 self.ft_sending_flag = False
-                self.stop_zoom_focus(Cons.selected_model_obj, 'focus')
+                self.stop_zoom_focus(Cons.selected_model, 'focus')
             elif btn_text in ptz_text_arr:
-                self.stop_ptz(Cons.selected_model_obj)
+                self.stop_ptz(Cons.selected_model)
 
     def stop_zoom_focus(self, model, command_type):
         if model == 'NYX Series':
@@ -338,7 +340,7 @@ class PTZ:
             port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
             hex_array = [255, 0, 34, 4, 0, 0, 38] if command_type == 'zoom' else [255, 0, 34, 19, 0, 0, 53]
             Comm.send_cmd_for_drs(host, port, hex_array, self.root)
-        elif Cons.selected_model_obj == 'MiniGimbal':
+        elif Cons.selected_model == 'MiniGimbal':
             if command_type == 'zoom':
                 self.send_miniGimbal('op_zoom_stop')
             elif command_type == 'focus':
@@ -438,7 +440,7 @@ class PTZ:
             ]
 
         for text, push_cmd, release_cmd, x, y in button_configurations:
-            self.create_button(text, push_cmd, release_cmd, x, y)
+            self.buttons[text] = self.create_button(text, push_cmd, release_cmd, x, y)
 
         center_text = 'AF' if Cons.ptz_osd_toggle_flag else 'OSD'
         self.create_circle_button(Cons.ptz_canvas['w'] / 2, Cons.ptz_canvas['h'] / 2, 22, Cons.my_color['bg'],
@@ -457,3 +459,4 @@ class PTZ:
             self.canvas.create_window(Cons.set_nyx_btn['x'], Cons.set_nyx_btn['y'] + 5, window=set_btn, width=40,
                                       height=20)
             set_btn.config(state='disabled')
+

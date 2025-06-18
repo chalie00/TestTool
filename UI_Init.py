@@ -20,6 +20,8 @@ class UIInit:
         Init_Info(root, parent)
         Init_Network(root, parent)
         Init_Search(root, parent, app)
+        ptz_ui = pt.PTZ(parent)
+        preset_ui = Pre.Preset(parent)
 
         # ======================================== Set Command Table ===========================================================
         column_name = Cons.column_array
@@ -46,7 +48,7 @@ def Init_Info(root, parent):
                                h=te_btn['h'], w=te_btn['w'], element='Button',
                                bg=te_btn['bg'], text=te_btn['text'],
                                anchor='center',
-                               command= lambda:  test_code())
+                               command=lambda: test_code())
 
     validator = Cons.validator_lbl
     validator_txt = Cons.validator_txt_fld
@@ -67,7 +69,8 @@ def Init_Info(root, parent):
     drop_down.current(3)
     drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
     drop_down.bind('<<ComboboxSelected>>', lambda event: Ufn.model_select(event, parent, sel_op))
-    Cons.drop_down_obj = drop_down
+    Cons.etc_btn_obj['drop_down'] = drop_down
+
 
 # ============================================ Set Network Information =================================================
 def Init_Network(root, parent):
@@ -164,7 +167,8 @@ def Init_Ptz_Preset_Script(root, parent, app, treeview):
                                      bg=r_btn['bg'], element='Button',
                                      text=r_btn['text'], anchor='center',
                                      command=lambda: Ufn.start_thread(parent, app, Cons.etc_obj['repe_txt'],
-                                                                      Cons.etc_obj['inter_txt'], treeview, script_run_btn,
+                                                                      Cons.etc_obj['inter_txt'], treeview,
+                                                                      script_run_btn,
                                                                       script_stop_btn))
 
     script_stop_btn = Mf.make_element(st_btn['x'], st_btn['y'],
@@ -178,6 +182,7 @@ def Init_Ptz_Preset_Script(root, parent, app, treeview):
                                        bg=clr_btn['bg'], element='Button',
                                        text=clr_btn['text'], anchor='center',
                                        command=lambda: Ufn.clr_script(parent, script_run_btn, script_stop_btn))
+    Cons.etc_btn_obj['script_clear'] = script_clear_btn
 
 
 def makeUI_Groups(ui_groups: [], type: str):
@@ -211,7 +216,7 @@ def makeUI_Groups(ui_groups: [], type: str):
 # 2025.05.28: Write Test Code
 def test_code():
     # Test Code
-    test_txt = {'ip': '192.168.100.158', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}  # NYX
+    test_txt = {'ip': '192.168.22.240', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}  # NYX
     # test_txt = {'ip': '192.168.100.155', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     # test_txt = {'ip': '192.168.100.152', 'port': '8081', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
     # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}  #Qred

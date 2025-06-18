@@ -12,6 +12,7 @@ key_state = {}
 # 키가 눌렸을 때 시간 기록 (중복 처리를 방지하기 위해)
 TIME_THRESHOLD = 0.2  # 0.2초 간격으로만 명령을 보냄
 
+
 # Logging Default Setting
 # logging.basicConfig(
 #     level=logging.DEBUG,
@@ -33,7 +34,7 @@ def initialize_ptz(root):
 # noinspection PyUnresolvedReferences
 def pressed_kbd_direction(event):
     try:
-        if Cons.selected_model_obj == 'FineTree':
+        if Cons.selected_model == 'FineTree':
             if event.keysym == 'Up':
                 params = {'move': 'up'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
@@ -49,13 +50,15 @@ def pressed_kbd_direction(event):
             elif event.keysym == 'Prior':
                 params = {'zoom': 'tele'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
+                return 'break'
             elif event.keysym == 'Next':
                 params = {'zoom': 'wide'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
+                return 'break'
             elif event.keysym == 'End':
                 params = {'focus': 'pushaf'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
-        elif Cons.selected_model_obj == 'DRS':
+        elif Cons.selected_model == 'DRS':
             if event.keysym == 'Up':
                 params = {'move': 'up'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
@@ -71,13 +74,15 @@ def pressed_kbd_direction(event):
             elif event.keysym == 'Prior':
                 params = {'zoom': 'tele'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
+                return 'break'
             elif event.keysym == 'Next':
                 params = {'zoom': 'wide'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
+                return 'break'
             elif event.keysym == 'End':
                 params = {'focus': 'pushaf'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
-        elif Cons.selected_model_obj == 'MiniGimbal':
+        elif Cons.selected_model == 'MiniGimbal':
             if event.keysym == 'Up':
                 ptz_ins.send_miniGimbal('up')
             elif event.keysym == 'Down':
@@ -88,29 +93,37 @@ def pressed_kbd_direction(event):
                 ptz_ins.send_miniGimbal('right')
             elif event.keysym == 'Prior':
                 ptz_ins.send_miniGimbal('op_zoom_in')
+                return 'break'
             elif event.keysym == 'Next':
                 ptz_ins.send_miniGimbal('op_zoom_out')
+                return 'break'
             elif event.keysym == 'End':
                 ptz_ins.send_miniGimbal('op_af')
-        if Cons.selected_model_obj == 'NYX Series':
+        if Cons.selected_model == 'NYX Series':
             if event.keysym == 'Up':
                 up_cmd = 'NYX.SET#isp0_guic=up'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(up_cmd)
+                return 'break'
             elif event.keysym == 'Down':
                 down_cmd = 'NYX.SET#isp0_guic=down'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(down_cmd)
+                return 'break'
             elif event.keysym == 'Left':
                 left_cmd = 'NYX.SET#isp0_guic=left'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(left_cmd)
+                return 'break'
             elif event.keysym == 'Right':
                 right_cmd = 'NYX.SET#isp0_guic=right'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(right_cmd)
+                return 'break'
             elif event.keysym == 'Prior':
                 narrow = 'NYX.SET#lens_zctl=narrow'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(narrow)
+                return 'break'
             elif event.keysym == 'Next':
                 wide = 'NYX.SET#lens_zctl=wide'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(wide)
+                return 'break'
             elif event.keysym == 'Insert':
                 near = 'NYX.SET#lens_fctl=near'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(near)
@@ -123,15 +136,20 @@ def pressed_kbd_direction(event):
             elif event.keysym == 'Home':
                 set_cmd = 'NYX.SET#isp0_guic=set'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(set_cmd)
+            elif event.keysym == 'Pause':
+                osd_on = 'NYX.SET#isp0_guie=on'
+                Comm.send_data_with_cmd_for_nyx_ptz_without_root(osd_on)
+
     except Exception as e:
         logging.error(f"Error in pressed_kbd_direction: {e}")
+        return 'break'
 
 
 # (2024.10.17): send stop cmd when key was released
 # noinspection PyUnresolvedReferences
 def release_stop(event, type):
     try:
-        if Cons.selected_model_obj == 'FineTree':
+        if Cons.selected_model == 'FineTree':
             if type in ['PTZ']:
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'move': 'stop'}
@@ -140,7 +158,7 @@ def release_stop(event, type):
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'zoom': 'stop'}
                 Comm.fine_tree_send_cgi(ptz_url, params)
-        elif Cons.selected_model_obj == 'DRS':
+        elif Cons.selected_model == 'DRS':
             if type in ['PTZ']:
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'move': 'stop'}
@@ -149,19 +167,20 @@ def release_stop(event, type):
                 ptz_url = '/cgi-bin/ptz/control.php?'
                 params = {'zoom': 'stop'}
                 Comm.send_cmd_to_Finetree(ptz_url, params)
-        elif Cons.selected_model_obj == 'MiniGimbal':
+        elif Cons.selected_model == 'MiniGimbal':
             if type in ['PTZ']:
                 logging.info('PTZ Stop')
                 ptz_ins.send_miniGimbal('stop')
             elif type in ['Zoom']:
                 ptz_ins.send_miniGimbal('op_zoom_stop')
-        elif Cons.selected_model_obj == 'NYX Series':
+        elif Cons.selected_model == 'NYX Series':
             if type in ['Focus']:
                 focus_stop = 'NYX.SET#lens_fctl=stop'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(focus_stop)
             elif type in ['Zoom']:
                 zoom_stop = 'NYX.SET#lens_zctl=stop'
                 Comm.send_data_with_cmd_for_nyx_ptz_without_root(zoom_stop)
+                return 'break'
         else:
             print('stop cmd was not sent because model is not finetree')
             return
@@ -200,11 +219,14 @@ def bind_system_kbd(root):
     root.bind("<KeyRelease-Prior>", lambda event, type='Zoom': release_stop(event, type))
     root.bind("<KeyRelease-Next>", lambda event, type='Zoom': release_stop(event, type))
 
-    # for NYX (Fopcus near / far)
+    # for NYX (Focus near / far)
     root.bind("<KeyPress-Insert>", pressed_kbd_direction)
     root.bind("<KeyPress-Delete>", pressed_kbd_direction)
     root.bind("<KeyRelease-Insert>", lambda event, type='Focus': release_stop(event, type))
     root.bind("<KeyRelease-Delete>", lambda event, type='Focus': release_stop(event, type))
+
+    # for NYX OSD Display
+    root.bind("<KeyRelease-Pause>", pressed_kbd_direction)
 
     # for NYX OSD Set
     root.bind("<KeyRelease-Home>", pressed_kbd_direction)

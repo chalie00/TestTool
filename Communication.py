@@ -20,6 +20,7 @@ from socket import AF_INET, SOCK_STREAM
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
+from icecream import ic
 
 import Dialog
 
@@ -299,10 +300,10 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                     print('Data sending stopped by user. Exiting loop.')
                     return
 
-                print(f'{i} is {s_cmd}')
+                ic(rf'{i + 1} is {s_cmd}')
                 current_time = datetime.now()
                 time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
-                print(i)
+
                 if titles[i] == Cons.capture_title:
                     path = Cons.capture_path['zoom']
                     filename = rf'{path}/{str(titles[i - 3])}-{time_str}-{i}.png'
@@ -335,7 +336,6 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                         print("NYX reconnect fail")
                         return
                 else:
-                    print(s_cmd)
                     s.sendall(s_cmd.encode('utf-8'))
                     ti.sleep(0.1)
                     try:
