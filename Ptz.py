@@ -8,6 +8,8 @@ import Communication as Th
 import OnOff_Switch as onoffSW
 import System_Info as sysinfo
 
+from icecream import ic
+
 d_click_detected = False
 press_time = 0
 
@@ -53,6 +55,8 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('up_left')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('left_top', 'pt_drv')
 
         else:
             print('Pressed Left Top')
@@ -77,6 +81,8 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Up
                 self.send_miniGimbal('up')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('up', 'pt_drv')
 
         else:
             if Cons.selected_model == 'Uncooled':
@@ -98,6 +104,9 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Optical Zoom In
                 self.send_miniGimbal('op_zoom_in')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('zoom_in', 'eo')
+                self.send_pt_drv('zoom_in', 'ir')
 
     def right_top(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -109,6 +118,8 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('up_right')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('right_top', 'pt_drv')
         else:
             print('Pressed Right Top')
 
@@ -122,6 +133,8 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('down_left')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('left_down', 'pt_drv')
         else:
             print('Pressed Left Bottom')
 
@@ -143,8 +156,10 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Down
                 self.send_miniGimbal('down')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('down', 'pt_drv')
         else:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'Multi']:
                 # Uncooled Zoom Out
                 self.send_data('FF010040000041')
             elif Cons.selected_model == 'NYX Series':
@@ -163,6 +178,9 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Optical Zoom Out
                 self.send_miniGimbal('op_zoom_out')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('zoom_out', 'eo')
+                self.send_pt_drv('zoom_out', 'ir')
 
     def right_down(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -174,6 +192,8 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('down_right')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('right_down', 'pt_drv')
         else:
             print('Pressed Right Bottom')
 
@@ -205,6 +225,8 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Left
                 self.send_miniGimbal('left')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('left', 'pt_drv')
         else:
             if Cons.selected_model == 'Uncooled':
                 # Near Uncooled
@@ -226,6 +248,9 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Near
                 self.send_miniGimbal('op_near')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('near', 'eo')
+                self.send_pt_drv('near', 'ir')
 
     def right_far(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -245,6 +270,8 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Right
                 self.send_miniGimbal('right')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('right', 'pt_drv')
         else:
             if Cons.selected_model == 'Uncooled':
                 # Far Uncooled
@@ -266,6 +293,9 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Far
                 self.send_miniGimbal('op_far')
+            elif Cons.selected_model == 'Multi':
+                self.send_pt_drv('far', 'eo')
+                self.send_pt_drv('far', 'ir')
 
     def osd_af(self, event):
         if not Cons.ptz_osd_toggle_flag:
@@ -319,7 +349,6 @@ class PTZ:
                 sys_info_pos = Cons.sys_info_tab
                 sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
                 sys_info.update_with_protocol()
-
         elif Cons.selected_model in ['NYX Series', 'FineTree', 'DRS', 'MiniGimbal']:
             if btn_text in ['Zoom\nIn', 'Zoom\nOut']:
                 self.stop_zoom_focus(Cons.selected_model, 'zoom')
@@ -328,6 +357,12 @@ class PTZ:
                 self.stop_zoom_focus(Cons.selected_model, 'focus')
             elif btn_text in ptz_text_arr:
                 self.stop_ptz(Cons.selected_model)
+        elif Cons.selected_model == 'Multi':
+            if btn_text in ['Zoom\nIn', 'Zoom\nOut', 'Near', 'Far']:
+                self.send_pt_drv('stop', 'eo')
+                self.send_pt_drv('stop', 'ir')
+            elif btn_text in ptz_text_arr:
+                self.send_pt_drv('stop', 'pt_drv')
 
     def stop_zoom_focus(self, model, command_type):
         if model == 'NYX Series':
@@ -370,6 +405,7 @@ class PTZ:
         Comm.send_data_with_cmd_for_nyx_ptz(self.root, set_cmd)
 
     def send_data(self, cmd):
+        ic('send_data in PTZ', cmd)
         hex_array = [int(cmd[i:i + 2], 16) for i in range(0, len(cmd), 2)]
         Th.send_cmd_for_uncooled(hex_array, 'Normal Query', self.root)
 
@@ -393,6 +429,41 @@ class PTZ:
         send_cmd = [int(ptz_cmd[dir_str][i:i + 2], 16) for i in range(0, len(ptz_cmd[dir_str]), 2)]
         # Comm.send_cmd_for_drs(host, port, send_cmd, self.root)
         Comm.send_to_mini(Cons.only_socket, send_cmd)
+
+    # 2025.06.30: Send the CMD to PT Driver
+    def send_pt_drv(self, dir_str, model):
+        pt_drv_cmd = {'up': 'FF010008404089', 'down': 'FF010010404091',
+                      'right': 'FF010002404083', 'left': 'FF010004404085',
+                      'left_top': 'FF01000C40408D', 'right_top': 'FF01000A40408B',
+                      'left_down': 'FF010014404095', 'right_down': 'FF010012404093',
+                      'stop': 'FF010000000001',
+                      }
+        eo_cmd = {'stop': 'FF020000000002',
+                  'zoom_in': 'FF020020000022', 'zoom_out': 'FF020040000042',
+                  'far': 'FF020080000082', 'near': 'FF020100000003',
+                  'zoom_spd_4': 'FF02002500042B', 'focus_spd_4': 'FF02002700042D',
+                  'af_on': 'FF02002B00002D', 'af_off': 'FF02002B00012E',
+                  'reboot': 'FF02000F000011', 'reset_default': 'FF02002900002B',
+                  }
+
+        ir_cmd = {'stop': 'FF030000000003',
+                  'zoom_in': 'FF030020000023', 'zoom_out': 'FF030040000043',
+                  'far': 'FF030080000083', 'near': 'FF030100000004',
+                  'zoom_spd_4': 'FF03002500042C', 'focus_spd_4': 'FF03002700042E',
+                  'af_on': 'FF03002B00002E', 'af_off': 'FF03002B00012F',
+                  'reboot': 'FF03000F000012', 'reset_default': 'FF03002900002C',
+                  }
+        if model == 'pt_drv':
+            hex_array = [int(pt_drv_cmd[dir_str][i:i + 2], 16) for i in range(0, len(pt_drv_cmd[dir_str]), 2)]
+            Th.send_cmd_only_for_multi(hex_array)
+        elif model == 'eo':
+            hex_array = [int(eo_cmd[dir_str][i:i + 2], 16) for i in range(0, len(eo_cmd[dir_str]), 2)]
+            Th.send_cmd_only_for_multi(hex_array)
+        elif model == 'ir':
+            hex_array = [int(ir_cmd[dir_str][i:i + 2], 16) for i in range(0, len(ir_cmd[dir_str]), 2)]
+            Th.send_cmd_only_for_multi(hex_array)
+        # print(hex_array)
+        # Th.send_cmd_only_for_multi(hex_array)
 
     def create_circle_button(self, x, y, r, color, text, command):
         oval = self.canvas.create_oval(x - r + 5, y - r - 12, x + r, y + r - 14, fill=color, outline=color)
@@ -459,4 +530,3 @@ class PTZ:
             self.canvas.create_window(Cons.set_nyx_btn['x'], Cons.set_nyx_btn['y'] + 5, window=set_btn, width=40,
                                       height=20)
             set_btn.config(state='disabled')
-

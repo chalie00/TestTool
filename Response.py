@@ -31,7 +31,7 @@ class Response:
 
         self.dis_response_text()
 
-# (2024.10.31): Apply green color text to UncooledType response value
+    # (2024.10.31): Apply green color text to UncooledType response value
     # Response Text
     def dis_response_text(self):
         self.text_widget.config(state=tk.NORMAL)
@@ -59,3 +59,33 @@ class Response:
                 # self.text_widget.see(tk.END)
             self.text_widget.config(state=tk.DISABLED)
 
+    # 2025.07.02 Display a Response Text for Multi
+    # TODO: function drs_response_text have to modify
+    def multi_response(self, res_txt: str):
+        current_time = datetime.now()
+        time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
+        bytes_seven = self.split_by_7bytes(res_txt)\
+
+        for res_cmd in bytes_seven:
+            spaced = " ".join([res_cmd[i:i + 2] for i in range(0, len(res_cmd), 2)])
+            self.text_widget.insert(tk.END, f"[{time_str}] {spaced}\n")
+        self.text_widget.see(tk.END)
+
+        # If you start with FF, print it on the next line.
+        # res_txt = res_txt.replace(' ', '')
+        # lines = []
+        # parts = res_txt.split('ff')
+        # for part in parts:
+        #     if part:
+        #         lines.append('FF' + part)
+        # for line in lines:
+        #     spaced_line = " ".join([line[i:i + 2] for i in range(0, len(line), 2)])
+        #     self.text_widget.insert(tk.END, rf'[{time_str}]' + spaced_line + '\n')
+
+        self.text_widget.see(tk.END)
+
+    # 2025.07.02: Divide 7byte
+    def split_by_7bytes(self, hex_string: str):
+        hex_string = hex_string.lower().replace(" ", "")  # 공백 제거 및 소문자 정리
+        bytes_seven = [hex_string[i:i + 14] for i in range(0, len(hex_string), 14)]
+        return bytes_seven

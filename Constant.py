@@ -30,8 +30,8 @@ lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 #  !import (2025.04.29): When was selected FineTree at first, It will be crash,
 #   because FineTree needs to collect another arrays
 
-selected_model = 'NYX Series'
-model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal']
+selected_model = 'Multi'
+model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
 
 only_socket = None
 
@@ -179,47 +179,47 @@ uncooled_query_arrays = [
 
 # Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
-# capture_hex = [255, 1, 0, 0, 0, 0, 0]
-# script_cmd_arrs = [
-#     [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 1],
-#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 1],
-#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 1],
-#     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 1],
-#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 1],
-#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 1]
-# ]
-#
-#
-# script_cmd_titles = [
-#     'Zoom Out', 'All Stop', 'AF', 'ScreenShot',
-#     'Far', 'All Stop', 'AF', 'ScreenShot',
-#     'Near', 'All Stop', 'AF', 'ScreenShot',
-#     'Zoom In', 'All Stop', 'AF', 'ScreenShot',
-#     'Far', 'All Stop', 'AF', 'ScreenShot',
-#     'Near', 'All Stop', 'AF', 'ScreenShot'
-# ]
-# script_itv_arrs = [
-#     2.0, 0.3, 12.0, 1.0,
-#     2.0, 0.3, 12.0, 1.0,
-#     2.0, 0.3, 12.0, 1.0,
-#     2.0, 0.3, 12.0, 1.0,
-#     2.0, 0.3, 12.0, 1.0,
-#     2.0, 0.3, 12.0, 1.0
-# ]
-# script_cmd_itv_arrs = [
-#     ['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#     ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#     ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#     ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#     ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-#     ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
-# ]
+capture_hex = [255, 1, 0, 0, 0, 0, 0]
+script_cmd_arrs = [
+    [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 1],
+    [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 1],
+    [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 1],
+    [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 1],
+    [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 1],
+    [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 1]
+]
+
+
+script_cmd_titles = [
+    'Zoom Out', 'All Stop', 'AF', 'ScreenShot',
+    'Far', 'All Stop', 'AF', 'ScreenShot',
+    'Near', 'All Stop', 'AF', 'ScreenShot',
+    'Zoom In', 'All Stop', 'AF', 'ScreenShot',
+    'Far', 'All Stop', 'AF', 'ScreenShot',
+    'Near', 'All Stop', 'AF', 'ScreenShot'
+]
+script_itv_arrs = [
+    2.0, 0.3, 12.0, 1.0,
+    2.0, 0.3, 12.0, 1.0,
+    2.0, 0.3, 12.0, 1.0,
+    2.0, 0.3, 12.0, 1.0,
+    2.0, 0.3, 12.0, 1.0,
+    2.0, 0.3, 12.0, 1.0
+]
+script_cmd_itv_arrs = [
+    ['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+    ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+    ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+    ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+    ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
+    ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
+]
 
 # NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
@@ -250,29 +250,29 @@ capture_title = 'Capture NYX'
 #     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
 #     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
 # ]
-script_cmd_arrs = [
-    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-]
-script_cmd_titles = [
-    'zoom wide', 'zoom stop', 'af execute', 'Capture NYX',
-    'zoom narrow', 'zoom stop', 'af execute', 'Capture NYX',
-    'focus near', 'focus stop', 'af execute', 'Capture NYX',
-    'focus far', 'focus stop', 'af execute', 'Capture NYX',
-]
-script_itv_arrs = [2.0, 1.0, 4.0, 3.0,
-                   2.0, 1.0, 4.0, 3.0,
-                   2.0, 1.0, 4.0, 3.0,
-                   2.0, 1.0, 4.0, 3.0,
-                   ]
-script_cmd_itv_arrs = [
-    ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-    ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-    ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-    ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-]
+# script_cmd_arrs = [
+#     'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+#     'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+#     'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+#     'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+# ]
+# script_cmd_titles = [
+#     'zoom wide', 'zoom stop', 'af execute', 'Capture NYX',
+#     'zoom narrow', 'zoom stop', 'af execute', 'Capture NYX',
+#     'focus near', 'focus stop', 'af execute', 'Capture NYX',
+#     'focus far', 'focus stop', 'af execute', 'Capture NYX',
+# ]
+# script_itv_arrs = [2.0, 1.0, 4.0, 3.0,
+#                    2.0, 1.0, 4.0, 3.0,
+#                    2.0, 1.0, 4.0, 3.0,
+#                    2.0, 1.0, 4.0, 3.0,
+#                    ]
+# script_cmd_itv_arrs = [
+#     ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+#     ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+#     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+#     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+# ]
 
 # Network Information form User Input
 data_sending = True
@@ -358,6 +358,9 @@ etc_obj = {}
 # etc Button
 etc_btn_obj = {'drop_down': None, 'script_clear': None}
 
+# log Obj
+res_log_obj = None
+
 # RTSP Information
 rtsp_url = ''
 ipc_id = ''
@@ -368,7 +371,8 @@ video_player_ch2 = None
 video_player_ch3 = None
 video_player_ch4 = None
 
-# selected ch is one of below ch(ch1_rtsp_info ....)
+# the selected ch is one of below ch(ch1_rtsp_info ....)
+# 2025.06.30 Added Muilti Sensor PT Drv
 selected_ch = None
 ch1_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port': '', 'port': '', 'url': '',
                  'x': 0, 'y': 0,
@@ -386,6 +390,8 @@ ch4_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port
                  'x': ch1_rtsp_info['w'] + 5, 'y': ch1_rtsp_info['h'] + 5,
                  'h': cam1_resolution['h'] / 2, 'w': cam1_resolution['w'] / 2
                  }
+pt_drv_info = {'ch': '', 'model': '', 'ip': '', 'port': '', 'drv': False}  # Default Port :1470
+
 
 # PTZ/OSD Toggle Variable
 ptz_osd_toggle_flag = False
@@ -428,23 +434,47 @@ cooled_lens_pos_spd = [0, 0, 0, 0, 0, 0, 0]
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
 right_text_fd_size = int(WINDOWS_SIZE['x'] * 0.01875)
 
+pt_drv_btn_pos = {'x': info_start_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+                  'h': lbl_size['h'], 'w': lbl_size['w'] / 3 + 15,
+                  'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'PT Drv'}
 
-ch1_btn_pos = {'x': info_start_pos['x'] + lbl_size['w'] * 2.5, 'y': info_start_pos['y'] - 20,
+# pt_eo_btn_pos = {'x': pt_drv_btn_pos['x'] + 45, 'y': info_start_pos['y'] - 20,dk
+#                  'h': lbl_size['h'], 'w': lbl_size['w'] / 3 + 15,
+#                  'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH1'}
+# pt_ir_btn_pos = {'x': pt_eo_btn_pos['x'] + 45, 'y': info_start_pos['y'] - 20,
+#                  'h': lbl_size['h'], 'w': lbl_size['w'] / 3 + 15,
+#                  'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH2'}
+
+ch1_btn_pos = {'x': pt_drv_btn_pos['x'] + lbl_size['w'] + 60, 'y': info_start_pos['y'] - 20,
                'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH1'}
-ch2_btn_pos = {'x': ch1_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+ch2_btn_pos = {'x': ch1_btn_pos['x'] + 40, 'y': info_start_pos['y'] - 20,
                'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH2'}
-ch3_btn_pos = {'x': ch2_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+ch3_btn_pos = {'x': ch2_btn_pos['x'] + 40, 'y': info_start_pos['y'] - 20,
                'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH3'}
-ch4_btn_pos = {'x': ch3_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+ch4_btn_pos = {'x': ch3_btn_pos['x'] + 40, 'y': info_start_pos['y'] - 20,
                'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
                'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'CH4'}
-test_btn = {'x': ch4_btn_pos['x'] + 50, 'y': info_start_pos['y'] - 20,
+
+test_btn = {'x': ch4_btn_pos['x'] + 40, 'y': info_start_pos['y'] - 20,
             'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
             'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'TEST'}
 
+save_btn = {'x': test_btn['x'] + 40, 'y': info_start_pos['y'] - 20,
+            'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
+            'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Save'}
+
+arrow_left_btn = {'pos1_x': save_btn['x'] + 35, 'pos1_y': info_start_pos['y'] - 20 + lbl_size['h']/2,
+                  'pos2_x': save_btn['x'] + 80, 'pos2_y': info_start_pos['y'] - 20,
+                  'pos3_x': save_btn['x'] + 80, 'pos3_y': info_start_pos['y'] - 20 + lbl_size['h'],
+                  'bg': my_color['bg'], 'fg': my_color['fg'], 'text': ''}
+
+arrow_right_btn = {'pos1_x': arrow_left_btn['pos2_x'] + 25, 'pos1_y': arrow_left_btn['pos2_x'] - 20 + lbl_size['h']/2,
+                   'pos2_x': arrow_left_btn['pos2_x'] + 5, 'pos2_y': arrow_left_btn['pos2_x'] - 20,
+                   'pos3_x': arrow_left_btn['pos2_x'] + 40, 'pos3_y': arrow_left_btn['pos2_x'] - 20 + lbl_size['h'],
+                   'bg': my_color['bg'], 'fg': my_color['fg'], 'text': ''}
 
 validator_lbl = {'x': info_start_pos['x'], 'y': info_start_pos['y'],
                  'h': lbl_size['h'], 'w': lbl_size['w'],

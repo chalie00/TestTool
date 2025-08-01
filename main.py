@@ -37,7 +37,7 @@ class TestTool(tk.Frame):
 
         # ========================================== Log Text Field ============================================
         log_pos = Cons.log_txt_fld_info
-        log_fld = Res.Response(parent, log_pos)
+        Cons.res_log_obj = Res.Response(parent, log_pos)
 
         # ========================================== System Information  ============================================
         sys_info_pos = Cons.sys_info_tab
@@ -57,12 +57,7 @@ class TestTool(tk.Frame):
         self.parent.config(padx=15, pady=15)
 
 
-# TODO: Command File Import Function
-# TODO: Generate exe format
-# TODO: When script mode, need to apply repeat count
-# TODO: Privacy Mask for FT
-# TODO: User Add/Delete for FT
-# TODO: Config Txt for FT
+# TODO: Script File Import Function
 # TODO: Searching App link for FT
 
 if __name__ == '__main__':
@@ -72,5 +67,7 @@ if __name__ == '__main__':
 
     app.pack()
     Comm.click_register_button(app)
+
+    root.focus_set()
 
     root.mainloop()

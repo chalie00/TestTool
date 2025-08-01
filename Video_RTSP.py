@@ -1,4 +1,5 @@
 import threading
+import icecream as ic
 
 import Constant as Cons
 import Communication as Comm
@@ -10,7 +11,7 @@ def open_video_window():
     Comm.find_ch()
     # Cons.selected_model = Cons.selected_ch['model']
     Cons.selected_model = Cons.selected_ch['model'] if Cons.selected_ch else 'UNKNOWN_MODEL'
-    print(Cons.selected_ch)
+    # print(Cons.selected_model)
     # Create only one socket for Minigimbal
     if Cons.selected_model == 'MiniGimbal':
         threading.Thread(target=handle_minigimbal, daemon=True).start()
@@ -90,11 +91,14 @@ def generate_rtsp_url(info):
         'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
         'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
         'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1',
-        # MiniGimbal can not display rtsp stream in currently
+        # MiniGimbal cannot display rtsp stream in currently
         'MiniGimbal': rf'',
         # EO Video Port: 20100, IR Video Port: 30100
         'TMS_20_EO': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net0',
         'TMS_20_IR': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net1',
+        #  2025.06.25 Added a CTEC EO Camera
+        # rtsp://192.168.100.160:554/AVStream1_1
+        'CTEC': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/AVStream1_1',
     }
     return url_patterns.get(info['model'], 'Invalid model')
 

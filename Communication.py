@@ -27,6 +27,64 @@ import Dialog
 file_lock = threading.Lock()
 
 
+# 2025.06.26 Added Function for TMS-10
+def send_cmd_for_multi(send_cmd, title, root_view):
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
+    port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+    client = socket.socket(AF_INET, SOCK_STREAM)
+
+    try:
+        client.settimeout(3)
+        # -*- coding: utf-8 -*-
+        client.connect((host, port))
+        if Cons.data_sending:
+            client.send(bytes(send_cmd))
+            reply = client.recv(buf_size)
+            hex_data = binascii.hexlify(reply).decode('utf-8')
+            ic(hex_data)
+        else:
+            print('Protocol sending was stopped')
+
+    except socket.error as err:
+        print(f'network error:{err}')
+        dialog_txt = f'Network Error \n Please check a network info.\n {err}'
+        Dialog.DialogBox(root_view, dialog_txt)
+        logging.error(err)
+    finally:
+        client.close()
+
+
+def send_cmd_only_for_multi(send_cmd):
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
+    # ic(Cons.selected_ch)
+    port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+    client = socket.socket(AF_INET, SOCK_STREAM)
+    try:
+        client.settimeout(3)
+        if Cons.data_sending:
+            client.connect((host, port))
+            client.send(bytes(send_cmd))
+            reply = client.recv(buf_size)
+            # ic(reply.hex())
+            Cons.res_log_obj.multi_response(reply.hex())
+        else:
+            print('Protocol sending was stopped')
+
+    except socket.error as err:
+        print(f'network error:{err}')
+        dialog_txt = f'Network Error \n Please check a network info.\n {err}'
+        # Dialog.DialogBox(root_view, dialog_txt)
+        logging.error(err)
+    finally:
+        client.close()
+
+
 # Sending Command with hex
 def send_cmd_for_uncooled(send_cmd, title, root_view):
     # print('send cmd for uncooled')
@@ -48,20 +106,17 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
             reply = client.recv(buf_size)
             hex_data = binascii.hexlify(reply).decode('utf-8')
             hex_data_14dig = [f'{hex_data[i:i + 14]}' for i in range(0, len(hex_data), 14)]
-            # (2024.07.17) Add 22 blank spaces to all elements except the first one
-            # hex_data_14dig_24space = [f'{line}' if i == 0 else f'{" " * 22}{line}' for i, line in
-            #                           enumerate(hex_data_14dig)]
-            # print(hex_data_14dig_24space)
-            # Store Constant for display Query
+
             if title in Cons.uncooled_query_arrays:
                 send_title = title
             else:
                 send_title = 'Normal Query'
+            ic('send_cmd_for_uncooled in Comm', reply.hex())
             uncooled_store_response(root_view, send_title, hex_data)
 
             current_time = datetime.now()
             time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-            # hex_with_time = rf'{time_str} : {hex_data_14dig_24space[0]}'
+            # hex_with_time = rf'{time_str}: {hex_data_14dig_24space[0]}'
             hex_with_time = fr'{hex_data_14dig[0]} : {time_str}'
             # print(response = {hex_with_time}\n')
             hex_data_14dig[0] = hex_with_time
@@ -78,6 +133,30 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
         print(f'network error:{err}')
         dialog_txt = f'Network Error \n Please check a network info.\n {err}'
         Dialog.DialogBox(root_view, dialog_txt)
+        logging.error(err)
+    finally:
+        client.close()
+
+def send_cmd_for_uncooled_only_cmd(cmd):
+    ic(cmd)
+    find_ch()
+    host = Cons.selected_ch['ip']
+    input_port = Cons.selected_ch['port']
+    port = int(0) if Cons.port == '' else int(input_port)
+    buf_size = Cons.buf_size
+    client = socket.socket(AF_INET, SOCK_STREAM)
+    try:
+        client.settimeout(3)
+        client.connect((host, port))
+        if Cons.data_sending:
+            client.send(bytes(cmd))
+            reply = client.recv(buf_size)
+            ic('send_cmd_for_uncooled_only_cmd in Comm', reply.hex())
+        else:
+            print('Protocol sending was stopped')
+
+    except socket.error as err:
+        print(f'network error:{err}')
         logging.error(err)
     finally:
         client.close()
@@ -397,7 +476,7 @@ def calc_lrc(send_form):
     return chr(lrc_hi), chr(lrc_lo)
 
 
-# (2024.07.19): Create Protocol form for NYX
+# (2024.07.19): Create a Protocol form for NYX
 def create_form(cmd):
     lrc_hi, lrc_lo = calc_lrc(cmd)
     cmd += lrc_hi + lrc_lo + '\n'
@@ -647,11 +726,13 @@ def send_cmd_to_Finetree(url, params):
 
 
 # (2024.09.25) Find selected model
+# 2025.06.30: Added a PT Driver
 @staticmethod
 def find_ch():
     model = Cons.selected_model
     model_arrays = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info,
-                    Cons.ch3_rtsp_info, Cons.ch4_rtsp_info]
+                    Cons.ch3_rtsp_info, Cons.ch4_rtsp_info,
+                    Cons.pt_drv_info]
     for i, ch in enumerate(model_arrays):
         if model == ch['model']:
             Cons.selected_ch = model_arrays[i]

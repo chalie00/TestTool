@@ -21,8 +21,10 @@ def model_select(event, parent, sel_op):
     col_name = []
     current_sel = sel_op.get()
     Cons.model_obj['model_name'] = current_sel
-    print(current_sel)
-    if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'MiniGimbal']:
+    Cons.selected_model = current_sel
+    # print(current_sel)
+    # print(Cons.selected_model)
+    if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'MiniGimbal', 'Multi', 'CTEC']:
         col_name = Cons.column_array
     elif current_sel in ['FineTree']:
         col_name = Cons.column_array_fine_tree
@@ -36,13 +38,15 @@ def model_select(event, parent, sel_op):
                   Cons.treeview_pos['x'], Cons.treeview_pos['y'], command_data)
 
     pt.PTZ(parent).refresh_ptz()
+    parent.focus_set()
 
 
-# Search a protocol which user typed text
+# Search a protocol which user typed a text
 def search_command(event, parent, sear_fld, col_name, col_count):
     query = sear_fld.get().lower()
     selected_item = []
     command_data = Mf.get_data_from_csv(Cons.cmd_path)
+    # ic(command_data)
     for item in command_data:
         if query in item[0].lower():
             selected_item.append(item)
@@ -66,7 +70,7 @@ def interval_add(parent, interval):
     tb.Table(parent)
 
 
-# (2024.07.04): Start thread with selected script
+# (2024.07.04): Start a thread with a selected script
 def start_thread(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_start_btn, script_stop_btn):
     global thread
     if not thread_running.is_set():
@@ -103,8 +107,8 @@ def clr_script(parent, script_start_btn, script_stop_btn):
     Mf.clr_table_arrays(parent)
 
 
-# (2024.07.04): Start thread with selected script
-# (2024.10.18): Add a Finetree for script
+# (2024.07.04): Start thread with a selected script
+# (2024.10.18): Add a Finetree for a script
 # (2024.10.18): modify threading for repeat
 def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_start_btn, script_stop_btn) -> []:
     current_time = datetime.now()
@@ -187,3 +191,31 @@ def set_ui_state(ui_obj, state):
                 ui_item.config(state=state)
             except Exception as e:
                 print(rf'Failed to change the {ui_item}: {e}')
+
+
+# 2025.06.30: pushed_PT_Drv Button
+def pushed_pt_drv():
+    info = getattr(Cons, 'pt_drv_info')
+    if info['drv']:
+        info.update({
+            'ch': '',
+            'model': '',
+            'ip': '',
+            'port': '',
+            'drv': False,
+        })
+        Cons.channel_buttons['pt_drv'].config(bg=Cons.pt_drv_btn_pos['bg'])
+        for i in range(3, 5):
+            Cons.channel_buttons[f'CH{i}'].config(state='normal')
+    else:
+        info.update({
+            'ch': 'pt_drv',
+            'model': Cons.model_obj['model_name'],
+            'ip': Cons.network_obj['ip_txt'].get(),
+            'port': Cons.network_obj['port_txt'].get(),
+            'drv': True,
+        })
+        Cons.channel_buttons['pt_drv'].config(bg='green')
+        for i in range(3, 5):
+            Cons.channel_buttons[f'CH{i}'].config(state='disabled')
+

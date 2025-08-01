@@ -22,8 +22,18 @@ class VideoPlayer:
         self.canvas.place(x=pos['x'], y=pos['y'])
         self.canvas.my_id = tag
 
-        self.instance = vlc.Instance('--network-caching=300', '--rtsp-tcp', '--clock-jitter=0', '--sout-mux-caching=10',
-                                     '--avcodec-hw=none')
+        # self.instance = vlc.Instance('--network-caching=500', '--rtsp-tcp', '--clock-jitter=0',
+        #                              '--sout-mux-caching=10', '--avcodec-hw=none', '--rtsp-frame-buffer-size=1000000',
+        #                              '--verbose=2', '--no-drop-late-frames', '--no-skip-frames')
+        self.instance = vlc.Instance(    '--avcodec-hw=any',              # 가능한 하드웨어 디코딩 사용
+                                         '--network-caching=150',        # 네트워크 버퍼 150ms (기본 1000~3000보다 낮춤)
+                                         '--rtsp-tcp',                   # TCP로 강제 (필요 시 제거해 테스트)
+                                         '--clock-jitter=0',
+                                         '--live-caching=100',           # 실시간 스트리밍 지연 감소
+                                         '--file-caching=100',
+                                         '--sout-mux-caching=100',
+                                         '--drop-late-frames',
+                                         '--skip-frames')
         self.player = self.instance.media_player_new()
         self.player.set_hwnd(self.canvas.winfo_id())
 
