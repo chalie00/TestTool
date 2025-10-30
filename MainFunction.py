@@ -1,3 +1,5 @@
+import threading
+
 import openpyxl
 import tkinter
 import string
@@ -158,7 +160,7 @@ def clicked_table_element(event, root_view, tv):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
-    # ic(rf'ip:{host}, port:{input_port}, port:{port}')
+    ic(rf'ip:{host}, port:{input_port}, port:{port}')
 
     iden = tv.identify_row(event.y)
     tags = tv.item(iden, 'tags')
@@ -187,14 +189,14 @@ def clicked_table_element(event, root_view, tv):
 # (2024.10.18): FineTree Added to script mode
 def handle_script_mode(event, iden, value, root_view):
     Cons.data_sending = True
-    if Cons.selected_model in ['Uncooled', 'DRS', 'MiniGimbal']:
+    if Cons.selected_model in ['Uncooled', 'DRS', 'MiniGimbal', 'Multi']:
         hex_value = select_item(event, root_view)
         Cons.script_cmd_arrs.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
         print(Cons.script_cmd_titles)
         print(hex_value)
 
-        gene_interval_arrays(value)
+        gene_interval_arrays(value, root_view)
         check_interval_active()
 
     elif Cons.selected_model == 'NYX Series':
@@ -202,7 +204,7 @@ def handle_script_mode(event, iden, value, root_view):
         # converted_cmd = Comm.create_form(value[1])
         Cons.script_cmd_arrs.append(value[1])
 
-        gene_interval_arrays(value)
+        gene_interval_arrays(value, root_view)
         check_interval_active()
 
     elif Cons.selected_model == 'FineTree':
@@ -211,7 +213,7 @@ def handle_script_mode(event, iden, value, root_view):
         items = Cons.fine_tree_cmd_data[index]
         # print(rf'items is {items}')
         Cons.script_cmd_titles.append(value[0])
-        gene_interval_arrays(value)
+        gene_interval_arrays(value, root_view)
         check_interval_active()
 
         url = items[2]
@@ -261,7 +263,7 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         Comm.send_cmd_only_for_multi(hex_value)
 
 
-def gene_interval_arrays(value):
+def gene_interval_arrays(value, root_view):
     if not Cons.script_cmd_itv_arrs:
         Cons.script_cmd_itv_arrs = Cons.script_cmd_itv_arrs or [[0] * 2 for _ in range(len(Cons.script_cmd_titles))]
         for i, cmd_title in enumerate(Cons.script_cmd_titles):
@@ -273,6 +275,7 @@ def gene_interval_arrays(value):
         print(f'added = {added}')
         print(Cons.script_cmd_itv_arrs)
         print(Cons.script_cmd_arrs)
+    script_tb = tb.Table(root_view)
 
 
 # (2024.07.04): Clear the Script Arrays
@@ -341,7 +344,7 @@ def capture_image(root, filename):
             return
 
         x = root.winfo_rootx()
-        y = root.winfo_roo
+        y = root.winfo_rooty()
         w = root.winfo_width()
         h = root.winfo_height()
         # print(rf'capture position is {x}, {y}, {w}, {h}')
@@ -361,6 +364,54 @@ def capture_image(root, filename):
             mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
     except Exception as e:
         print(f'capture image error: {e}')
+# def do_capture(monitor_geom, filename, result_callback=None):
+#     try:
+#         top, left, width, height = monitor_geom
+#         if width <= 0 or height <= 0:
+#             raise ValueError("invalid size for capture")
+#
+#         monitor = {
+#             "top": top,
+#             "left": left,
+#             "width": width,
+#             "height": height
+#         }
+#         with mss.mss() as sct:
+#             screenshot = sct.grab(monitor)
+#             mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
+#         if result_callback:
+#             result_callback(True, filename)
+#     except Exception as e:
+#         if result_callback:
+#             result_callback(False, e)
+#         else:
+#             print(f'capture image error: {e}')
+#
+#
+# # 메인 스레드에서 호출할 래퍼: tkinter API를 여기서만 사용
+# def capture_image(root, filename, result_callback=None):
+#     if not root.winfo_exists():
+#         print('root not exists')
+#         if result_callback:
+#             result_callback(False, RuntimeError("root not exists"))
+#         return
+#
+#     x = root.winfo_rootx()
+#     y = root.winfo_rooty()
+#     w = root.winfo_width()
+#     h = root.winfo_height()
+#
+#     if w <= 0 or h <= 0:
+#         print('width or height is 0')
+#         if result_callback:
+#             result_callback(False, RuntimeError("invalid geometry"))
+#         return
+#
+#     # mss expects top/left/width/height in its own coordinate style
+#     monitor_geom = (y, x, w, h)  # 기존 코드가 top=y, left=x
+#     # 백그라운드에서 실제 캡처
+#     thread = threading.Thread(target=do_capture, args=(monitor_geom, filename, result_callback), daemon=True)
+#     thread.start()
 
 
 def print_monitor_info():

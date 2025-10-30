@@ -60,15 +60,14 @@ finetree_parms_arrays = []
 # Script Variable
 script_toggle_flag = None
 
-# script_hex_nyx_cmd_arrays = []
-# script_cmd_titles = []
-# interval_arrays = []
-# cmd_itv_arrays = []
+script_cmd_arrs = []
+script_cmd_titles = []
+script_itv_arrs = []
+script_cmd_itv_arrs = []
 
-# script_itv_arrs = []
-# script_cmd_arrs = []
-# script_cmd_titles = []
-# script_cmd_itv_arrs = []
+#
+
+
 
 # ScreenShot Hex Value
 capture_hex = [255, 1, 0, 0, 0, 0, 1]
@@ -180,46 +179,46 @@ uncooled_query_arrays = [
 # Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
 capture_hex = [255, 1, 0, 0, 0, 0, 0]
-script_cmd_arrs = [
-    [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 1],
-    [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 1],
-    [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 1],
-    [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 1],
-    [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 1],
-    [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-    [255, 1, 0, 0, 0, 0, 1]
-]
-
-
-script_cmd_titles = [
-    'Zoom Out', 'All Stop', 'AF', 'ScreenShot',
-    'Far', 'All Stop', 'AF', 'ScreenShot',
-    'Near', 'All Stop', 'AF', 'ScreenShot',
-    'Zoom In', 'All Stop', 'AF', 'ScreenShot',
-    'Far', 'All Stop', 'AF', 'ScreenShot',
-    'Near', 'All Stop', 'AF', 'ScreenShot'
-]
-script_itv_arrs = [
-    2.0, 0.3, 12.0, 1.0,
-    2.0, 0.3, 12.0, 1.0,
-    2.0, 0.3, 12.0, 1.0,
-    2.0, 0.3, 12.0, 1.0,
-    2.0, 0.3, 12.0, 1.0,
-    2.0, 0.3, 12.0, 1.0
-]
-script_cmd_itv_arrs = [
-    ['Zoom Out', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-    ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-    ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-    ['Zoom In', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-    ['Far', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0],
-    ['Near', 2.0], ['All Stop', 0.3], ['AF', 12.0], ['ScreenShot', 1.0]
-]
+# script_cmd_arrs = [
+#     [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0],
+#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+#     [255, 1, 0, 0, 0, 0, 0]
+# ]
+#
+#
+# script_cmd_titles = [
+#     'Zoom Out', 'All Stop', 'Out AF', 'ScreenShot',
+#     'Far', 'All Stop', ' Far AF', 'ScreenShot',
+#     'Near', 'All Stop', 'Near AF', 'ScreenShot',
+#     'Zoom In', 'All Stop', 'In AF', 'ScreenShot',
+#     'Far', 'All Stop', 'Far AF', 'ScreenShot',
+#     'Near', 'All Stop', 'Near AF', 'ScreenShot'
+# ]
+# script_itv_arrs = [
+#     2.0, 0.3, 15.0, 1.0,
+#     2.0, 0.3, 15.0, 1.0,
+#     2.0, 0.3, 15.0, 1.0,
+#     2.0, 0.3, 15.0, 1.0,
+#     2.0, 0.3, 15.0, 1.0,
+#     2.0, 0.3, 15.0, 1.0
+# ]
+# script_cmd_itv_arrs = [
+#     ['Zoom Out', 2.0], ['All Stop', 0.3], ['Out AF', 15.0], ['ScreenShot', 1.0],
+#     ['Far', 2.0], ['All Stop', 0.3], ['Far AF', 15.0], ['ScreenShot', 1.0],
+#     ['Near', 2.0], ['All Stop', 0.3], ['Near AF', 15.0], ['ScreenShot', 1.0],
+#     ['Zoom In', 2.0], ['All Stop', 0.3], ['In AF', 15.0], ['ScreenShot', 1.0],
+#     ['Far', 2.0], ['All Stop', 0.3], ['Far AF', 15.0], ['ScreenShot', 1.0],
+#     ['Near', 2.0], ['All Stop', 0.3], ['Near AF', 15.0], ['ScreenShot', 1.0]
+# ]
 
 # NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)

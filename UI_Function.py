@@ -75,16 +75,19 @@ def start_thread(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script
     global thread
     if not thread_running.is_set():
         thread_running.set()
+        Cons.data_sending = True
         # target에 함수 이름만 넘기고 인자는 별도로 설정 해야함
         thread = threading.Thread(target=run_script, args=(parent, app, repeat_txt_fld, interval_txt_fld,
-                                                           treeview, script_start_btn, script_stop_btn))
-        Cons.data_sending = True
+                                                           treeview, script_start_btn, script_stop_btn), daemon=True)
 
         thread.start()
+    else:
+        ic('[info] script is alerady running')
 
 
 def stop_script(script_start_btn, script_stop_btn):
     global thread
+    thread_running.clear()
     Cons.data_sending = False
     script_start_btn.config(state='normal')
     script_stop_btn.config(state='disabled')
@@ -92,10 +95,10 @@ def stop_script(script_start_btn, script_stop_btn):
     ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj, Cons.etc_btn_obj]
     set_ui_state(ui_obj, 'normal')
 
-    thread_running.clear()
-
     if thread is not None and thread.is_alive():
         thread.join(timeout=1)  # Allow GUI to process events while waiting
+        if thread.is_alive():
+            print("[warn] worker thread still alive after join timeout")
         thread = None
 
 
@@ -114,7 +117,7 @@ def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_s
     current_time = datetime.now()
     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
     response_file_name = rf'{Cons.log_path}_{time_str}.txt'
-    repeat = int(repeat_txt_fld.get())
+    repeat = int(repeat_txt_fld.get() or '1')
     ui_obj = [Cons.model_obj, Cons.network_obj, Cons.etc_obj, Cons.etc_btn_obj]
     # 2025.05.28: Disable some UI(model, network, etc), but must be modified PTZ, Preset, Tour, Script Stop
     set_ui_state(ui_obj, 'disable')
@@ -124,12 +127,12 @@ def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_s
         script_stop_btn.config(state='normal')
 
         for i in range(repeat):
+            if not thread_running.is_set():
+                break
+
             ic(rf'Repeat {i + 1}')
             if not Cons.data_sending:
-                return
-
-            if not thread_running.is_set():
-                thread_running.set()
+                break
 
             if Cons.script_toggle_flag:
                 execute_model_logic(app, parent, response_file_name)
@@ -155,8 +158,9 @@ def execute_model_logic(app, parent, res_file_name):
     interval = Cons.script_itv_arrs
     script = Cons.script_cmd_arrs
     titles = Cons.script_cmd_titles
+    print(script)
 
-    if Cons.selected_model in ['Uncooled', 'DRS']:
+    if Cons.selected_model in ['Uncooled', 'DRS', 'Multi']:
         Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
     elif Cons.selected_model == 'NYX Series':
         Comm.send_cmd_to_nyx_with_interval(app, parent, titles, script, interval, res_file_name)

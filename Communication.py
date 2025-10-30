@@ -64,6 +64,12 @@ def send_cmd_only_for_multi(send_cmd):
     # ic(Cons.selected_ch)
     port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.buf_size
+
+    # 일시적으로 송신 가능 상태가 아니면, False라도 임시로 송신 허용
+    was_sending = Cons.data_sending
+    if not Cons.data_sending:
+        Cons.data_sending = True
+
     client = socket.socket(AF_INET, SOCK_STREAM)
     try:
         client.settimeout(3)
@@ -102,6 +108,7 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
         # client.send(bytearray([0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35]))
         # client.send(bytes([0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35]))
         if Cons.data_sending:
+            ic('send_cmd_uncooled in Comm', send_cmd)
             client.send(bytes(send_cmd))
             reply = client.recv(buf_size)
             hex_data = binascii.hexlify(reply).decode('utf-8')
@@ -111,7 +118,7 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
                 send_title = title
             else:
                 send_title = 'Normal Query'
-            ic('send_cmd_for_uncooled in Comm', reply.hex())
+            # ic('send_cmd_for_uncooled in Comm', reply.hex())
             uncooled_store_response(root_view, send_title, hex_data)
 
             current_time = datetime.now()
@@ -137,6 +144,7 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
     finally:
         client.close()
 
+
 def send_cmd_for_uncooled_only_cmd(cmd):
     ic(cmd)
     find_ch()
@@ -158,21 +166,24 @@ def send_cmd_for_uncooled_only_cmd(cmd):
     except socket.error as err:
         print(f'network error:{err}')
         logging.error(err)
+
     finally:
+
+
         client.close()
 
 
 def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_title: [str], root_view):
-    current_time = datetime.now()
-    time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
     for i, protocol in enumerate(send_cmds):
-        print(i)
-        print(rf'protocol is {protocol}')
-        print(datetime.now())
+        # print(i)
+        # print(rf'protocol is {protocol}')
+        # print(datetime.now())
         if Cons.data_sending:
             if protocol == Cons.capture_hex:
+                current_time = datetime.now()
+                time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
                 path = Cons.capture_path['zoom']
-                filename = rf'{path}/{str(cmd_title[i - 1])}-{time_str}-{i}.png'
+                filename = rf'{path}/{time_str}-{i}-{str(cmd_title[i - 1])}.png'
                 Mf.capture_image(root_view, filename)
             else:
                 if cmd_title[i - 1] in Cons.uncooled_query_arrays:
@@ -181,7 +192,7 @@ def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_t
                     title = 'Normal Query'
                 if Cons.selected_model == 'Uncooled':
                     send_cmd_for_uncooled(protocol, title, root_view)
-                elif Cons.selected_model in ['DRS', 'MiniGimbal']:
+                elif Cons.selected_model in ['DRS', 'MiniGimbal', 'Multi']:
                     find_ch()
                     host = Cons.selected_ch['ip']
                     port = int(Cons.selected_ch['port'])
@@ -302,7 +313,7 @@ def send_cmd_to_nyx(root, cmd):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, send_port))
         s.sendall(cmd.encode('utf-8'))
-        response = s.recv(1024)
+        response = s.recv(buf_size)
 
         current_time = datetime.now()
         time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')

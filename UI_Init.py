@@ -194,7 +194,8 @@ def Init_Ptz_Preset_Script(root, parent, app, treeview):
     Cons.interval_button = Mf.make_element(x=inter_add_btn['x'], y=inter_add_btn['y'],
                                            h=inter_add_btn['h'], w=inter_add_btn['w'], element='Button',
                                            bg=inter_add_btn['bg'], text=inter_add_btn['text'],
-                                           anchor='center', command=lambda: Ufn.interval_add(parent, inter_txt))
+                                           anchor='center',
+                                           command=lambda: Ufn.interval_add(parent, Cons.etc_obj['inter_txt']))
 
     # Set a Script Mode Slide and Run Button
     script_btn_id = 'SCRIPT'
@@ -257,13 +258,15 @@ def test_code():
     test_code_delete()
     # ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
     if Cons.selected_model == 'NYX Series':
-        test_txt = {'ip': '192.168.22.240', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.148', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'DRS':
-        test_txt = {'ip': '192.168.100.161', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'bw84218899!'}
+        # test_txt = {'ip': '192.168.100.161', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'bw84218899!'}
+        test_txt = {'ip': '192.168.100.153', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'FineTree':
-        test_txt = {'ip': '192.168.100.152', 'port': '8081', 'rtsp_port': '554', 'id': 'admin','pw': 'admin1357'}
+        test_txt = {'ip': '192.168.100.152', 'port': '80', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
     elif Cons.selected_model == 'Uncooled':
-        test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.159', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
+        # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'Multi':
         test_txt = {'ip': '192.168.100.162', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'CTEC':

@@ -73,6 +73,7 @@ class PTZ:
                 up_cmd = 'NYX.SET#isp0_guic=up'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, up_cmd)
             elif Cons.selected_model == 'FineTree':
+                # it should be modified to http://ip/cgi-bin/ptz/conmtrol.php?move=up&pspd=63
                 params = {'move': 'up'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
             elif Cons.selected_model == 'DRS':
