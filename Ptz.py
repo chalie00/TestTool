@@ -107,7 +107,7 @@ class PTZ:
                 self.send_miniGimbal('op_zoom_in')
             elif Cons.selected_model == 'Multi':
                 self.send_pt_drv('zoom_in', 'eo')
-                self.send_pt_drv('zoom_in', 'ir')
+                # self.send_pt_drv('zoom_in', 'ir')
 
     def right_top(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -181,7 +181,7 @@ class PTZ:
                 self.send_miniGimbal('op_zoom_out')
             elif Cons.selected_model == 'Multi':
                 self.send_pt_drv('zoom_out', 'eo')
-                self.send_pt_drv('zoom_out', 'ir')
+                # self.send_pt_drv('zoom_out', 'ir')
 
     def right_down(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
@@ -408,7 +408,8 @@ class PTZ:
     def send_data(self, cmd):
         ic('send_data in PTZ', cmd)
         hex_array = [int(cmd[i:i + 2], 16) for i in range(0, len(cmd), 2)]
-        Th.send_cmd_for_uncooled(hex_array, 'Normal Query', self.root)
+        # Th.send_cmd_for_uncooled(hex_array, 'Normal Query', self.root)
+        Th.send_cmd_for_TTL_uncooled_async(hex_array, 'Normal Query', self.root)
 
     # (2024.12.03): Send the CMD to Minigimbal
     def send_miniGimbal(self, dir_str):

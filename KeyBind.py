@@ -171,7 +171,8 @@ def handle_ptz_move(key):
             cmd = uncooled_keymap.get(key)
             if cmd:
                 hex_array = hex_string_to_array(cmd)
-                Comm.send_cmd_for_uncooled_only_cmd(hex_array)
+                # Comm.send_cmd_for_uncooled_only_cmd(hex_array)
+                Comm.send_cmd_for_TTL_uncooled_async(hex_array)
             else:
                 logging.debug(f"[MOVE][Uncooled] no mapping for key '{key}'")
         else:
@@ -211,7 +212,8 @@ def handle_ptz_stop(key):
         elif model == 'uncooled':
             cmd = 'FF010000000001'
             hex_array = hex_string_to_array(cmd)
-            Comm.send_cmd_for_uncooled_only_cmd(hex_array)
+            # Comm.send_cmd_for_uncooled_only_cmd(hex_array)
+            Comm.send_cmd_for_TTL_uncooled_async(hex_array)
         else:
             logging.debug(f"[STOP] Unknown model '{Cons.selected_model}' for key '{key}'")
     except Exception as e:
@@ -245,7 +247,8 @@ def pressed_kbd_direction(event):
             ic('[ExtraKey][Uncooled]', key, cmd)
             if cmd:
                 hex_array = hex_string_to_array(cmd)
-                Comm.send_cmd_for_uncooled_only_cmd(hex_array)
+                # Comm.send_cmd_for_uncooled_only_cmd(hex_array)
+                Comm.send_cmd_for_TTL_uncooled_async(hex_array)
                 return 'break'
     except Exception as e:
         logging.error(f"[ExtraKey] Error: {e}")

@@ -8,6 +8,21 @@ from tkinter import font
 import Constant as Cons
 
 
+# 2025.07.02: Divide 7byte
+def split_by_7bytes(hex_string: str):
+    hex_string = hex_string.lower().replace(" ", "")  # 공백 제거 및 소문자 정리
+    bytes_seven = [hex_string[i:i + 14] for i in range(0, len(hex_string), 14)]
+    return bytes_seven
+
+# 2025.11.04: The displayed value includes the value converted to an int of msb(By5) + lsb(By6)
+def hex_to_signed(value: str, bits: int = 16) -> int:
+    """주어진 16진수를 지정된 비트수의 signed 값으로 변환"""
+    val = int(value, 16)
+    if val >= 2 ** (bits - 1):
+        val -= 2 ** bits
+    return val
+
+
 class Response:
     def __init__(self, root, pos):
         self.root = root
@@ -64,11 +79,12 @@ class Response:
     def multi_response(self, res_txt: str):
         current_time = datetime.now()
         time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-        bytes_seven = self.split_by_7bytes(res_txt)\
+        bytes_seven = split_by_7bytes(res_txt)\
 
         for res_cmd in bytes_seven:
             spaced = " ".join([res_cmd[i:i + 2] for i in range(0, len(res_cmd), 2)])
-            self.text_widget.insert(tk.END, f"[{time_str}] {spaced}\n")
+            msb_lsb = hex_to_signed(res_cmd[8:12], 16)
+            self.text_widget.insert(tk.END, f"[{time_str}] {spaced} : 'MSB+LSB Int:' {msb_lsb}\n")
         self.text_widget.see(tk.END)
 
         # If you start with FF, print it on the next line.
@@ -84,8 +100,5 @@ class Response:
 
         self.text_widget.see(tk.END)
 
-    # 2025.07.02: Divide 7byte
-    def split_by_7bytes(self, hex_string: str):
-        hex_string = hex_string.lower().replace(" ", "")  # 공백 제거 및 소문자 정리
-        bytes_seven = [hex_string[i:i + 14] for i in range(0, len(hex_string), 14)]
-        return bytes_seven
+
+

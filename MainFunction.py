@@ -160,7 +160,7 @@ def clicked_table_element(event, root_view, tv):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
-    ic(rf'ip:{host}, port:{input_port}, port:{port}')
+    # ic(rf'ip:{host}, port:{input_port}, port:{port}')
 
     iden = tv.identify_row(event.y)
     tags = tv.item(iden, 'tags')
@@ -234,7 +234,8 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
     if Cons.selected_model in 'Uncooled':
         hex_value = select_item(event, root_view)
         ic('handle_normal_mode in MF', hex_value)
-        Comm.send_cmd_for_uncooled(hex_value, title, root_view)
+        # Comm.send_cmd_for_uncooled(hex_value, title, root_view)
+        Comm.send_cmd_for_TTL_uncooled_async(hex_value, title, root_view)
     elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
         Comm.send_cmd_for_drs(host, port, hex_array, root_view)

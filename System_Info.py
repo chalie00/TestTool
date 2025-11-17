@@ -195,7 +195,8 @@ class SysInfo:
                     }
 
                     for title, protocol in titles.items():
-                        Comm.send_cmd_for_uncooled(protocol, title, self.root)
+                        # Comm.send_cmd_for_uncooled(protocol, title, self.root)
+                        Comm.send_cmd_for_TTL_uncooled_async(protocol, title, self.root)
 
                 elif Cons.selected_model == 'NYX Series':
                     print('NYX Updated')

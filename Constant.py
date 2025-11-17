@@ -280,6 +280,23 @@ port: int = 0  # Default 32000
 rtsp_port: int = 0
 buf_size = 4096
 
+# for Seyeon TTL
+
+# 확정된 파라미터
+FW_NODE = "ttyS1"
+FW_BAUD = {
+    'Uncooled': 38400,
+    'NYX Series': 57600,
+}.get(selected_model, 38400)
+FW_DBITS = 8
+FW_SBITS = 1
+FW_PARITY = "n"  # 소문자
+
+# 수신 루프 설정
+READ_MAX_BYTES = 8192
+RECV_WAIT_SEC = 3.0  # 최대 대기
+PRE_SEND_DELAY = 0.30  # 헤더 보낸 뒤 터널 준비 시간
+POST_SEND_DELAY = 0.30  # 송신 직후 첫 수신까지 지연
 
 # =================================================== DRS Response =====================================================
 response_txt = []
@@ -298,6 +315,10 @@ drs_response = {
     'roi_x_threshold_temp': '',
     'center_temp': '',
     'temp_info': '', 'colorbar': '', 'center_mark': '', 'min_max': '',
+
+
+
+
     'zoom_pos': '',
     'focus_pos': '',
     'focal_len': '', 'TBD': '', 'zoom_move_flag': '', 'af_flag': '',

@@ -11,7 +11,14 @@ import Communication as Comm
 import Table as tb
 import Response as Res
 import System_Info as SysInfo
-from MainFunction import capture_image
+import TTL_Communication as ttl
+
+
+import ssl, hashlib, binascii, time
+import requests
+from requests.adapters import HTTPAdapter
+from requests.auth import HTTPDigestAuth
+from urllib3.util.ssl_ import create_urllib3_context
 
 
 class TestTool(tk.Frame):

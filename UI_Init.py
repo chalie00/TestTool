@@ -265,7 +265,7 @@ def test_code():
     elif Cons.selected_model == 'FineTree':
         test_txt = {'ip': '192.168.100.152', 'port': '80', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
     elif Cons.selected_model == 'Uncooled':
-        test_txt = {'ip': '192.168.100.159', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
+        test_txt = {'ip': '192.168.100.159', 'port': '443', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
         # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'Multi':
         test_txt = {'ip': '192.168.100.162', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}

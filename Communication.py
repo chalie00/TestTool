@@ -9,15 +9,19 @@ import time as ti
 import requests
 import hashlib
 import uuid
+import time
+import binascii
 
 import Constant as Cons
 import MainFunction as Mf
 import Response as Res
 import System_Info as SysInfo
 import DRS_Response as DR_r
+import TTL_Communication as ttl
 
 from socket import AF_INET, SOCK_STREAM
 from requests.auth import HTTPBasicAuth
+from requests.auth import HTTPDigestAuth
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 from icecream import ic
@@ -191,7 +195,8 @@ def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_t
                 else:
                     title = 'Normal Query'
                 if Cons.selected_model == 'Uncooled':
-                    send_cmd_for_uncooled(protocol, title, root_view)
+                    # send_cmd_for_uncooled(protocol, title, root_view)
+                    send_cmd_for_TTL_uncooled_async(protocol, title, root_view)
                 elif Cons.selected_model in ['DRS', 'MiniGimbal', 'Multi']:
                     find_ch()
                     host = Cons.selected_ch['ip']
@@ -998,3 +1003,136 @@ def send_authenticated_request(params, uri, method='GET', additional_params=None
     response = requests.request(method, full_url, headers=headers)
 
     return response
+
+# 2025.11.17: threading function was applied
+
+def send_cmd_for_TTL_uncooled_async(send_cmd_bytes, title=None, root_view=None):
+    """
+    - send_cmd_bytes: list[int], str(hex), bytes 등 아무거나 받아도 됨
+    - UI 스레드는 바로 리턴되고, 통신은 백그라운드 스레드에서 수행
+    """
+    # 0) 먼저 payload를 bytes로 통일
+    try:
+        payload = to_bytes_payload(send_cmd_bytes)  # <-- 여기서만 변환
+    except Exception as e:
+        logging.exception(e)
+        raise TypeError("send_cmd_bytes must be bytes") from e
+
+    def worker():
+        try:
+            # 1) 여기서는 "동기 함수"를 호출해야 함 (중요!!)
+            rx = send_cmd_for_TTL_uncooled(payload, title, root_view)
+            #    ↑ 이 함수가 실제로 TLS 연결 + Digest + fwtransparent + recv 다 하는 기존 함수
+        except Exception as e:
+            logging.exception("uncooled async send error: %s", e)
+            if root_view is not None:
+                # UI 업데이트는 메인 스레드에서
+                root_view.after(0, lambda: logging.error(f"[ERR] {title}: {e}"))
+            return
+
+        # 2) 응답을 UI에 반영 (역시 메인 스레드에서만)
+        if root_view is not None:
+            def _update_ui():
+                hex_data = binascii.hexlify(rx).decode("utf-8")
+                logging.info("uncooled async handled(%s): %s", title, hex_data)
+                # 필요하면 여기서 로그창/Treeview 업데이트
+                # ex) uncooled_store_response(root_view, title, hex_data)
+            root_view.after(0, _update_ui)
+
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+
+# 2025.11.17: Convert a protocol command to byte
+
+def to_bytes_payload(value) -> bytes:
+    """
+    value: bytes | bytearray | list[int] | tuple[int] | str(공백/쉼표 포함 hex) 모두 허용.
+    예) b'\xff\x00...', [0xff,0x00,0x21], 'ff 00 21 13 00 01 35', 'ff,00,21,13,00,01,35'
+    """
+    if isinstance(value, (bytes, bytearray)):
+        return bytes(value)
+
+    if isinstance(value, (list, tuple)):
+        # 정수 범위 검증
+        return bytes(int(x) & 0xFF for x in value)
+
+    if isinstance(value, str):
+        s = value.strip().lower()
+        # 구분자 통일
+        s = s.replace(',', ' ').replace('0x', '')
+        # 공백 제거 후 짝수 길이가 아니면 보정
+        hexchars = ''.join(s.split())
+        if len(hexchars) % 2 != 0:
+            # 'f 00 ...' 처럼 홀수 nibble 방지
+            hexchars = '0' + hexchars
+        try:
+            return binascii.unhexlify(hexchars)
+        except binascii.Error:
+            # 공백 단위로 나눠서 바이트화 (예: "ff 0 21" 같은 케이스)
+            parts = [p for p in s.split() if p]
+            return bytes(int(p, 16) & 0xFF for p in parts)
+
+    raise TypeError("Unsupported type for payload -> bytes 변환 실패")
+
+
+# 2025.11.16: TTL Auth has been applied applied to Seyeon
+def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
+    find_ch()
+    user_info = Cons.selected_ch
+
+    # 0) 안전장치
+    if not isinstance(send_cmd, (bytes, bytearray)):
+        raise TypeError("send_cmd_bytes must be bytes")
+    payload = bytes(send_cmd) + b"\r\n"  # ★ CRLF 필수
+
+    # 1) Digest 재료와 쿠키 준비
+    chal = ttl._get_admin_challenge(user_info['ip'])
+    cookie = ttl._enc_cookie(user_info['id'], user_info['pw'])
+
+    # 2) fwtransparent 요청라인 만들기
+    uri = (f"/cgi-bin/fwtransparent.cgi"
+           f"?BaudRate={Cons.FW_BAUD}&DataBit={Cons.FW_DBITS}&StopBit={Cons.FW_SBITS}"
+           f"&ParityBit={Cons.FW_PARITY}&Node={Cons.FW_NODE}&FwCgiVer=0x0001")
+    authz = ttl._build_digest_md5(user_info['id'], user_info['pw'], "GET", uri, chal)
+
+    # 3) TLS 연결 후 GET 헤더 송신(응답은 기다리지 않고 터널 용도로 사용)
+    s = ttl._tls_connect(user_info['ip'], user_info['port'])
+    try:
+        req = (f"GET {uri} HTTP/1.0\r\n"
+               f"Host: {user_info['ip']}\r\n"
+               f"Authorization: {authz}\r\n"
+               f"Cookie: -goahead-session-={cookie}\r\n"
+               "Accept: */*\r\nUser-Agent: py-client\r\n"
+               "Connection: keep-alive\r\n\r\n").encode()
+        s.sendall(req)
+
+        # 4) 터널 준비 시간
+        time.sleep(Cons.PRE_SEND_DELAY)
+
+        # 5) 명령 송신
+        s.sendall(payload)
+
+        # 6) 응답 수신(최대 RECV_WAIT_SEC)
+        end_by = time.time() + Cons.RECV_WAIT_SEC
+        buf = bytearray()
+        while time.time() < end_by:
+            try:
+                chunk = s.recv(Cons.READ_MAX_BYTES)
+                if not chunk:
+                    break
+                buf += chunk
+            except socket.timeout:
+                break
+
+        rx = bytes(buf)
+        # ★ 로그/가공 예시 (필요 시 기존 UI/저장 함수 호출)
+        logging.info("uncooled tx=%s", binascii.hexlify(payload).decode())
+        logging.info("uncooled rx(%d)=%s", len(rx), binascii.hexlify(rx).decode())
+        return rx
+
+    finally:
+        try:
+            s.shutdown(socket.SHUT_WR)
+        except Exception:
+            pass
+        s.close()
