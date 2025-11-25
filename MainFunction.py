@@ -13,6 +13,7 @@ import Communication as Comm
 import Constant as Cons
 import Table as tb
 import KeyBind as Kb
+import ASYNC_Temp as Async
 
 from tkinter import *
 from tkinter import ttk
@@ -21,7 +22,7 @@ from screeninfo import get_monitors
 from datetime import datetime
 from icecream import ic
 
-from Communication import send_data_for_nyx
+from Communication import nyx_cmd_to_convert, send_cmd_to_nyx
 
 
 # Set an element (label, text field, button) as specified position and size
@@ -246,7 +247,12 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         # print(hex_array)
         Comm.send_to_mini(Cons.only_socket, hex_array)
     elif Cons.selected_model == 'NYX Series':
-        send_data_for_nyx(event, root_view)
+        # send_data_for_nyx(event, root_view)
+        form = Comm.nyx_cmd_to_convert(event, root_view)
+        file_name = f"NYX_{Cons.start_time}.txt"
+        # def job():
+        #     return Comm.send_cmd_to_nyx(root_view, form)
+        Async.nyx_series_async(fn=lambda: send_cmd_to_nyx(root_view, form), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'FineTree':
         index = int(iden.split('번')[0])
         items = Cons.fine_tree_cmd_data[index]

@@ -32,6 +32,7 @@ lbl_size = {'h': WINDOWS_SIZE['y'] / 50, 'w': WINDOWS_SIZE['x'] / 20}
 
 selected_model = 'Multi'
 model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
+start_time = None
 
 only_socket = None
 
@@ -60,10 +61,10 @@ finetree_parms_arrays = []
 # Script Variable
 script_toggle_flag = None
 
-script_cmd_arrs = []
-script_cmd_titles = []
-script_itv_arrs = []
-script_cmd_itv_arrs = []
+# script_cmd_arrs = []
+# script_cmd_titles = []
+# script_itv_arrs = []
+# script_cmd_itv_arrs = []
 
 #
 
@@ -223,55 +224,55 @@ capture_hex = [255, 1, 0, 0, 0, 0, 0]
 # NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
 capture_title = 'Capture NYX'
-# script_cmd_arrs = [
-#     'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#syst_exec=reboot',
-#     'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#syst_exec=reboot',
-#     'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#syst_exec=reboot',
-#     'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#syst_exec=reboot',
-# ]
-# script_cmd_titles = ['zoom narrow', 'zoom stop', 'af execute', 'Capture NYX', 'reboot',
-#                      'zoom wide', 'zoom stop', 'af execute', 'Capture NYX', 'reboot',
-#                      'focus near', 'focus stop', 'af execute', 'Capture NYX', 'reboot',
-#                      'focus far', 'focus stop', 'af execute', 'Capture NYX', 'reboot'
-#                      ]
-# script_itv_arrs = [2.0, 1.0, 4.0, 2.0, 2.0,
-#                    2.0, 1.0, 4.0, 2.0, 2.0,
-#                    2.0, 1.0, 4.0, 2.0, 2.0,
-#                    2.0, 1.0, 4.0, 2.0, 2.0,
-#                    ]
-# script_cmd_itv_arrs = [
-#     ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
-#     ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
-#     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
-#     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
-# ]
-# script_cmd_arrs = [
-#     'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-#     'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-# ]
-# script_cmd_titles = [
-#     'zoom wide', 'zoom stop', 'af execute', 'Capture NYX',
-#     'zoom narrow', 'zoom stop', 'af execute', 'Capture NYX',
-#     'focus near', 'focus stop', 'af execute', 'Capture NYX',
-#     'focus far', 'focus stop', 'af execute', 'Capture NYX',
-# ]
-# script_itv_arrs = [2.0, 1.0, 4.0, 3.0,
-#                    2.0, 1.0, 4.0, 3.0,
-#                    2.0, 1.0, 4.0, 3.0,
-#                    2.0, 1.0, 4.0, 3.0,
-#                    ]
-# script_cmd_itv_arrs = [
-#     ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-#     ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-#     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-#     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-# ]
+script_cmd_arrs = [
+    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#syst_exec=reboot',
+]
+script_cmd_titles = ['zoom narrow', 'zoom stop', 'af execute', 'Capture NYX', 'reboot',
+                     'zoom wide', 'zoom stop', 'af execute', 'Capture NYX', 'reboot',
+                     'focus near', 'focus stop', 'af execute', 'Capture NYX', 'reboot',
+                     'focus far', 'focus stop', 'af execute', 'Capture NYX', 'reboot'
+                     ]
+script_itv_arrs = [2.0, 1.0, 4.0, 2.0, 2.0,
+                   2.0, 1.0, 4.0, 2.0, 2.0,
+                   2.0, 1.0, 4.0, 2.0, 2.0,
+                   2.0, 1.0, 4.0, 2.0, 2.0,
+                   ]
+script_cmd_itv_arrs = [
+    ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
+    ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
+    ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
+    ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
+]
+script_cmd_arrs = [
+    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+]
+script_cmd_titles = [
+    'zoom wide', 'zoom stop', 'af execute', 'Capture NYX',
+    'zoom narrow', 'zoom stop', 'af execute', 'Capture NYX',
+    'focus near', 'focus stop', 'af execute', 'Capture NYX',
+    'focus far', 'focus stop', 'af execute', 'Capture NYX',
+]
+script_itv_arrs = [2.0, 1.0, 4.0, 3.0,
+                   2.0, 1.0, 4.0, 3.0,
+                   2.0, 1.0, 4.0, 3.0,
+                   2.0, 1.0, 4.0, 3.0,
+                   ]
+script_cmd_itv_arrs = [
+    ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+    ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+    ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+    ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+]
 
 # Network Information form User Input
 data_sending = True

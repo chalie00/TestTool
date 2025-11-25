@@ -2,7 +2,6 @@ import os
 import urllib
 import threading
 
-import binascii
 import socket
 import logging
 import time as ti
@@ -18,6 +17,8 @@ import Response as Res
 import System_Info as SysInfo
 import DRS_Response as DR_r
 import TTL_Communication as ttl
+import Calculate_CMD as Cal
+import ASYNC_Temp as Async
 
 from socket import AF_INET, SOCK_STREAM
 from requests.auth import HTTPBasicAuth
@@ -173,7 +174,6 @@ def send_cmd_for_uncooled_only_cmd(cmd):
 
     finally:
 
-
         client.close()
 
 
@@ -320,14 +320,15 @@ def send_cmd_to_nyx(root, cmd):
         s.sendall(cmd.encode('utf-8'))
         response = s.recv(buf_size)
 
-        current_time = datetime.now()
-        time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-
-        print(f"Received response: {response.decode('utf-8')}")
-        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-        Cons.response_txt.append(response_with_time)
-        log_pos = Cons.log_txt_fld_info
-        log_fld = Res.Response(root, log_pos)
+    return response
+    # current_time = datetime.now()
+    # time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
+    #
+    # print(f"Received response: {response.decode('utf-8')}")
+    # response_with_time = fr'{time_str} : {response.decode('utf-8')}'
+    # Cons.response_txt.append(response_with_time)
+    # log_pos = Cons.log_txt_fld_info
+    # log_fld = Res.Response(root, log_pos)
 
 
 def send_cmd_to_nyx_without_root(cmd):
@@ -375,105 +376,64 @@ def wait_for_nyx_ready(host, port, retries=10, delay=5):
 
 # 2024.07.24: Open socket and store to Constant after send cmd with interval
 # 2025.05.22: Retry Connect to NYX after send Reboot CMD for NYX
+# 2025.11.24 Async to NYX Script and log text file was applied
 def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, response_file_name):
-    find_ch()
-    host = Cons.selected_ch['ip']
-    input_port = Cons.selected_ch['port']
-    send_port = int(0) if Cons.port == '' else int(input_port)
+    send_cmds = [create_form(cmd) for cmd in cmds]
+    results = []
 
-    send_cmds = []
+    for i, s_cmd in enumerate(send_cmds):
+        if not Cons.data_sending:
+            print('Data sending stopped by user. Exiting loop.')
+            return
 
-    for cmd in cmds:
-        send_cmd = create_form(cmd)
-        send_cmds.append(send_cmd)
+        ic(rf'{i + 1} is {s_cmd}')
+        current_time = datetime.now()
+        time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
 
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((host, send_port))
-            for i, s_cmd in enumerate(send_cmds):
+        if titles[i] == Cons.capture_title:
+            path = Cons.capture_path['zoom']
+            filename = rf'{path}/{str(titles[i - 3])}-{time_str}-{i}.png'
+            Mf.capture_image(root, filename)
+        elif s_cmd.startswith('NYX.SET#syst_exec=reboot'):
+            find_ch()
+            host = Cons.selected_ch['ip']
+            input_port = Cons.selected_ch['port']
+            send_port = int(0) if Cons.port == '' else int(input_port)
+            print('reboot')
+            # s.sendall(s_cmd.encode('utf-8'))
+            Async.nyx_series_async(fn=lambda cmd=s_cmd: send_cmd_to_nyx(root, cmd), title=titles[i],
+                                   root_view=root, log_name=response_file_name)
+            ti.sleep(10)
+            if not Cons.data_sending:
+                print('Stopped during reboot wait.')
+                return
+
+            if wait_for_nyx_ready(host, send_port):
+                s = create_socket()
+                ti.sleep(3)
+
                 if not Cons.data_sending:
-                    print('Data sending stopped by user. Exiting loop.')
+                    print('Stopped during reboot wait.')
                     return
 
-                ic(rf'{i + 1} is {s_cmd}')
-                current_time = datetime.now()
-                time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
+                click_register_button(app)
+                ti.sleep(100)
 
-                if titles[i] == Cons.capture_title:
-                    path = Cons.capture_path['zoom']
-                    filename = rf'{path}/{str(titles[i - 3])}-{time_str}-{i}.png'
-                    Mf.capture_image(root, filename)
-                elif s_cmd.startswith('NYX.SET#syst_exec=reboot'):
-                    print('reboot')
-                    s.sendall(s_cmd.encode('utf-8'))
-                    ti.sleep(10)
+                if not Cons.data_sending:
+                    print('Stopped during reboot wait.')
+                    return
 
-                    if not Cons.data_sending:
-                        print('Stopped during reboot wait.')
-                        return
+            else:
+                print("NYX reconnect fail")
+                return
+        else:
+            Async.nyx_series_async(fn=lambda cmd=s_cmd: send_cmd_to_nyx(root, cmd), title=titles[i],
+                                   root_view=root, log_name=response_file_name )
+            ti.sleep(intervals_sec[i])
 
-                    if wait_for_nyx_ready(host, send_port):
-                        s = create_socket()
-                        ti.sleep(3)
-
-                        if not Cons.data_sending:
-                            print('Stopped during reboot wait.')
-                            return
-
-                        click_register_button(app)
-                        ti.sleep(100)
-
-                        if not Cons.data_sending:
-                            print('Stopped during reboot wait.')
-                            return
-
-                    else:
-                        print("NYX reconnect fail")
-                        return
-                else:
-                    s.sendall(s_cmd.encode('utf-8'))
-                    ti.sleep(0.1)
-                    try:
-                        response = s.recv(1024)
-                    except socket.timeout:
-                        print('Socket recv timed out')
-                        response = b''
-
-                    if response_file_name:
-                        # Open file in write mode (creates a new file)
-                        with open(response_file_name, 'a') as a:
-                            response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-                            a.write(response_with_time + '\n')
-                    else:
-                        with open(response_file_name, 'w') as w:
-                            response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-                            w.write(response_with_time + '\n')
-
-                    print(f"Received response: {response.decode('utf-8')}")
-
-                    if (
-                            'NYX.ACK#syst_stat=standby&lens_fpos' not in response.decode('utf-8') or
-                            'NYX.ACK#lens_zpos=' not in response.decode('utf-8') or
-                            'NYX.ACK#lens_fpos=' not in response.decode('utf-8') or
-                            'NYX.ACK#lens_zctl=' not in response.decode('utf-8') or
-                            'NYX.ACK#lens_fctl=' not in response.decode('utf-8')
-                    ):
-                        response_with_time = fr'{time_str} : {(response.decode('utf-8').split('\n'))[0]}'
-                    else:
-                        response_with_time = fr'{time_str} : {response.decode('utf-8')}'
-
-                    Cons.response_txt.append(response_with_time)
-                    log_pos = Cons.log_txt_fld_info
-                    ti.sleep(intervals_sec[i])
-                    log_fld = Res.Response(root, log_pos)
-
-                    if not Cons.data_sending:
-                        print('Stopped during reboot wait.')
-                        return
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    ti.sleep(3)
+            if not Cons.data_sending:
+                print('Stopped during reboot wait.')
+                return
 
 
 # 2024.07.19): Calculate LRC for NYX
@@ -500,7 +460,7 @@ def create_form(cmd):
 
 
 # (2024.07.19): Protocol send function for NYX
-def send_data_for_nyx(event, root):
+def nyx_cmd_to_convert(event, root):
     tree = event.widget
     # get id of select item
     selected_item = tree.selection()[0]
@@ -508,7 +468,8 @@ def send_data_for_nyx(event, root):
     item = tree.item(selected_item)
     values = item['values'][1]
     form = create_form(values)
-    send_cmd_to_nyx(root, form)
+
+    return form
 
 
 # (2024.7.22): Protocol send with command for NYX
@@ -1004,6 +965,7 @@ def send_authenticated_request(params, uri, method='GET', additional_params=None
 
     return response
 
+
 # 2025.11.17: threading function was applied
 
 def send_cmd_for_TTL_uncooled_async(send_cmd_bytes, title=None, root_view=None):
@@ -1013,7 +975,7 @@ def send_cmd_for_TTL_uncooled_async(send_cmd_bytes, title=None, root_view=None):
     """
     # 0) 먼저 payload를 bytes로 통일
     try:
-        payload = to_bytes_payload(send_cmd_bytes)  # <-- 여기서만 변환
+        payload = Cal.to_bytes_payload(send_cmd_bytes)  # <-- 여기서만 변환
     except Exception as e:
         logging.exception(e)
         raise TypeError("send_cmd_bytes must be bytes") from e
@@ -1037,42 +999,11 @@ def send_cmd_for_TTL_uncooled_async(send_cmd_bytes, title=None, root_view=None):
                 logging.info("uncooled async handled(%s): %s", title, hex_data)
                 # 필요하면 여기서 로그창/Treeview 업데이트
                 # ex) uncooled_store_response(root_view, title, hex_data)
+
             root_view.after(0, _update_ui)
 
     t = threading.Thread(target=worker, daemon=True)
     t.start()
-
-# 2025.11.17: Convert a protocol command to byte
-
-def to_bytes_payload(value) -> bytes:
-    """
-    value: bytes | bytearray | list[int] | tuple[int] | str(공백/쉼표 포함 hex) 모두 허용.
-    예) b'\xff\x00...', [0xff,0x00,0x21], 'ff 00 21 13 00 01 35', 'ff,00,21,13,00,01,35'
-    """
-    if isinstance(value, (bytes, bytearray)):
-        return bytes(value)
-
-    if isinstance(value, (list, tuple)):
-        # 정수 범위 검증
-        return bytes(int(x) & 0xFF for x in value)
-
-    if isinstance(value, str):
-        s = value.strip().lower()
-        # 구분자 통일
-        s = s.replace(',', ' ').replace('0x', '')
-        # 공백 제거 후 짝수 길이가 아니면 보정
-        hexchars = ''.join(s.split())
-        if len(hexchars) % 2 != 0:
-            # 'f 00 ...' 처럼 홀수 nibble 방지
-            hexchars = '0' + hexchars
-        try:
-            return binascii.unhexlify(hexchars)
-        except binascii.Error:
-            # 공백 단위로 나눠서 바이트화 (예: "ff 0 21" 같은 케이스)
-            parts = [p for p in s.split() if p]
-            return bytes(int(p, 16) & 0xFF for p in parts)
-
-    raise TypeError("Unsupported type for payload -> bytes 변환 실패")
 
 
 # 2025.11.16: TTL Auth has been applied applied to Seyeon
@@ -1136,3 +1067,21 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
         except Exception:
             pass
         s.close()
+
+
+# 2025.11.24 Control a Log Text File
+def log_control(text, log_dir="Log", file_name=None):
+    log_dir = Cons.log_path.rstrip('/\\')  # 끝의 / 또는 \ 제거
+    os.makedirs(log_dir, exist_ok=True)
+
+    if file_name is None:
+        time_str = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        file_name = f"log_{time_str}.txt"
+
+    full_path = os.path.join(log_dir, file_name)
+    try:
+        with open(full_path, 'a') as f:
+            f.write(text + '\n')
+    except Exception as e:
+        logging.error("Log file write error(%s): %s", full_path, e)
+        return None

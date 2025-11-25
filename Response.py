@@ -23,25 +23,58 @@ def hex_to_signed(value: str, bits: int = 16) -> int:
     return val
 
 
+# class Response:
+#     def __init__(self, root, pos):
+#         self.root = root
+#         self.pos = pos
+#         self.canvas = tk.Canvas(self.root, width=pos['w'] - 30, height=pos['h'] + 15, bg=pos['bg'])
+#         self.canvas.place(x=pos['x'], y=pos['y'] + 5)
+#
+#         # Create Log Field
+#         self.text_widget = tk.Text(self.canvas, bg='lightgray', width=88, height=15)
+#         self.text_widget.place(x=0, y=0)
+#         self.text_font = font.Font(size=8)
+#         self.text_widget.configure(font=self.text_font)
+#
+#         # Set bold to specified txt
+#         bold_font = font.Font(size=8, weight="bold")
+#         self.text_widget.tag_configure("bold", font=bold_font, foreground='green')
+#
+#         scrollbar = tk.Scrollbar(self.canvas, orient='vertical', command=self.text_widget.yview)
+#         # scrollbar.place(x=self.pos['x'] + self.pos['w'] - 25, y=self.pos['y'], height=self.pos['h'] - 10)
+#         scrollbar.place(x=self.pos['w'] - 25 - 30, y=0, height=self.pos['h'] - 10)
+#         self.text_widget.config(yscrollcommand=scrollbar.set)
+#
+#         self.dis_response_text()
+
 class Response:
     def __init__(self, root, pos):
         self.root = root
         self.pos = pos
-        self.canvas = tk.Canvas(self.root, width=pos['w'] - 30, height=pos['h'] + 15, bg=pos['bg'])
-        self.canvas.place(x=pos['x'], y=pos['y'] + 5)
 
-        # Create Log Field
-        self.text_widget = tk.Text(self.canvas, bg='lightgray', width=88, height=15)
-        self.text_widget.place(x=0, y=0)
+        # 1) 바깥 컨테이너 Frame (이걸 root에 직접 배치)
+        self.frame = tk.Frame(self.root, bg=pos['bg'])
+        self.frame.place(x=pos['x'],
+                         y=pos['y'] + 5,
+                         width=pos['w'] - 30,
+                         height=pos['h'] + 15)
+
+        # 2) frame 안에서 Text + Scrollbar 를 pack으로 정렬
+        self.text_widget = tk.Text(self.frame, bg='lightgray')
         self.text_font = font.Font(size=8)
         self.text_widget.configure(font=self.text_font)
 
-        # Set bold to specified txt
         bold_font = font.Font(size=8, weight="bold")
         self.text_widget.tag_configure("bold", font=bold_font, foreground='green')
 
-        scrollbar = tk.Scrollbar(orient='vertical', command=self.text_widget.yview)
-        scrollbar.place(x=self.pos['x'] + self.pos['w'] - 25, y=self.pos['y'], height=self.pos['h'] - 10)
+        scrollbar = tk.Scrollbar(self.frame,
+                                 orient='vertical',
+                                 command=self.text_widget.yview)
+
+        # 왼쪽에 Text, 오른쪽에 Scrollbar
+        self.text_widget.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+
         self.text_widget.config(yscrollcommand=scrollbar.set)
 
         self.dis_response_text()

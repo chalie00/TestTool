@@ -163,7 +163,8 @@ def execute_model_logic(app, parent, res_file_name):
     if Cons.selected_model in ['Uncooled', 'DRS', 'Multi']:
         Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
     elif Cons.selected_model == 'NYX Series':
-        Comm.send_cmd_to_nyx_with_interval(app, parent, titles, script, interval, res_file_name)
+        file_name = f"NYX Script_{Cons.start_time}.txt"
+        Comm.send_cmd_to_nyx_with_interval(app, parent, titles, script, interval, file_name)
     elif Cons.selected_model == 'FineTree':
         print('Finetree Script Run')
         for i, cmd_data in enumerate(Cons.finetree_parms_arrays):

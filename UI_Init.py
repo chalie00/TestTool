@@ -10,6 +10,7 @@ import Ptz as pt
 import Preset as Pre
 
 from tkinter import ttk
+from datetime import datetime
 
 from Communication import find_ch
 
@@ -26,6 +27,9 @@ class UIInit:
         Init_Search_Register(root, parent, app)
         ptz_ui = pt.PTZ(parent)
         preset_ui = Pre.Preset(parent)
+
+        log_file_name = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        Cons.start_time = log_file_name
 
         # ======================================== Set Command Table ===========================================================
         column_name = Cons.column_array
