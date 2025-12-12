@@ -37,7 +37,7 @@ def run_in_worker(fn, *, root_view=None, on_done=None, on_error=None, desc="work
 
 
 # 2025.11.20 NYX Series Async Function
-def nyx_series_async(fn, cmd=None, title=None, root_view=None, log_name=None):
+def async_send(fn, cmd=None, title=None, root_view=None, log_name=None):
     def done_func(rx):
         # if isinstance(rx, (bytes, bytearray)):
         #     response_raw = binascii.hexlify(rx).decode('utf-8')

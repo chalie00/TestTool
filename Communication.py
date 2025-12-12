@@ -177,7 +177,7 @@ def send_cmd_for_uncooled_only_cmd(cmd):
         client.close()
 
 
-def send_cmd_to_ucooled_with_interval(interval: [float], send_cmds: [int], cmd_title: [str], root_view):
+def send_cmd_to_ucooled_with_interval(interval: list[float], send_cmds: list[int], cmd_title: list[str], root_view):
     for i, protocol in enumerate(send_cmds):
         # print(i)
         # print(rf'protocol is {protocol}')
@@ -401,7 +401,7 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
             send_port = int(0) if Cons.port == '' else int(input_port)
             print('reboot')
             # s.sendall(s_cmd.encode('utf-8'))
-            Async.nyx_series_async(fn=lambda cmd=s_cmd: send_cmd_to_nyx(root, cmd), title=titles[i],
+            Async.async_send(fn=lambda cmd=s_cmd: send_cmd_to_nyx(root, cmd), title=titles[i],
                                    root_view=root, log_name=response_file_name)
             ti.sleep(10)
             if not Cons.data_sending:
@@ -427,7 +427,7 @@ def send_cmd_to_nyx_with_interval(app, root, titles, cmds, intervals_sec, respon
                 print("NYX reconnect fail")
                 return
         else:
-            Async.nyx_series_async(fn=lambda cmd=s_cmd: send_cmd_to_nyx(root, cmd), title=titles[i],
+            Async.async_send(fn=lambda cmd=s_cmd: send_cmd_to_nyx(root, cmd), title=titles[i],
                                    root_view=root, log_name=response_file_name )
             ti.sleep(intervals_sec[i])
 

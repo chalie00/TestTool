@@ -9,6 +9,7 @@ from functools import partial
 import Constant as Cons
 import Communication as Comm
 import Ptz
+import ASYNC_Temp as Async
 
 ptz_url = '/cgi-bin/ptz/control.php?'
 ptz_ins = None
@@ -153,7 +154,9 @@ def handle_ptz_move(key):
             ptz_ins.send_miniGimbal(key.lower())
         elif model == 'finetree':
             params = {'move': key.lower()}
-            Comm.fine_tree_send_cgi(ptz_url, params)
+            # Comm.fine_tree_send_cgi(ptz_url, params)
+            file_name = f"Finetree_{Cons.start_time}.txt"
+            Async.async_send(fn=lambda:Comm.fine_tree_send_cgi(ptz_url, params), log_name=file_name)
         elif model == 'drs':
             params = {'move': key.lower()}
             Comm.send_cmd_to_Finetree(ptz_url, params)

@@ -10,6 +10,7 @@ import MainFunction as Mf
 import Communication as Comm
 import Ptz as pt
 import Table as tb
+import ASYNC_Temp as Async
 
 thread_running = threading.Event()
 thread = None
@@ -161,16 +162,20 @@ def execute_model_logic(app, parent, res_file_name):
     print(script)
 
     if Cons.selected_model in ['Uncooled', 'DRS', 'Multi']:
-        Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
+        # Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
+        file_name = f"{Cons.selected_model}_{Cons.start_time}.txt"
+        Async.async_send(Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent), root_view=parent, log_name=file_name)
     elif Cons.selected_model == 'NYX Series':
         file_name = f"NYX Script_{Cons.start_time}.txt"
         Comm.send_cmd_to_nyx_with_interval(app, parent, titles, script, interval, file_name)
     elif Cons.selected_model == 'FineTree':
         print('Finetree Script Run')
+        file_name = f"{Cons.selected_model}_{Cons.start_time}.txt"
         for i, cmd_data in enumerate(Cons.finetree_parms_arrays):
             Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1])
-            file_name = rf'{Cons.capture_path["zoom"]}/{titles[i]}.png'
-            Mf.capture_image(parent, file_name)
+            Async.async_send(Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1]), root_view=parent, log_name=file_name)
+            file_name_cap = rf'{Cons.capture_path["zoom"]}/{titles[i]}.png'
+            Mf.capture_image(parent, file_name_cap)
     elif Cons.selected_model == 'MiniGimbal':
         Comm.send_to_mini_with_interval(Cons.only_socket, titles, script, interval)
 

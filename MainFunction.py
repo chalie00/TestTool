@@ -57,8 +57,8 @@ def fix_selection_tags(event):
 # 2025.06.25: Added a CTEC Protocol of Multi Sensor
 # (2024.02.15) CheckBox Change a treeview to CheckTreeView  and event is changed to
 #  Double-Button-1, CheckBox is controlled with tag
-def make_table(root: tkinter, column_num: int, width: int, column_title: [string], x: int, y: int,
-               cmd_data: []) -> CheckboxTreeview:
+def make_table(root: tkinter, column_num: int, width: int, column_title: list[str], x: int, y: int,
+               cmd_data: list[str]) -> CheckboxTreeview:
     # Create a table, column is the name of column,
     # The display column shows the order in which the table is executed.
 
@@ -120,7 +120,7 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: [string
     return tv
 
 
-def convert_str_to_hex(hex_str_arr) -> []:
+def convert_str_to_hex(hex_str_arr) -> list[int]:
     hex_array = []
     for i in range(0, len(hex_str_arr), 2):
         hex_str = '0x' + hex_str_arr[i:i + 2]
@@ -130,7 +130,7 @@ def convert_str_to_hex(hex_str_arr) -> []:
     return hex_array
 
 
-def select_item(event, root_view) -> []:
+def select_item(event, root_view) -> list[int]:
     hex_array = []
     tree = event.widget
     # selection = [tree.item(item)["text"] for item in tree.selection()]
@@ -239,7 +239,9 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         Comm.send_cmd_for_TTL_uncooled_async(hex_value, title, root_view)
     elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
-        Comm.send_cmd_for_drs(host, port, hex_array, root_view)
+        # Comm.send_cmd_for_drs(host, port, hex_array, root_view)
+        file_name = f"DRS_{Cons.start_time}.txt"
+        Async.async_send(fn=lambda:Comm.send_cmd_for_drs(host, port, hex_array, root_view), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'MiniGimbal':
         hex_array = select_item(event, root_view)
         print(rf'{datetime.now()} : {title}')
@@ -252,18 +254,17 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         file_name = f"NYX_{Cons.start_time}.txt"
         # def job():
         #     return Comm.send_cmd_to_nyx(root_view, form)
-        Async.nyx_series_async(fn=lambda: send_cmd_to_nyx(root_view, form), title=title, root_view=root_view, log_name=file_name)
+        Async.async_send(fn=lambda:send_cmd_to_nyx(root_view, form), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'FineTree':
         index = int(iden.split('번')[0])
         items = Cons.fine_tree_cmd_data[index]
         print(items)
         url = items[2]
         params = dict(zip(items[0], items[1]))
-        # for i, item in enumerate(items[0]):
-        #     form = {rf'{item[0][i]}': rf'{item[1][i]}'}
-        #     params.update(form)
         print(params)
-        Comm.fine_tree_send_cgi(url, params)
+        # Comm.fine_tree_send_cgi(url, params)
+        file_name = f"Finetree_{Cons.start_time}.txt"
+        Async.async_send(fn=lambda:Comm.fine_tree_send_cgi(url, params), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'Multi':
         hex_value = select_item(event, root_view)
         # print(hex_value)
@@ -303,7 +304,7 @@ def show_network_dialog(root_view, dialog_text):
 
 # Get the Command from csv file
 # (2024.07.29) change protocol list base on a selected model
-def get_data_from_csv(file_path) -> [(str, str)]:
+def get_data_from_csv(file_path) -> list[(str, str)]:
     wb = openpyxl.load_workbook(file_path, data_only=True)
     sel_model = Cons.selected_model
     command_data = []
