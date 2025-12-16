@@ -71,6 +71,7 @@ only_socket = None
 
 # 0: parameter, 1: value, 2: BaseUrl
 fine_tree_cmd_data = []
+fine_tree_cmd_data_filtered = []
 finetree_parms_arrays = []
 
 # PTZ/OSD Toggle Variable

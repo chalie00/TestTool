@@ -14,7 +14,6 @@ from datetime import datetime
 
 from Communication import find_ch
 
-
 class UIInit:
     def __init__(self, root, parent, app):
         self.root = root
@@ -24,23 +23,15 @@ class UIInit:
         Init_btn_ui(root, parent)
         Init_Info(root, parent)
         Init_Network(root, parent)
-        Init_Search_Register(root, parent, app)
         ptz_ui = pt.PTZ(parent)
         preset_ui = Pre.Preset(parent)
 
         log_file_name = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         Cons.start_time = log_file_name
 
-        # ======================================== Set Command Table ===========================================================
-        column_name = Cons.column_array
-        column_count = len(column_name)
-        cmd_data = Cons.command_array
-
-        self.treeview = Mf.make_table(parent, column_count, Cons.tree_view_size['w'], column_name,
-                                      Cons.treeview_pos['x'], Cons.treeview_pos['y'], cmd_data)
-
-        Init_Ptz_Preset_Script(root, parent, app, treeview=self.treeview)
-
+        Init_table_view(root, parent)
+        Init_Search_Register(root, parent, app, Cons.tv)
+        Init_Ptz_Preset_Script(root, parent, app, treeview=Cons.tv)
 
 # 2025.0711: tri_left, right was added
 # ================================================ Button UI ===========================================================
@@ -133,16 +124,21 @@ def Init_Network(root, parent):
 
 # ======================================== Set Command Table ===========================================================
 def Init_table_view(root, parent):
-    column_name = Cons.column_array
-    column_count = len(column_name)
-    cmd_data = Cons.command_array
+        column_name = Cons.column_array
+        column_count = len(column_name)
+        cmd_data = Cons.command_array
 
-    treeview = Mf.make_table(parent, column_count, Cons.tree_view_size['w'], column_name,
-                             Cons.treeview_pos['x'], Cons.treeview_pos['y'], cmd_data)
-
-
+        Cons.tv = tv = Mf.create_table(parent,
+                     column_titles=column_name,
+                     column_width=Cons.tree_view_size['w'],
+                     x=Cons.treeview_pos['x'],
+                     y=Cons.treeview_pos['y'])
+        Mf.update_table(Cons.tv,
+                column_titles=column_name,
+                column_width=Cons.tree_view_size['w'],
+                rows=cmd_data)
 # ===================================== Set Searching a command and Register ===========================================
-def Init_Search_Register(root, parent, app):
+def Init_Search_Register(root, parent, app, treeview):
     column_name = Cons.column_array
     column_count = len(column_name)
     sear_txt = Cons.search_txt_fld_info
@@ -152,7 +148,7 @@ def Init_Search_Register(root, parent, app):
                                      h=sear_txt['h'], w=sear_txt['w'],
                                      bg=sear_txt['bg'], element='Entry')
     search_txt_fld.bind('<Return>',
-                        lambda event: Ufn.search_command(event, parent, search_txt_fld, column_name, column_count))
+                        lambda event: Ufn.search_command(event, parent, search_txt_fld, column_name, column_count, treeview))
 
     search_btn = Mf.make_element(
         x=sear_btn['x'], y=sear_btn['y'],
@@ -161,7 +157,7 @@ def Init_Search_Register(root, parent, app):
         anchor='center'
     )
     search_btn.bind("<Button-1>",
-                    lambda event: Ufn.search_command(event, parent, search_txt_fld, column_name, column_count))
+                    lambda event: Ufn.search_command(event, parent, search_txt_fld, column_name, column_count, treeview))
 
     regi_btn = Cons.register_btn
     register_btn = Mf.make_element(x=regi_btn['x'], y=regi_btn['y'],

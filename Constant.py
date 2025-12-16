@@ -1,3 +1,6 @@
+from typing import Optional
+from tkinter import ttk
+
 import MainFunction as Mf
 import Constant_Script as Test_Script
 import Constant_Net_OBJ as Net_Obj_Con
@@ -51,6 +54,7 @@ res_log_obj = Net_Obj_Con.res_log_obj
 start_time = Net_Obj_Con.start_time
 only_socket = Net_Obj_Con.only_socket
 fine_tree_cmd_data = Net_Obj_Con.fine_tree_cmd_data
+fine_tree_cmd_data_filtered = Net_Obj_Con.fine_tree_cmd_data_filtered
 finetree_parms_arrays = Net_Obj_Con.finetree_parms_arrays
 ptz_osd_toggle_flag = Net_Obj_Con.ptz_osd_toggle_flag
 tour_lists = Net_Obj_Con.tour_lists
@@ -84,7 +88,8 @@ log_path = rf'Log/'
 # Table Data
 column_array = ['Function', 'Command']
 column_array_fine_tree = ['Function', 'Parameter']
-tv = None
+tv: Optional[any] = None         # CheckboxTreeview면 Any가 현실적으로 편함
+tv_vsb: Optional[ttk.Scrollbar] = None
 
 # Command from CSV File
 command_array = Mf.get_data_from_csv(cmd_path)

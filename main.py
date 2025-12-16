@@ -34,14 +34,6 @@ class TestTool(tk.Frame):
         # ================================================ UI Layout ============================================
         ui_initializer = UI_init.UIInit(root, parent, self)
 
-        # ======================================== Set Command Table ===========================================
-        column_name = Cons.column_array
-        column_count = len(column_name)
-        cmd_data = Cons.command_array
-
-        treeview = Mf.make_table(parent, column_count, Cons.tree_view_size['w'], column_name,
-                                 Cons.treeview_pos['x'], Cons.treeview_pos['y'], cmd_data)
-
         # ========================================== Log Text Field ============================================
         log_pos = Cons.log_txt_fld_info
         Cons.res_log_obj = Res.Response(parent, log_pos)

@@ -75,6 +75,7 @@ uncooled_keymap = {
     'Home': 'FF01E021000002',   # OSD
 }
 
+# 2025.12.15: DRS keymap added
 drs_keymap = {
     'Prior': 'FF002200000123',   # Zoom in
     'Next': 'FF002200000224',    # Zoom Out
@@ -181,7 +182,7 @@ def handle_ptz_move(key):
             cmd = cmd_map.get(key)
             if cmd:
                 # Comm.send_data_with_cmd_for_nyx_ptz_without_root(cmd)
-                file_name = f"DRS_{Cons.start_time}.txt"
+                file_name = f"NYX_{Cons.start_time}.txt"
                 Async.async_send(fn=lambda:Comm.send_data_with_cmd_for_nyx_ptz_without_root(cmd), log_name=file_name)
         elif model == 'uncooled':
             cmd = uncooled_keymap.get(key)

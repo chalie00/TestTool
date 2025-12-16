@@ -18,44 +18,59 @@ thread = None
 
 # (2024.07.19): Model Drop Down Menu function
 # (2024.09.24): Add Model for FT
+# 2025.12.16: model select function modify for finetree
 def model_select(event, parent, sel_op):
-    col_name = []
     current_sel = sel_op.get()
     Cons.model_obj['model_name'] = current_sel
     Cons.selected_model = current_sel
-    # print(current_sel)
-    # print(Cons.selected_model)
+
     if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'MiniGimbal', 'Multi', 'CTEC']:
         col_name = Cons.column_array
-    elif current_sel in ['FineTree']:
+    else:
         col_name = Cons.column_array_fine_tree
+        
+    command_data, ft_data = Mf.get_data_from_csv(Cons.cmd_path)
+    if current_sel == "FineTree":
+        Cons.fine_tree_cmd_data_all = ft_data
+        Cons.fine_tree_cmd_data_filtered = ft_data[:]   # ✅ 현재 뷰는 일단 전체
+    else:
+        Cons.fine_tree_cmd_data_all = []
+        Cons.fine_tree_cmd_data_filtered = []
 
-    Cons.selected_model = current_sel
-    Comm.find_ch()
-    col_count = len(col_name)
-    command_data = Mf.get_data_from_csv(Cons.cmd_path)
-
-    Mf.make_table(parent, col_count, Cons.tree_view_size['w'], col_name,
-                  Cons.treeview_pos['x'], Cons.treeview_pos['y'], command_data)
+    # ✅ 테이블 재생성 금지, update만
+    Mf.update_table(Cons.tv, col_name, Cons.tree_view_size['w'], command_data)
 
     pt.PTZ(parent).refresh_ptz()
     parent.focus_set()
 
 
 # Search a protocol which user typed a text
-def search_command(event, parent, sear_fld, col_name, col_count):
-    query = sear_fld.get().lower()
-    selected_item = []
-    command_data = Mf.get_data_from_csv(Cons.cmd_path)
-    # ic(command_data)
-    for item in command_data:
-        if query in item[0].lower():
-            selected_item.append(item)
+# 2025.12.16: search function modify for finetree
+def search_command(event, parent, sear_fld, col_name, col_count, treeview):
+    query = sear_fld.get().lower().strip()
 
-    Mf.make_table(parent, col_count, Cons.tree_view_size['w'], col_name,
-                  Cons.treeview_pos['x'], Cons.treeview_pos['y'], selected_item)
+    command_data, ft_data = Mf.get_data_from_csv(Cons.cmd_path)
+    
+    if Cons.selected_model == "FineTree":
+        Cons.fine_tree_cmd_data_all = ft_data  # 원본 갱신(엑셀 다시 읽었으니)
+        if query:
+            paired = [(cmd, ft) for cmd, ft in zip(command_data, ft_data)
+                      if query in str(cmd[0]).lower()]
+        else:
+            paired = list(zip(command_data, ft_data))
 
+        filtered_cmd = [p[0] for p in paired]
+        filtered_ft  = [p[1] for p in paired]
 
+        Cons.fine_tree_cmd_data_filtered = filtered_ft  # ✅ 화면용 갱신
+        rows_to_show = filtered_cmd
+    else:
+        rows_to_show = [cmd for cmd in command_data
+                        if (not query) or (query in str(cmd[0]).lower())]
+
+    # ✅ update만 호출
+    Mf.update_table(treeview, col_name, Cons.tree_view_size['w'], rows_to_show)
+    
 def interval_add(parent, interval):
     cur_interval = float(int(interval.get()) / 1000)
     Cons.script_itv_arrs.append(cur_interval)

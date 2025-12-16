@@ -54,44 +54,27 @@ def fix_selection_tags(event):
 
 
 # Set Command Table
-# 2025.06.25: Added a CTEC Protocol of Multi Sensor
-# (2024.02.15) CheckBox Change a treeview to CheckTreeView  and event is changed to
-#  Double-Button-1, CheckBox is controlled with tag
-def make_table(root: tkinter, column_num: int, width: int, column_title: list[str], x: int, y: int,
-               cmd_data: list[str]) -> CheckboxTreeview:
-    # Create a table, column is the name of column,
-    # The display column shows the order in which the table is executed.
+# 2025.12.16: create table was changed from make table
+def create_table(root, column_titles, column_width, x, y, height=29):
+    column_num = len(column_titles)
+    dis_column = [str(i + 1) for i in range(column_num)]
 
-    column = [i + 1 for i in range(column_num)]
-    dis_column = [str(n) for n in column]
-    tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
+    tv = CheckboxTreeview(root, height=height, columns=dis_column, displaycolumns=dis_column)
 
-    # 2025.06.13: Pgup/Pgdn Direction key prevent
-    tv.bind("<Prior>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<Next>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_direction(e))
-
-    # set the treeview scroll
+    # 스크롤바
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
-    vsb.place(x=width * column_num + 105 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'] - 30)
-    # tv = tkinter.ttk.Treeview(root, columns=column, display columns=dis_column)
-    # Treeview의 width, height 글자 수로 정해 진다.
-    # tv.configure(height=len(Cons.command_array) + 1)
+    vsb.place(x=column_width * column_num + 105 + Cons.cam1_resolution['w'],
+              y=y,
+              height=Cons.tree_view_size['h'] - 30)
+
     tv.place(x=x, y=y)
     tv.configure(yscrollcommand=vsb.set)
 
-    # Set the Table No Tab
+    # 기본 컬럼(#0)
     tv.column('#0', width=70, anchor='center', stretch='yes')
     tv.heading('#0', text='No', anchor='center')
 
-    # Create each column (name, width, anchor)
-    for i in range(column_num):
-        tv.column(dis_column[i], width=width, anchor='center')
-        tv.heading(dis_column[i], text=column_title[i], anchor='center')
-
+    # 폰트/태그
     default_font = tkfont.nametofont("TkTextFont")
     bold_font = default_font.copy()
     bold_font.configure(weight="bold")
@@ -100,24 +83,49 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
     tv.tag_configure('query_tag', background='yellow')
     tv.tag_configure('bold_text', font=bold_font)
 
-    # Insert the command data in Table
-    for i, row_values in enumerate(cmd_data):
-        tags = ['unchecked']  # 기본 태그
+    # ✅ bind는 생성 시 1번만
+    tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
+    tv.bind('<<TreeviewSelect>>', fix_selection_tags)
 
-        # 태그 조건 누적
+    # Cons에 저장 (선택)
+    Cons.tv = tv
+    Cons.tv_vsb = vsb
+
+    # 최초 생성 후 컬럼/데이터 세팅은 update에서 처리
+    return tv
+
+# 2025.12.16: Table update has been added
+def update_table(tv, column_titles, column_width, rows):
+    """
+    기존 Treeview(tv)를 재사용하면서 컬럼/데이터만 갱신한다.
+    """
+    column_num = len(column_titles)
+    dis_column = [str(i + 1) for i in range(column_num)]
+
+    # ✅ 컬럼 구조 갱신
+    tv.configure(columns=dis_column, displaycolumns=dis_column)
+
+    # #0 컬럼은 유지
+    tv.column('#0', width=70, anchor='center', stretch='yes')
+    tv.heading('#0', text='No', anchor='center')
+
+    # 나머지 컬럼 설정
+    for i in range(column_num):
+        tv.column(dis_column[i], width=column_width, anchor='center')
+        tv.heading(dis_column[i], text=column_titles[i], anchor='center')
+
+    # ✅ 기존 row 삭제
+    tv.delete(*tv.get_children())
+
+    # ✅ row 재삽입
+    for i, row_values in enumerate(rows):
+        tags = ['unchecked']
         if any(cell == 'CMD List' for cell in row_values):
             tags.append('cmd_tag')
         if any('Query' in str(cell) for cell in row_values):
-            tags.append('query_tag')
-            tags.append('bold_text')
+            tags += ['query_tag', 'bold_text']
 
-        # 단 한 번만 insert, 태그는 누적해서
-        tv.insert('', 'end', text=i + 1, values=row_values, iid=f'{i}번', tags=tags)
-
-    # 더블 클릭 바인딩은 루프 밖에서 1번만!
-    tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
-    tv.bind('<<TreeviewSelect>>', fix_selection_tags)
-    return tv
+        tv.insert('', 'end', text=i + 1, values=row_values, iid=f'row_{i}', tags=tags)
 
 def convert_str_to_hex(hex_str_arr) -> list[int]:
     hex_array = []
@@ -140,7 +148,6 @@ def select_item(event, root_view) -> list[int]:
         hex_array.append(hex_int)
 
     return hex_array
-
 
 # Check Whether Interval Button Active
 def check_interval_active():
@@ -255,8 +262,11 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         #     return Comm.send_cmd_to_nyx(root_view, form)
         Async.async_send(fn=lambda:send_cmd_to_nyx(root_view, form), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'FineTree':
-        index = int(iden.split('번')[0])
-        items = Cons.fine_tree_cmd_data[index]
+        try:
+            index = int(tv.item(iden, 'text')) - 1
+        except (ValueError, TypeError):
+            return
+        items = Cons.fine_tree_cmd_data_filtered[index]
         print(items)
         url = items[2]
         params = dict(zip(items[0], items[1]))
@@ -303,19 +313,21 @@ def show_network_dialog(root_view, dialog_text):
 
 # Get the Command from csv file
 # (2024.07.29) change protocol list base on a selected model
+# 2025.12.16: Changing the method for acquiring cmd in finetree
 def get_data_from_csv(file_path) -> list[(str, str)]:
     wb = openpyxl.load_workbook(file_path, data_only=True)
     sel_model = Cons.selected_model
     command_data = []
+    fine_tree_cmd_data = []
 
-    if sel_model in Cons.selected_model:
-        # print(rf'get csv {sel_model}')
-        sh = wb[f'{sel_model}']
-    else:
+    if sel_model not in wb.sheetnames:
+        print(f"[WARN] Worksheet '{sel_model}' does not exist.")
         return command_data
 
+    sh = wb[sel_model]
     max_column = sh.max_column
     max_row = sh.max_row
+    
     if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']:
         for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
             cmd_title = sh.cell(row=i, column=2).value
@@ -332,13 +344,11 @@ def get_data_from_csv(file_path) -> list[(str, str)]:
             value_arr = str(value).split(',')
             url = sh.cell(row=i, column=6).value
             cmd_pair = (title, data)
+            
             command_data.append(cmd_pair)
+            fine_tree_cmd_data.append((para_arr, value_arr, url))
 
-            fine_tree_cmd_data = (para_arr, value_arr, url)
-            Cons.fine_tree_cmd_data.append(fine_tree_cmd_data)
-
-    return command_data
-
+    return command_data, fine_tree_cmd_data
 
 # 2025.06.17: Added check whether the wininfo is exist
 # (2024.07.05) Capture an Image from RTSP
@@ -371,55 +381,6 @@ def capture_image(root, filename):
             mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
     except Exception as e:
         print(f'capture image error: {e}')
-# def do_capture(monitor_geom, filename, result_callback=None):
-#     try:
-#         top, left, width, height = monitor_geom
-#         if width <= 0 or height <= 0:
-#             raise ValueError("invalid size for capture")
-#
-#         monitor = {
-#             "top": top,
-#             "left": left,
-#             "width": width,
-#             "height": height
-#         }
-#         with mss.mss() as sct:
-#             screenshot = sct.grab(monitor)
-#             mss.tools.to_png(screenshot.rgb, screenshot.size, output=filename)
-#         if result_callback:
-#             result_callback(True, filename)
-#     except Exception as e:
-#         if result_callback:
-#             result_callback(False, e)
-#         else:
-#             print(f'capture image error: {e}')
-#
-#
-# # 메인 스레드에서 호출할 래퍼: tkinter API를 여기서만 사용
-# def capture_image(root, filename, result_callback=None):
-#     if not root.winfo_exists():
-#         print('root not exists')
-#         if result_callback:
-#             result_callback(False, RuntimeError("root not exists"))
-#         return
-#
-#     x = root.winfo_rootx()
-#     y = root.winfo_rooty()
-#     w = root.winfo_width()
-#     h = root.winfo_height()
-#
-#     if w <= 0 or h <= 0:
-#         print('width or height is 0')
-#         if result_callback:
-#             result_callback(False, RuntimeError("invalid geometry"))
-#         return
-#
-#     # mss expects top/left/width/height in its own coordinate style
-#     monitor_geom = (y, x, w, h)  # 기존 코드가 top=y, left=x
-#     # 백그라운드에서 실제 캡처
-#     thread = threading.Thread(target=do_capture, args=(monitor_geom, filename, result_callback), daemon=True)
-#     thread.start()
-
 
 def print_monitor_info():
     monitors = get_monitors()
@@ -444,3 +405,68 @@ def get_secondary_monitor_bbox():
                 secondary_monitor.x + secondary_monitor.width,
                 secondary_monitor.y + secondary_monitor.height)
     return None
+
+# 2025.06.25: Added a CTEC Protocol of Multi Sensor
+# (2024.02.15) CheckBox Change a treeview to CheckTreeView  and event is changed to
+#  Double-Button-1, CheckBox is controlled with tag
+def make_table(root: tkinter, column_num: int, width: int, column_title: list[str], x: int, y: int,
+               cmd_data: list[str]) -> CheckboxTreeview:
+    # Create a table, column is the name of column,
+    # The display column shows the order in which the table is executed.
+
+    column = [i + 1 for i in range(column_num)]
+    dis_column = [str(n) for n in column]
+    tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
+
+    # 2025.06.13: Pgup/Pgdn Direction key prevent
+    tv.bind("<Prior>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<Next>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_direction(e))
+
+    # set the treeview scroll
+    vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
+    vsb.place(x=width * column_num + 105 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'] - 30)
+    # tv = tkinter.ttk.Treeview(root, columns=column, display columns=dis_column)
+    # Treeview의 width, height 글자 수로 정해 진다.
+    # tv.configure(height=len(Cons.command_array) + 1)
+    tv.place(x=x, y=y)
+    tv.configure(yscrollcommand=vsb.set)
+
+    # Set the Table No Tab
+    tv.column('#0', width=70, anchor='center', stretch='yes')
+    tv.heading('#0', text='No', anchor='center')
+
+    # Create each column (name, width, anchor)
+    for i in range(column_num):
+        tv.column(dis_column[i], width=width, anchor='center')
+        tv.heading(dis_column[i], text=column_title[i], anchor='center')
+
+    default_font = tkfont.nametofont("TkTextFont")
+    bold_font = default_font.copy()
+    bold_font.configure(weight="bold")
+
+    tv.tag_configure('cmd_tag', background='lightblue')
+    tv.tag_configure('query_tag', background='yellow')
+    tv.tag_configure('bold_text', font=bold_font)
+
+    # Insert the command data in Table
+    for i, row_values in enumerate(cmd_data):
+        tags = ['unchecked']  # 기본 태그
+
+        # 태그 조건 누적
+        if any(cell == 'CMD List' for cell in row_values):
+            tags.append('cmd_tag')
+        if any('Query' in str(cell) for cell in row_values):
+            tags.append('query_tag')
+            tags.append('bold_text')
+
+        # 단 한 번만 insert, 태그는 누적해서
+        tv.insert('', 'end', text=i + 1, values=row_values, iid=f'{i}번', tags=tags)
+
+    # 더블 클릭 바인딩은 루프 밖에서 1번만!
+    tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
+    tv.bind('<<TreeviewSelect>>', fix_selection_tags)
+    return tv
