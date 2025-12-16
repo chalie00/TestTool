@@ -336,7 +336,7 @@ class PTZ:
                 self.send_miniGimbal('op_af')
 
     def release_cmd(self, event):
-        # print("Button released")
+        print("Button released")
         btn = event.widget
         btn_text = btn.cget('text')
 
@@ -366,6 +366,7 @@ class PTZ:
                 self.send_pt_drv('stop', 'pt_drv')
 
     def stop_zoom_focus(self, model, command_type):
+        ic('stop cmd was sent')
         if model == 'NYX Series':
             self.zoom_focus_stop_for_nyx(command_type)
         elif model == 'FineTree':

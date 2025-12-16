@@ -1,4 +1,0 @@
-2025-12-01-10-58-17 : b'NYX.ACK#lens_afmd=zoom-triggerAE\n'
-2025-12-01-10-59-36 : b'NYX.ACK#isp0_dzen=onCK\n'
-2025-12-01-11-04-10 : b'NYX.ACK#infr_cale=execute@N\n'
-2025-12-01-11-04-34 : b'NYX.ACK#infr_cale=execute@N\n'

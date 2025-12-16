@@ -119,7 +119,6 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
     tv.bind('<<TreeviewSelect>>', fix_selection_tags)
     return tv
 
-
 def convert_str_to_hex(hex_str_arr) -> list[int]:
     hex_array = []
     for i in range(0, len(hex_str_arr), 2):

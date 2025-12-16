@@ -1,3 +1,0 @@
-2025-12-04-10-00-12 : b'NYX.ACK#isp0_frox=20JH\n'
-2025-12-04-10-00-26 : b'NYX.ACK#isp0_frsx=19IL\n'
-2025-12-04-10-00-31 : b'NYX.ACK#isp0_frsy=63IL\n'

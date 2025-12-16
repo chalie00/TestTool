@@ -272,7 +272,8 @@ def test_code():
         test_txt = {'ip': '192.168.100.159', 'port': '443', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
         # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'Multi':
-        test_txt = {'ip': '192.168.100.162', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        # test_txt = {'ip': '192.168.100.162', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.151', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'CTEC':
         test_txt = {'ip': '192.168.100.160', 'port': '9000', 'rtsp_port': '554', 'id': 'root', 'pw': 'asdf12345!'}
     Cons.network_obj['ip_txt'].insert(0, test_txt['ip'])

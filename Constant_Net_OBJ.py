@@ -7,6 +7,13 @@ selected_model = 'Multi'
 model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
 
 # ====================================================  NETWORK ==================================================================
+# Network Information form User Input
+data_sending = True
+host_ip: str = ""
+port: int = 0  # Default 32000
+rtsp_port: int = 0
+buf_size = 4096
+
 # RTSP Information
 rtsp_url = ''
 ipc_id = ''

@@ -4,15 +4,34 @@ import Constant_Net_OBJ as Net_Obj_Con
 import Constant_Query as Qry
 
 # =====================================================   Constant Script =====================================================
+script_toggle_flag = Test_Script.script_toggle_flag
+capture_hex = Test_Script.capture_hex
+uncooled_query_arrays = Test_Script.uncooled_query_arrays
 capture_title = Test_Script.capture_title
 script_cmd_arrs = Test_Script.script_cmd_arrs
 script_cmd_titles = Test_Script.script_cmd_titles
 script_itv_arrs = Test_Script.script_itv_arrs
 script_cmd_itv_arrs = Test_Script.script_cmd_itv_arrs
-
+response_txt = Test_Script.response_txt
+drs_response = Test_Script.drs_response
+miniG_response = Test_Script.miniG_response
+miniG_res_payload = Test_Script.miniG_res_payload
+miniG_res_row = Test_Script.miniG_res_row
 # =====================================================   Constant Network =====================================================
 selected_model = Net_Obj_Con.selected_model
 model_option = Net_Obj_Con.model_option
+data_sending = Net_Obj_Con.data_sending
+host_ip: str = Net_Obj_Con.host_ip
+port: int  = Net_Obj_Con.port
+rtsp_port = Net_Obj_Con.rtsp_port
+buf_size = Net_Obj_Con.buf_size
+rtsp_url = Net_Obj_Con.rtsp_url
+ipc_id = Net_Obj_Con.ipc_id
+ipc_pw = Net_Obj_Con.ipc_pw
+video_player_ch1 = Net_Obj_Con.video_player_ch1
+video_player_ch2 = Net_Obj_Con.video_player_ch2
+video_player_ch3 = Net_Obj_Con.video_player_ch3
+video_player_ch4 = Net_Obj_Con.video_player_ch4
 selected_ch = Net_Obj_Con.selected_ch
 FW_NODE = Net_Obj_Con.FW_NODE
 FW_BAUD = Net_Obj_Con.FW_BAUD
@@ -29,13 +48,6 @@ network_obj = Net_Obj_Con.network_obj
 etc_obj = Net_Obj_Con.etc_obj
 etc_btn_obj = Net_Obj_Con.etc_btn_obj
 res_log_obj = Net_Obj_Con.res_log_obj
-rtsp_url = Net_Obj_Con.rtsp_url
-ipc_id = Net_Obj_Con.ipc_id
-ipc_pw = Net_Obj_Con.ipc_pw
-video_player_ch1 = None
-video_player_ch2 = None
-video_player_ch3 = None
-video_player_ch4 = None
 start_time = Net_Obj_Con.start_time
 only_socket = Net_Obj_Con.only_socket
 fine_tree_cmd_data = Net_Obj_Con.fine_tree_cmd_data
@@ -72,6 +84,7 @@ log_path = rf'Log/'
 # Table Data
 column_array = ['Function', 'Command']
 column_array_fine_tree = ['Function', 'Parameter']
+tv = None
 
 # Command from CSV File
 command_array = Mf.get_data_from_csv(cmd_path)

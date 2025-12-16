@@ -38,7 +38,7 @@ def send_cmd_for_multi(send_cmd, title, root_view):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
     client = socket.socket(AF_INET, SOCK_STREAM)
 
     try:
@@ -68,7 +68,7 @@ def send_cmd_only_for_multi(send_cmd):
     input_port = Cons.selected_ch['port']
     # ic(Cons.selected_ch)
     port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
 
     # 일시적으로 송신 가능 상태가 아니면, False라도 임시로 송신 허용
     was_sending = Cons.data_sending
@@ -103,7 +103,7 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
     client = socket.socket(AF_INET, SOCK_STREAM)
 
     try:
@@ -156,7 +156,7 @@ def send_cmd_for_uncooled_only_cmd(cmd):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
     client = socket.socket(AF_INET, SOCK_STREAM)
     try:
         client.settimeout(3)
@@ -314,7 +314,7 @@ def send_cmd_to_nyx(root, cmd):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     send_port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, send_port))
         s.sendall(cmd.encode('utf-8'))
@@ -336,7 +336,7 @@ def send_cmd_to_nyx_without_root(cmd):
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     send_port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, send_port))
         s.sendall(cmd.encode('utf-8'))
@@ -492,7 +492,7 @@ def send_data_with_cmd_for_info(root, cmds):
     host = Cons.host_ip
     input_port = Cons.port
     send_port = int(0) if Cons.port == '' else int(input_port)
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
 
     responses = []
     for cmd in cmds:
@@ -509,9 +509,9 @@ def send_data_with_cmd_for_info(root, cmds):
 
 
 # (2024.08.13): Added send cmd function for DRS
-def send_cmd_for_drs(host, port, send_cmd, root_view):
+def send_cmd_for_drs(host, port, send_cmd, root_view = None):
     # print('send_cmd_for_drs')
-    buf_size = Cons.buf_size
+    buf_size = Cons.READ_MAX_BYTES
     client = socket.socket(AF_INET, SOCK_STREAM)
     try:
         client.settimeout(3)
@@ -699,7 +699,7 @@ def send_cmd_to_Finetree(url, params):
 
     Cons.selected_model = 'DRS'
     find_ch()
-    print(rf'last model is {Cons.selected_model}')
+    # print(rf'last model is {Cons.selected_model}')
 
 
 # (2024.09.25) Find selected model

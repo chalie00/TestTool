@@ -23,30 +23,6 @@ def hex_to_signed(value: str, bits: int = 16) -> int:
     return val
 
 
-# class Response:
-#     def __init__(self, root, pos):
-#         self.root = root
-#         self.pos = pos
-#         self.canvas = tk.Canvas(self.root, width=pos['w'] - 30, height=pos['h'] + 15, bg=pos['bg'])
-#         self.canvas.place(x=pos['x'], y=pos['y'] + 5)
-#
-#         # Create Log Field
-#         self.text_widget = tk.Text(self.canvas, bg='lightgray', width=88, height=15)
-#         self.text_widget.place(x=0, y=0)
-#         self.text_font = font.Font(size=8)
-#         self.text_widget.configure(font=self.text_font)
-#
-#         # Set bold to specified txt
-#         bold_font = font.Font(size=8, weight="bold")
-#         self.text_widget.tag_configure("bold", font=bold_font, foreground='green')
-#
-#         scrollbar = tk.Scrollbar(self.canvas, orient='vertical', command=self.text_widget.yview)
-#         # scrollbar.place(x=self.pos['x'] + self.pos['w'] - 25, y=self.pos['y'], height=self.pos['h'] - 10)
-#         scrollbar.place(x=self.pos['w'] - 25 - 30, y=0, height=self.pos['h'] - 10)
-#         self.text_widget.config(yscrollcommand=scrollbar.set)
-#
-#         self.dis_response_text()
-
 class Response:
     def __init__(self, root, pos):
         self.root = root
@@ -108,7 +84,7 @@ class Response:
             self.text_widget.config(state=tk.DISABLED)
 
     # 2025.07.02 Display a Response Text for Multi
-    # TODO: function drs_response_text have to modify
+    # function drs_response_text have to modify
     def multi_response(self, res_txt: str):
         current_time = datetime.now()
         time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
@@ -119,17 +95,6 @@ class Response:
             msb_lsb = hex_to_signed(res_cmd[8:12], 16)
             self.text_widget.insert(tk.END, f"[{time_str}] {spaced} : 'MSB+LSB Int:' {msb_lsb}\n")
         self.text_widget.see(tk.END)
-
-        # If you start with FF, print it on the next line.
-        # res_txt = res_txt.replace(' ', '')
-        # lines = []
-        # parts = res_txt.split('ff')
-        # for part in parts:
-        #     if part:
-        #         lines.append('FF' + part)
-        # for line in lines:
-        #     spaced_line = " ".join([line[i:i + 2] for i in range(0, len(line), 2)])
-        #     self.text_widget.insert(tk.END, rf'[{time_str}]' + spaced_line + '\n')
 
         self.text_widget.see(tk.END)
 
