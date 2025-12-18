@@ -519,7 +519,6 @@ def send_cmd_for_drs(host, port, send_cmd, root_view = None):
         client.send(bytes(send_cmd))
         reply = client.recv(buf_size)
         # print(reply)
-
         if Cons.selected_model == 'DRS':
             # 데이터 파싱 함수 호출
             parse_drs_reply(reply)
@@ -616,7 +615,7 @@ def fine_tree_send_cgi(url, params):
     find_ch()
     # 2025.04.29: Was Applied Port No (FineTree needs Web Port No for Controlling)
     sel_ip = Cons.selected_ch['ip'] + f':{Cons.selected_ch['port']}'
-    print(rf'sel ip is {sel_ip}')
+    # print(rf'sel ip is {sel_ip}')
 
     base_url = rf'http://{sel_ip}{url}?'
 
@@ -672,18 +671,19 @@ def fine_tree_send_cgi(url, params):
 
 # (2024.11.14): Sending a PTZ CMD to Finetree by DRS
 def send_cmd_to_Finetree(url, params):
-    Cons.selected_model = 'FineTree'
-    find_ch()
-    sel_ip = Cons.selected_ch['ip']
-    print(sel_ip)
-    base_url = rf'http://{sel_ip}:{Cons.selected_ch['port']}{url}?'
-    username = Cons.selected_ch['id']
-    password = Cons.selected_ch['pw']
-
-    params_encoded = urllib.parse.urlencode(params)
-    print(f"Sending request to: {base_url} with params: {params_encoded}")
-    full_url = f'http://{sel_ip}{url}?{params_encoded}'
+    pre_model = getattr(Cons, 'selected_model', None)
     try:
+        Cons.selected_model = 'FineTree'
+        find_ch()
+        sel_ip = Cons.selected_ch['ip']
+        # print(sel_ip)
+        base_url = rf'http://{sel_ip}:{Cons.selected_ch['port']}{url}?'
+        username = Cons.selected_ch['id']
+        password = Cons.selected_ch['pw']
+
+        params_encoded = urllib.parse.urlencode(params)
+        print(f"Sending request to: {base_url} with params: {params_encoded}")
+        full_url = f'http://{sel_ip}{url}?{params_encoded}'
         response = requests.get(base_url, params=params_encoded, auth=HTTPBasicAuth(username, password), timeout=5)
         if response.status_code == 200:
             print("Request was successful!")
@@ -696,10 +696,10 @@ def send_cmd_to_Finetree(url, params):
         print(f"Connection error occurred: {e}")
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
-
-    Cons.selected_model = 'DRS'
-    find_ch()
-    # print(rf'last model is {Cons.selected_model}')
+    finally:
+        Cons.selected_model = pre_model if pre_model else 'DRS'
+        find_ch()
+        # print(rf'last model is {Cons.selected_model}')
 
 
 # (2024.09.25) Find selected model

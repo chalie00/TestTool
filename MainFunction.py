@@ -60,6 +60,14 @@ def create_table(root, column_titles, column_width, x, y, height=29):
     dis_column = [str(i + 1) for i in range(column_num)]
 
     tv = CheckboxTreeview(root, height=height, columns=dis_column, displaycolumns=dis_column)
+    
+    # 2025.06.13: Pgup/Pgdn Direction key prevent
+    tv.bind("<Prior>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<Next>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_ExtKey(e))
 
     # 스크롤바
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
@@ -419,12 +427,12 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
     tv = CheckboxTreeview(root, height=29, columns=dis_column, displaycolumns=dis_column)
 
     # 2025.06.13: Pgup/Pgdn Direction key prevent
-    tv.bind("<Prior>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<Next>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_direction(e))
-    tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_direction(e))
+    tv.bind("<Prior>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<Next>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Up>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Down>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_ExtKey(e))
+    tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_ExtKey(e))
 
     # set the treeview scroll
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)

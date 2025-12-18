@@ -23,6 +23,7 @@ def model_select(event, parent, sel_op):
     current_sel = sel_op.get()
     Cons.model_obj['model_name'] = current_sel
     Cons.selected_model = current_sel
+    Comm.find_ch()
 
     if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'MiniGimbal', 'Multi', 'CTEC']:
         col_name = Cons.column_array
@@ -129,7 +130,7 @@ def clr_script(parent, script_start_btn, script_stop_btn):
 # (2024.07.04): Start thread with a selected script
 # (2024.10.18): Add a Finetree for a script
 # (2024.10.18): modify threading for repeat
-def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_start_btn, script_stop_btn) -> []:
+def run_script(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script_start_btn, script_stop_btn):
     current_time = datetime.now()
     time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
     response_file_name = rf'{Cons.log_path}_{time_str}.txt'

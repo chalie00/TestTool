@@ -144,6 +144,7 @@ _last_sent = {'type': None, 'key': None, 'time': 0.0}
 
 
 def handle_ptz_move(key):
+    Comm.find_ch()
     if not ptz_ins:
         logging.warning("[MOVE] PTZ instance not ready.")
         return
@@ -237,7 +238,7 @@ def handle_ptz_stop(key):
         logging.error(f"[STOP] Error: {e}")
 
 
-def pressed_kbd_direction(event):
+def pressed_kbd_ExtKey(event):
     """Prior/Next/Insert/Delete/End 등 특수 키 처리"""
     try:
         key = event.keysym
@@ -268,10 +269,14 @@ def pressed_kbd_direction(event):
                 Comm.send_cmd_for_TTL_uncooled_async(hex_array)
                 return 'break'
         elif model == 'drs':
+            Cons.selected_model = 'DRS'
+            Comm.find_ch()
             host = Cons.selected_ch['ip']
             port = int(Cons.selected_ch['port']) if Cons.selected_ch['port'] else 0
+            # print(host, port)
             cmd = drs_keymap.get(key)
             hex_array = hex_string_to_array(cmd)
+            # print(hex_array)
             if cmd: 
                 Comm.send_cmd_for_drs(host=host, port=port, send_cmd=hex_array)
     except Exception as e:
@@ -340,7 +345,7 @@ def bind_system_kbd(root):
     # 기타 키 (Zoom, Focus, AF 등)
     extra_keys = ['Prior', 'Next', 'Insert', 'Delete', 'End', 'Home', 'Pause']
     for key in extra_keys:
-        root.bind_all(f"<KeyPress-{key}>", pressed_kbd_direction)
+        root.bind_all(f"<KeyPress-{key}>", pressed_kbd_ExtKey)
         root.bind_all(f"<KeyRelease-{key}>", extra_key_release)
 
     # 프리셋 단축키
