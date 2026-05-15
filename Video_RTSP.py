@@ -1,4 +1,5 @@
 import threading
+import logging
 import icecream as ic
 
 import Constant as Cons
@@ -8,10 +9,9 @@ import VideoPlayer as Vp
 
 def open_video_window():
     Cons.selected_model = Cons.model_obj['model_name']
-    Comm.find_ch()
-    # Cons.selected_model = Cons.selected_ch['model']
-    Cons.selected_model = Cons.selected_ch['model'] if Cons.selected_ch else 'UNKNOWN_MODEL'
-    # print(Cons.selected_model)
+    if Cons.selected_ch and Cons.selected_ch.get('model') == Cons.selected_model:
+        Comm.find_ch()
+    logging.info("open_video_window model=%s selected_ch=%s", Cons.selected_model, Cons.selected_ch)
     # Create only one socket for Minigimbal
     if Cons.selected_model == 'MiniGimbal':
         threading.Thread(target=handle_minigimbal, daemon=True).start()
@@ -62,6 +62,9 @@ def handle_minigimbal():
 def pushed_ch_btn(parent, ch_name):
     info = get_rtsp_info(ch_name)
     info['url'] = generate_rtsp_url(info)
+    Cons.selected_model = info['model']
+    Cons.selected_ch = info
+    logging.info("channel selected ch=%s model=%s ip=%s port=%s rtsp=%s", ch_name, info['model'], info['ip'], info['port'], info['rtsp_port'])
 
     if info['url'] == 'Invalid model':
         print(f"Invalid model selected for {ch_name}")
@@ -89,6 +92,7 @@ def generate_rtsp_url(info):
     url_patterns = {
         'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
         'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+        'UncooledTTL': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
         'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
         'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1',
         # MiniGimbal cannot display rtsp stream in currently

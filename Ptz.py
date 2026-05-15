@@ -1,6 +1,7 @@
 import tkinter as tk
 import time as ti
 import threading
+import logging
 
 import Communication as Comm
 import Constant as Cons
@@ -55,7 +56,7 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('up_left')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('left_top', 'pt_drv')
 
         else:
@@ -64,8 +65,9 @@ class PTZ:
     # (2024.07.19) modified so that commands sent from PTZ are also switched when model is changed
     # (20204.11.14): Added DRS Zoom Module
     def up_zoom_in(self, event=None):
+        logging.info("ptz up_zoom_in model=%s selected_ch=%s osd=%s", Cons.selected_model, Cons.selected_ch, Cons.ptz_osd_toggle_flag)
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # OSD Uncooled
                 self.send_data('FF01E024000005')
             elif Cons.selected_model == 'NYX Series':
@@ -82,11 +84,11 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Up
                 self.send_miniGimbal('up')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('up', 'pt_drv')
 
         else:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # PTZ Uncooled
                 self.send_data('FF010020000021')
             elif Cons.selected_model == 'NYX Series':
@@ -105,7 +107,7 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Optical Zoom In
                 self.send_miniGimbal('op_zoom_in')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('zoom_in', 'eo')
                 # self.send_pt_drv('zoom_in', 'ir')
 
@@ -119,7 +121,7 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('up_right')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('right_top', 'pt_drv')
         else:
             print('Pressed Right Top')
@@ -134,14 +136,15 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('down_left')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('left_down', 'pt_drv')
         else:
             print('Pressed Left Bottom')
 
     def down_zoom_out(self, event=None):
+        logging.info("ptz down_zoom_out model=%s selected_ch=%s osd=%s", Cons.selected_model, Cons.selected_ch, Cons.ptz_osd_toggle_flag)
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # OSD Uncooled
                 self.send_data('FF01E025000006')
             elif Cons.selected_model == 'NYX Series':
@@ -157,10 +160,10 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Down
                 self.send_miniGimbal('down')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('down', 'pt_drv')
         else:
-            if Cons.selected_model in ['Uncooled', 'Multi']:
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL', 'Multi', 'CTEC']:
                 # Uncooled Zoom Out
                 self.send_data('FF010040000041')
             elif Cons.selected_model == 'NYX Series':
@@ -179,7 +182,7 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Optical Zoom Out
                 self.send_miniGimbal('op_zoom_out')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('zoom_out', 'eo')
                 # self.send_pt_drv('zoom_out', 'ir')
 
@@ -193,7 +196,7 @@ class PTZ:
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
             elif Cons.selected_model == 'MiniGimbal':
                 self.send_miniGimbal('down_right')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('right_down', 'pt_drv')
         else:
             print('Pressed Right Bottom')
@@ -210,7 +213,7 @@ class PTZ:
     def left_near(self, event=None):
         # print("Left button pressed")
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # OSD Uncooled
                 self.send_data('FF01E022000003')
             elif Cons.selected_model == 'NYX Series':
@@ -226,10 +229,10 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Left
                 self.send_miniGimbal('left')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('left', 'pt_drv')
         else:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # Near Uncooled
                 self.send_data('FF010100000002')
             elif Cons.selected_model == 'NYX Series':
@@ -249,13 +252,13 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Near
                 self.send_miniGimbal('op_near')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('near', 'eo')
                 self.send_pt_drv('near', 'ir')
 
     def right_far(self, event=None):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # OSD Uncooled
                 self.send_data('FF01E023000004')
             elif Cons.selected_model == 'NYX Series':
@@ -271,10 +274,10 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Move Right
                 self.send_miniGimbal('right')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('right', 'pt_drv')
         else:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # Far Uncooled
                 self.send_data('FF010080000081')
             elif Cons.selected_model == 'NYX Series':
@@ -294,13 +297,13 @@ class PTZ:
             elif Cons.selected_model == 'MiniGimbal':
                 # Far
                 self.send_miniGimbal('op_far')
-            elif Cons.selected_model == 'Multi':
+            elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('far', 'eo')
                 self.send_pt_drv('far', 'ir')
 
     def osd_af(self, event):
         if not Cons.ptz_osd_toggle_flag:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # OSD Uncooled
                 self.send_data('FF01E021000002')
             elif Cons.selected_model == 'NYX Series':
@@ -308,7 +311,7 @@ class PTZ:
                 osd_cmd = 'NYX.SET#isp0_guie=on'
                 Comm.send_data_with_cmd_for_nyx_ptz(self.root, osd_cmd)
         else:
-            if Cons.selected_model == 'Uncooled':
+            if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # AF Uncooled
                 sys_info_pos = Cons.sys_info_tab
                 sys_info = sysinfo.SysInfo(self.root, sys_info_pos)
@@ -337,12 +340,13 @@ class PTZ:
 
     def release_cmd(self, event):
         print("Button released")
+        logging.info("ptz release model=%s selected_ch=%s button=%s", Cons.selected_model, Cons.selected_ch, event.widget.cget('text'))
         btn = event.widget
         btn_text = btn.cget('text')
 
         ptz_text_arr = ['Left\nTop', 'Up', 'Right\nTop', 'Left\nDown', 'Down', 'Right\nDown', 'Left', 'Right']
 
-        if Cons.selected_model == 'Uncooled':
+        if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
             # All Stop
             self.send_data('FF010000000001')
             if Cons.ptz_osd_toggle_flag:
@@ -358,7 +362,7 @@ class PTZ:
                 self.stop_zoom_focus(Cons.selected_model, 'focus')
             elif btn_text in ptz_text_arr:
                 self.stop_ptz(Cons.selected_model)
-        elif Cons.selected_model == 'Multi':
+        elif Cons.selected_model in ['Multi', 'CTEC']:
             if btn_text in ['Zoom\nIn', 'Zoom\nOut', 'Near', 'Far']:
                 self.send_pt_drv('stop', 'eo')
                 self.send_pt_drv('stop', 'ir')
@@ -408,6 +412,7 @@ class PTZ:
 
     def send_data(self, cmd):
         ic('send_data in PTZ', cmd)
+        logging.info("ptz send_data model=%s selected_ch=%s cmd=%s", Cons.selected_model, Cons.selected_ch, cmd)
         hex_array = [int(cmd[i:i + 2], 16) for i in range(0, len(cmd), 2)]
         # Th.send_cmd_for_uncooled(hex_array, 'Normal Query', self.root)
         Th.send_cmd_for_TTL_uncooled_async(hex_array, 'Normal Query', self.root)
@@ -435,6 +440,7 @@ class PTZ:
 
     # 2025.06.30: Send the CMD to PT Driver
     def send_pt_drv(self, dir_str, model):
+        logging.info("ptz send_pt_drv selected_model=%s selected_ch=%s target=%s cmd=%s", Cons.selected_model, Cons.selected_ch, model, dir_str)
         pt_drv_cmd = {'up': 'FF010008404089', 'down': 'FF010010404091',
                       'right': 'FF010002404083', 'left': 'FF010004404085',
                       'left_top': 'FF01000C40408D', 'right_top': 'FF01000A40408B',

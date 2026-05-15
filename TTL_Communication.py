@@ -5,6 +5,30 @@ import ssl, socket, time, hashlib, binascii, re, secrets, logging
 import Constant as Cons
 
 
+def _resolve_tls_port(channel_info=None):
+    """Return the HTTPS/TLS port used by the TTL admin and fwtransparent endpoints."""
+    info = channel_info or Cons.selected_ch or {}
+
+    for key in ("ttl_tls_port", "https_port", "web_port", "auth_port"):
+        value = info.get(key)
+        if value in (None, ""):
+            continue
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            logging.warning("invalid TTL TLS port override %s=%r", key, value)
+
+    try:
+        selected_port = int(info.get("port", 0))
+    except (TypeError, ValueError):
+        selected_port = 0
+
+    if selected_port in {443, 8443, 9443, 10443}:
+        return selected_port
+
+    return 443
+
+
 def _make_legacy_tls():
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     try:
@@ -38,9 +62,12 @@ def _read_headers(fp, timeout=2.0):
     return status, headers
 
 
-def _get_admin_challenge(host):
+def _get_admin_challenge(host, port=None):
     # /admin/aindex_m.asp 로 401 챌린지만 한번 받아 realm/nonce 확보 (MD5로 사용)
-    s = _tls_connect(host, Cons.selected_ch['port'])
+    tls_port = _resolve_tls_port()
+    if port is not None:
+        tls_port = int(port)
+    s = _tls_connect(host, tls_port)
     fp = s.makefile("rb", buffering=0)
     req = (f"GET /admin/aindex_m.asp HTTP/1.0\r\nHost: {host}\r\nConnection: close\r\n\r\n").encode()
     s.sendall(req)

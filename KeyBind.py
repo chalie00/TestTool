@@ -157,7 +157,7 @@ def handle_ptz_move(key):
 
     try:
         model = normalized_model()
-        if model == 'multi':
+        if model in ['multi', 'ctec']:
             # ptz_ins.send_pt_drv(key.lower(), 'pt_drv')
             file_name = f"Multi_{Cons.start_time}.txt"
             Async.async_send(fn=lambda:ptz_ins.send_pt_drv(key.lower(), 'pt_drv'), log_name=file_name)
@@ -212,7 +212,7 @@ def handle_ptz_stop(key):
 
     try:
         model = normalized_model()
-        if model == 'multi':
+        if model in ['multi', 'ctec']:
             stop = 'FF010000000001'
             hex_array = hex_string_to_array(stop)
             Comm.send_cmd_only_for_multi(hex_array)
@@ -279,6 +279,7 @@ def pressed_kbd_ExtKey(event):
             # print(hex_array)
             if cmd: 
                 Comm.send_cmd_for_drs(host=host, port=port, send_cmd=hex_array)
+                return 'break'
     except Exception as e:
         logging.error(f"[ExtraKey] Error: {e}")
         return 'break'

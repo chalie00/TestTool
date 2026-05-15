@@ -64,6 +64,7 @@ def send_cmd_for_multi(send_cmd, title, root_view):
 
 def send_cmd_only_for_multi(send_cmd):
     find_ch()
+    logging.info("send_cmd_only_for_multi selected_ch=%s send_cmd=%s", Cons.selected_ch, send_cmd)
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     # ic(Cons.selected_ch)
@@ -83,7 +84,10 @@ def send_cmd_only_for_multi(send_cmd):
             client.send(bytes(send_cmd))
             reply = client.recv(buf_size)
             # ic(reply.hex())
-            Cons.res_log_obj.multi_response(reply.hex())
+            if Cons.res_log_obj:
+                Cons.res_log_obj.multi_response(reply.hex())
+            else:
+                logging.warning("res_log_obj is not initialized; reply=%s", reply.hex())
         else:
             print('Protocol sending was stopped')
 
@@ -98,8 +102,12 @@ def send_cmd_only_for_multi(send_cmd):
 
 # Sending Command with hex
 def send_cmd_for_uncooled(send_cmd, title, root_view):
-    # print('send cmd for uncooled')
+    """Send an Uncooled command over the legacy TCP channel and return raw reply bytes."""
     find_ch()
+    if not Cons.selected_ch:
+        logging.warning("send_cmd_for_uncooled aborted: no selected channel")
+        return None
+
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
@@ -108,44 +116,44 @@ def send_cmd_for_uncooled(send_cmd, title, root_view):
 
     try:
         client.settimeout(3)
-        # -*- coding: utf-8 -*-
         client.connect((host, port))
-        # client.send(bytearray([0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35]))
-        # client.send(bytes([0xff, 0x00, 0x21, 0x13, 0x00, 0x01, 0x35]))
-        if Cons.data_sending:
-            ic('send_cmd_uncooled in Comm', send_cmd)
-            client.send(bytes(send_cmd))
-            reply = client.recv(buf_size)
-            hex_data = binascii.hexlify(reply).decode('utf-8')
-            hex_data_14dig = [f'{hex_data[i:i + 14]}' for i in range(0, len(hex_data), 14)]
 
-            if title in Cons.uncooled_query_arrays:
-                send_title = title
-            else:
-                send_title = 'Normal Query'
-            # ic('send_cmd_for_uncooled in Comm', reply.hex())
-            uncooled_store_response(root_view, send_title, hex_data)
+        if not Cons.data_sending:
+            logging.info("send_cmd_for_uncooled skipped: data sending disabled")
+            return None
 
-            current_time = datetime.now()
-            time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
-            # hex_with_time = rf'{time_str}: {hex_data_14dig_24space[0]}'
-            hex_with_time = fr'{hex_data_14dig[0]} : {time_str}'
-            # print(response = {hex_with_time}\n')
-            hex_data_14dig[0] = hex_with_time
+        payload = bytes(send_cmd)
+        ic('send_cmd_uncooled in Comm', send_cmd)
+        logging.info("send_cmd_for_uncooled host=%s port=%s title=%s tx=%s", host, port, title, payload.hex())
+
+        client.send(payload)
+        reply = client.recv(buf_size)
+        if not reply:
+            logging.warning("send_cmd_for_uncooled received empty reply for title=%s", title)
+            return b""
+
+        hex_data = binascii.hexlify(reply).decode('utf-8')
+        hex_data_14dig = [f'{hex_data[i:i + 14]}' for i in range(0, len(hex_data), 14)]
+        send_title = title if title in Cons.uncooled_query_arrays else 'Normal Query'
+
+        uncooled_store_response(root_view, send_title, hex_data)
+
+        if hex_data_14dig:
+            time_str = datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+            hex_data_14dig[0] = fr'{hex_data_14dig[0]} : {time_str}'
             for item in hex_data_14dig:
                 Cons.response_txt.append(item)
-            # print(Cons.response_txt)
-            log_pos = Cons.log_txt_fld_info
-            log_fld = Res.Response(root_view, log_pos)
 
-        else:
-            print('Protocol sending was stopped')
+        Res.Response(root_view, Cons.log_txt_fld_info)
+        logging.info("send_cmd_for_uncooled rx=%s", hex_data)
+        return reply
 
     except socket.error as err:
         print(f'network error:{err}')
         dialog_txt = f'Network Error \n Please check a network info.\n {err}'
         Dialog.DialogBox(root_view, dialog_txt)
         logging.error(err)
+        return None
     finally:
         client.close()
 
@@ -183,18 +191,20 @@ def send_cmd_to_ucooled_with_interval(interval: list[float], send_cmds: list[int
         # print(rf'protocol is {protocol}')
         # print(datetime.now())
         if Cons.data_sending:
+            current_title = cmd_title[i] if i < len(cmd_title) else 'Normal Query'
+            previous_title = cmd_title[i - 1] if 0 < i <= len(cmd_title) else current_title
             if protocol == Cons.capture_hex:
                 current_time = datetime.now()
                 time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
                 path = Cons.capture_path['zoom']
-                filename = rf'{path}/{time_str}-{i}-{str(cmd_title[i - 1])}.png'
+                filename = rf'{path}/{time_str}-{i}-{str(previous_title)}.png'
                 Mf.capture_image(root_view, filename)
             else:
-                if cmd_title[i - 1] in Cons.uncooled_query_arrays:
-                    title = cmd_title[i - 1]
+                if current_title in Cons.uncooled_query_arrays:
+                    title = current_title
                 else:
                     title = 'Normal Query'
-                if Cons.selected_model == 'Uncooled':
+                if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                     # send_cmd_for_uncooled(protocol, title, root_view)
                     send_cmd_for_TTL_uncooled_async(protocol, title, root_view)
                 elif Cons.selected_model in ['DRS', 'MiniGimbal', 'Multi']:
@@ -205,6 +215,7 @@ def send_cmd_to_ucooled_with_interval(interval: list[float], send_cmds: list[int
                 ti.sleep(interval[i])
         else:
             print('Protocol sending was stopped')
+            break
 
 
 # (2024.07.12) Save the response data in 14-digit increments.
@@ -618,8 +629,8 @@ def fine_tree_send_cgi(url, params):
     # print(rf'sel ip is {sel_ip}')
 
     base_url = rf'http://{sel_ip}{url}?'
-
     if len(params) == 1:
+
         username = Cons.selected_ch['id']
         password = Cons.selected_ch['pw']
 
@@ -633,6 +644,9 @@ def fine_tree_send_cgi(url, params):
                 print(response.text)
             else:
                 print(f"Failed to send request. Status code: {response.status_code}")
+                
+                
+                
         except requests.exceptions.Timeout:
             print("The request timed out.")
         except requests.exceptions.ConnectionError as e:
@@ -706,13 +720,21 @@ def send_cmd_to_Finetree(url, params):
 # 2025.06.30: Added a PT Driver
 @staticmethod
 def find_ch():
+    if Cons.selected_ch and Cons.selected_ch.get('model') == Cons.selected_model:
+        logging.info("find_ch keep current selected_ch=%s", Cons.selected_ch)
+        return
+
     model = Cons.selected_model
     model_arrays = [Cons.ch1_rtsp_info, Cons.ch2_rtsp_info,
                     Cons.ch3_rtsp_info, Cons.ch4_rtsp_info,
                     Cons.pt_drv_info]
     for i, ch in enumerate(model_arrays):
-        if model == ch['model']:
+        if model == ch['model'] and ch.get('ip') and ch.get('port'):
             Cons.selected_ch = model_arrays[i]
+            logging.info("find_ch matched selected_ch=%s", Cons.selected_ch)
+            return
+
+    logging.warning("find_ch failed model=%s", model)
 
 
 # ========================================= Regarding Create Only One Socket ===========================================
@@ -788,6 +810,8 @@ def save_res_from_miniG_CSV(response):
     column_title = Cons.miniG_res_row
     # res_arrs = []
     hex_value = [f'{bytes:02x}' for bytes in response]
+    
+    
     file_path = rf'Log/mini_gimbal.xlsx'
 
     with file_lock:
@@ -969,36 +993,36 @@ def send_authenticated_request(params, uri, method='GET', additional_params=None
 # 2025.11.17: threading function was applied
 
 def send_cmd_for_TTL_uncooled_async(send_cmd_bytes, title=None, root_view=None):
-    """
-    - send_cmd_bytes: list[int], str(hex), bytes 등 아무거나 받아도 됨
-    - UI 스레드는 바로 리턴되고, 통신은 백그라운드 스레드에서 수행
-    """
-    # 0) 먼저 payload를 bytes로 통일
+    """Run the Uncooled send path on a worker thread without requiring a return value."""
     try:
-        payload = Cal.to_bytes_payload(send_cmd_bytes)  # <-- 여기서만 변환
+        payload = Cal.to_bytes_payload(send_cmd_bytes)
     except Exception as e:
         logging.exception(e)
         raise TypeError("send_cmd_bytes must be bytes") from e
 
     def worker():
         try:
-            # 1) 여기서는 "동기 함수"를 호출해야 함 (중요!!)
-            rx = send_cmd_for_TTL_uncooled(payload, title, root_view)
-            #    ↑ 이 함수가 실제로 TLS 연결 + Digest + fwtransparent + recv 다 하는 기존 함수
+            if Cons.selected_model == 'UncooledTTL':
+                rx = send_cmd_for_TTL_uncooled(payload, title, root_view)
+                print('TTL')
+            else:
+                rx = send_cmd_for_uncooled(payload, title, root_view)
+                print('Uncooled')
         except Exception as e:
-            logging.exception("uncooled async send error: %s", e)
+            err_msg = str(e)
+            logging.exception("uncooled async send error: %s", err_msg)
             if root_view is not None:
-                # UI 업데이트는 메인 스레드에서
-                root_view.after(0, lambda: logging.error(f"[ERR] {title}: {e}"))
+                root_view.after(0, lambda msg=err_msg: logging.error(f"[ERR] {title}: {msg}"))
             return
 
-        # 2) 응답을 UI에 반영 (역시 메인 스레드에서만)
+        if rx is None:
+            logging.info("uncooled async handled(%s): no response", title)
+            return
+
         if root_view is not None:
             def _update_ui():
-                hex_data = binascii.hexlify(rx).decode("utf-8")
+                hex_data = binascii.hexlify(rx).decode("utf-8") if rx else ""
                 logging.info("uncooled async handled(%s): %s", title, hex_data)
-                # 필요하면 여기서 로그창/Treeview 업데이트
-                # ex) uncooled_store_response(root_view, title, hex_data)
 
             root_view.after(0, _update_ui)
 
@@ -1010,14 +1034,23 @@ def send_cmd_for_TTL_uncooled_async(send_cmd_bytes, title=None, root_view=None):
 def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
     find_ch()
     user_info = Cons.selected_ch
+    tls_port = ttl._resolve_tls_port(user_info)
 
     # 0) 안전장치
     if not isinstance(send_cmd, (bytes, bytearray)):
         raise TypeError("send_cmd_bytes must be bytes")
     payload = bytes(send_cmd) + b"\r\n"  # ★ CRLF 필수
-
+                
     # 1) Digest 재료와 쿠키 준비
-    chal = ttl._get_admin_challenge(user_info['ip'])
+    logging.info(
+        "send_cmd_for_TTL_uncooled host=%s cmd_port=%s tls_port=%s title=%s tx=%s",
+        user_info['ip'],
+        user_info.get('port'),
+        tls_port,
+        title,
+        payload.hex(),
+    )
+    chal = ttl._get_admin_challenge(user_info['ip'], tls_port)
     cookie = ttl._enc_cookie(user_info['id'], user_info['pw'])
 
     # 2) fwtransparent 요청라인 만들기
@@ -1027,7 +1060,7 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
     authz = ttl._build_digest_md5(user_info['id'], user_info['pw'], "GET", uri, chal)
 
     # 3) TLS 연결 후 GET 헤더 송신(응답은 기다리지 않고 터널 용도로 사용)
-    s = ttl._tls_connect(user_info['ip'], user_info['port'])
+    s = ttl._tls_connect(user_info['ip'], tls_port)
     try:
         req = (f"GET {uri} HTTP/1.0\r\n"
                f"Host: {user_info['ip']}\r\n"
@@ -1085,3 +1118,4 @@ def log_control(text, log_dir="Log", file_name=None):
     except Exception as e:
         logging.error("Log file write error(%s): %s", full_path, e)
         return None
+

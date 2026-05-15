@@ -5,6 +5,7 @@ import tkinter
 import string
 import mss
 import mss.tools
+import logging
 import time as ti
 import tkinter.font as tkfont
 
@@ -170,21 +171,38 @@ def check_interval_active():
 
 # Called when a table element was clicked
 def clicked_table_element(event, root_view, tv):
+    iden = tv.identify_row(event.y)
+    if not iden:
+        return
+
     Comm.find_ch()
-    # print(Cons.selected_model)
+    if not Cons.selected_ch:
+        logging.warning("table click ignored: no selected channel, model=%s", Cons.selected_model)
+        show_network_dialog(root_view, 'Please select a registered channel first.')
+        return
+
     host = Cons.selected_ch['ip']
     input_port = Cons.selected_ch['port']
     port = int(0) if Cons.port == '' else int(input_port)
-    # ic(rf'ip:{host}, port:{input_port}, port:{port}')
-
-    iden = tv.identify_row(event.y)
     tags = tv.item(iden, 'tags')
     item = tv.item(iden)
+    if not item or not item.get('values') or len(item['values']) < 2:
+        return
+
     # item['values'][0] is title that user was clicked
     # item['values'][1] is command
     selected_item = item['values']
     title = selected_item[0]
     value = selected_item[1]
+    logging.info(
+        "table click model=%s channel=%s host=%s port=%s title=%s value=%s",
+        Cons.selected_model,
+        Cons.selected_ch.get('ch'),
+        host,
+        input_port,
+        title,
+        value,
+    )
 
     if not host or not port:
         print("Invalid command")
@@ -204,7 +222,7 @@ def clicked_table_element(event, root_view, tv):
 # (2024.10.18): FineTree Added to script mode
 def handle_script_mode(event, iden, value, root_view):
     Cons.data_sending = True
-    if Cons.selected_model in ['Uncooled', 'DRS', 'MiniGimbal', 'Multi']:
+    if Cons.selected_model in ['Uncooled', 'UncooledTTL', 'DRS', 'MiniGimbal', 'Multi', 'CTEC']:
         hex_value = select_item(event, root_view)
         Cons.script_cmd_arrs.append(hex_value)
         Cons.script_cmd_titles.append(value[0])
@@ -242,6 +260,7 @@ def handle_script_mode(event, iden, value, root_view):
 # (2024.07.25): NYX added to normal mode
 def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
     Cons.data_sending = True
+    logging.info("handle_normal_mode model=%s id=%s title=%s", Cons.selected_model, iden, title)
     if 'checked' in tags:
         tv.item(iden, tags='unchecked')
     else:
@@ -251,11 +270,16 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         ic('handle_normal_mode in MF', hex_value)
         # Comm.send_cmd_for_uncooled(hex_value, title, root_view)
         Comm.send_cmd_for_TTL_uncooled_async(hex_value, title, root_view)
+    elif Cons.selected_model in 'UncooledTTL':
+        hex_value = select_item(event, root_view)
+        ic('handle_normal_mode in MF', hex_value)
+        # Comm.send_cmd_for_uncooled(hex_value, title, root_view)
+        Comm.send_cmd_for_TTL_uncooled_async(hex_value, title, root_view)
     elif Cons.selected_model == 'DRS':
         hex_array = select_item(event, root_view)
         # Comm.send_cmd_for_drs(host, port, hex_array, root_view)
         file_name = f"DRS_{Cons.start_time}.txt"
-        Async.async_send(fn=lambda:Comm.send_cmd_for_drs(host, port, hex_array, root_view), title=title, root_view=root_view, log_name=file_name)
+        Async.async_send(fn=lambda: Comm.send_cmd_for_drs(host, port, hex_array, root_view), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'MiniGimbal':
         hex_array = select_item(event, root_view)
         print(rf'{datetime.now()} : {title}')
@@ -268,7 +292,7 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         file_name = f"NYX_{Cons.start_time}.txt"
         # def job():
         #     return Comm.send_cmd_to_nyx(root_view, form)
-        Async.async_send(fn=lambda:send_cmd_to_nyx(root_view, form), title=title, root_view=root_view, log_name=file_name)
+        Async.async_send(fn=lambda: Comm.send_cmd_to_nyx(root_view, form), title=title, root_view=root_view, log_name=file_name)
     elif Cons.selected_model == 'FineTree':
         try:
             index = int(tv.item(iden, 'text')) - 1
@@ -281,11 +305,14 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         print(params)
         # Comm.fine_tree_send_cgi(url, params)
         file_name = f"Finetree_{Cons.start_time}.txt"
-        Async.async_send(fn=lambda:Comm.fine_tree_send_cgi(url, params), title=title, root_view=root_view, log_name=file_name)
-    elif Cons.selected_model == 'Multi':
+        Async.async_send(fn=lambda: Comm.fine_tree_send_cgi(url, params), title=title, root_view=root_view, log_name=file_name)
+    elif Cons.selected_model in ['Multi', 'CTEC']:
         hex_value = select_item(event, root_view)
         # print(hex_value)
         Comm.send_cmd_only_for_multi(hex_value)
+        # file_name = f"Multi_{Cons.start_time}.txt"
+        # Async.async_send(fn=lambda: Comm.send_cmd_only_for_multi(hex_value), title=title, root_view=root_view,
+        #                  log_name=file_name)
 
 
 def gene_interval_arrays(value, root_view):
@@ -336,7 +363,7 @@ def get_data_from_csv(file_path) -> list[(str, str)]:
     max_column = sh.max_column
     max_row = sh.max_row
     
-    if sel_model in ['Uncooled', 'DRS', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']:
+    if sel_model in ['Uncooled', 'UncooledTTL', 'DRS', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']:
         for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
             cmd_title = sh.cell(row=i, column=2).value
             cmd_data = sh.cell(row=i, column=3).value

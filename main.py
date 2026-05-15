@@ -1,7 +1,48 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
 import tkinter as tk
 import threading
+import logging
+
+
+def configure_vlc_runtime():
+    base_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    libvlc_path = os.path.join(base_dir, "libvlc.dll")
+    plugins_path = os.path.join(base_dir, "plugins")
+
+    if os.path.exists(libvlc_path):
+        os.environ["PYTHON_VLC_LIB_PATH"] = libvlc_path
+        os.environ["PYTHON_VLC_MODULE_PATH"] = plugins_path
+        os.environ["VLC_PLUGIN_PATH"] = plugins_path
+        if hasattr(os, "add_dll_directory"):
+            os.add_dll_directory(base_dir)
+
+
+configure_vlc_runtime()
+
+
+def configure_runtime_logging():
+    log_dir = os.path.join(os.getcwd(), "Log")
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir, "runtime_debug.log")
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[
+            logging.FileHandler(log_path, encoding="utf-8"),
+            logging.StreamHandler(sys.stdout),
+        ],
+        force=True,
+    )
+    logging.info("runtime logging initialized")
+    logging.info("cwd=%s", os.getcwd())
+    logging.info("meipass=%s", getattr(sys, "_MEIPASS", ""))
+
+
+configure_runtime_logging()
 
 import UI_Init as UI_init
 import Constant as Cons
@@ -70,4 +111,3 @@ if __name__ == '__main__':
     root.focus_set()
 
     root.mainloop()
-

@@ -1,0 +1,7 @@
+2026-04-21 14:30:42,914 INFO runtime logging initialized
+2026-04-21 14:30:42,915 INFO cwd=C:\Users\PC\Desktop\Project\Python\TestTool\dist
+2026-04-21 14:30:42,915 INFO meipass=C:\Temp\_MEI1643402
+2026-04-21 14:30:44,461 INFO open_video_window model=Multi selected_ch=None
+2026-04-21 14:30:50,643 WARNING find_ch failed model=Uncooled
+2026-04-21 14:30:51,802 WARNING find_ch failed model=Uncooled
+2026-04-21 14:30:52,774 INFO channel selected ch=CH1 model=Uncooled ip=192.168.100.154 port=31000 rtsp=554

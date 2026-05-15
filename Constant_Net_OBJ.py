@@ -4,7 +4,7 @@
 #   because FineTree needs to collect another arrays
 
 selected_model = 'Multi'
-model_option = ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
+model_option = ['Uncooled', 'UncooledTTL', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
 
 # ====================================================  NETWORK ==================================================================
 # Network Information form User Input
@@ -33,6 +33,7 @@ selected_ch = None
 FW_NODE = "ttyS1"
 FW_BAUD = {
     'Uncooled': 38400,
+    'UncooledTTL': 38400,
     'NYX Series': 57600,
 }.get(selected_model, 38400)
 FW_DBITS = 8

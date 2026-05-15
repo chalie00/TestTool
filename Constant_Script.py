@@ -115,46 +115,46 @@ uncooled_query_arrays = [
 
 # Uncooled Type Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
-# script_cmd_arrs = [
-#     [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 0],
-#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 0],
-#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 0],
-#     [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 0],
-#     [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 0],
-#     [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
-#     [255, 1, 0, 0, 0, 0, 0]
-# ]
-#
-#
-# script_cmd_titles = [
-#     'Zoom Out', 'All Stop', 'Out AF', 'ScreenShot',
-#     'Far', 'All Stop', ' Far AF', 'ScreenShot',
-#     'Near', 'All Stop', 'Near AF', 'ScreenShot',
-#     'Zoom In', 'All Stop', 'In AF', 'ScreenShot',
-#     'Far', 'All Stop', 'Far AF', 'ScreenShot',
-#     'Near', 'All Stop', 'Near AF', 'ScreenShot'
-# ]
-# script_itv_arrs = [
-#     2.0, 0.3, 15.0, 1.0,
-#     2.0, 0.3, 15.0, 1.0,
-#     2.0, 0.3, 15.0, 1.0,
-#     2.0, 0.3, 15.0, 1.0,
-#     2.0, 0.3, 15.0, 1.0,
-#     2.0, 0.3, 15.0, 1.0
-# ]
-# script_cmd_itv_arrs = [
-#     ['Zoom Out', 2.0], ['All Stop', 0.3], ['Out AF', 15.0], ['ScreenShot', 1.0],
-#     ['Far', 2.0], ['All Stop', 0.3], ['Far AF', 15.0], ['ScreenShot', 1.0],
-#     ['Near', 2.0], ['All Stop', 0.3], ['Near AF', 15.0], ['ScreenShot', 1.0],
-#     ['Zoom In', 2.0], ['All Stop', 0.3], ['In AF', 15.0], ['ScreenShot', 1.0],
-#     ['Far', 2.0], ['All Stop', 0.3], ['Far AF', 15.0], ['ScreenShot', 1.0],
-#     ['Near', 2.0], ['All Stop', 0.3], ['Near AF', 15.0], ['ScreenShot', 1.0]
-# ]
+script_cmd_arrs = [
+    [255, 1, 0, 64, 0, 0, 65], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 32, 0, 0, 33], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 0, 128, 0, 0, 129], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 0],
+    [255, 1, 1, 0, 0, 0, 2], [255, 1, 0, 0, 0, 0, 1], [255, 1, 160, 17, 0, 0, 178],
+    [255, 1, 0, 0, 0, 0, 0]
+]
+
+
+script_cmd_titles = [
+    'Zoom Out', 'All Stop', 'Out AF', 'ScreenShot',
+    'Far', 'All Stop', ' Far AF', 'ScreenShot',
+    'Near', 'All Stop', 'Near AF', 'ScreenShot',
+    'Zoom In', 'All Stop', 'In AF', 'ScreenShot',
+    'Far', 'All Stop', 'Far AF', 'ScreenShot',
+    'Near', 'All Stop', 'Near AF', 'ScreenShot'
+]
+script_itv_arrs = [
+    2.0, 0.3, 15.0, 1.0,
+    2.0, 0.3, 15.0, 1.0,
+    2.0, 0.3, 15.0, 1.0,
+    2.0, 0.3, 15.0, 1.0,
+    2.0, 0.3, 15.0, 1.0,
+    2.0, 0.3, 15.0, 1.0
+]
+script_cmd_itv_arrs = [
+    ['Zoom Out', 2.0], ['All Stop', 0.3], ['Out AF', 15.0], ['ScreenShot', 1.0],
+    ['Far', 2.0], ['All Stop', 0.3], ['Far AF', 15.0], ['ScreenShot', 1.0],
+    ['Near', 2.0], ['All Stop', 0.3], ['Near AF', 15.0], ['ScreenShot', 1.0],
+    ['Zoom In', 2.0], ['All Stop', 0.3], ['In AF', 15.0], ['ScreenShot', 1.0],
+    ['Far', 2.0], ['All Stop', 0.3], ['Far AF', 15.0], ['ScreenShot', 1.0],
+    ['Near', 2.0], ['All Stop', 0.3], ['Near AF', 15.0], ['ScreenShot', 1.0]
+]
 
 # NYX Series Zoom In/Out AF Test Code
 # For Test Arrays (Zoom Out -> All Stop -> AF -> Zoom In -> All Stop -> AF)
@@ -186,29 +186,29 @@ capture_title = 'Capture NYX'
 #     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
 #     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 2.0], ['reboot', 2.0],
 # ]
-script_cmd_arrs = [
-    'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-    'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-    'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-    'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
-]
-script_cmd_titles = [
-    'zoom wide', 'zoom stop', 'af execute', 'Capture NYX',
-    'zoom narrow', 'zoom stop', 'af execute', 'Capture NYX',
-    'focus near', 'focus stop', 'af execute', 'Capture NYX',
-    'focus far', 'focus stop', 'af execute', 'Capture NYX',
-]
-script_itv_arrs = [2.0, 1.0, 4.0, 3.0,
-                   2.0, 1.0, 4.0, 3.0,
-                   2.0, 1.0, 4.0, 3.0,
-                   2.0, 1.0, 4.0, 3.0,
-                   ]
-script_cmd_itv_arrs = [
-    ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-    ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-    ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-    ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
-]
+# script_cmd_arrs = [
+#     'NYX.SET#lens_zctl=wide', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+#     'NYX.SET#lens_zctl=narrow', 'NYX.SET#lens_zctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+#     'NYX.SET#lens_fctl=near', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+#     'NYX.SET#lens_fctl=far', 'NYX.SET#lens_fctl=stop', 'NYX.SET#lens_afex=execute', 'Capture NYX',
+# ]
+# script_cmd_titles = [
+#     'zoom wide', 'zoom stop', 'af execute', 'Capture NYX',
+#     'zoom narrow', 'zoom stop', 'af execute', 'Capture NYX',
+#     'focus near', 'focus stop', 'af execute', 'Capture NYX',
+#     'focus far', 'focus stop', 'af execute', 'Capture NYX',
+# ]
+# script_itv_arrs = [2.0, 1.0, 4.0, 3.0,
+#                    2.0, 1.0, 4.0, 3.0,
+#                    2.0, 1.0, 4.0, 3.0,
+#                    2.0, 1.0, 4.0, 3.0,
+#                    ]
+# script_cmd_itv_arrs = [
+#     ['zoom wide', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+#     ['zoom narrow', 2.0], ['zoom stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+#     ['focus near', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+#     ['focus far', 2.0], ['focus stop', 1.0], ['af execute', 4.0], ['Capture NYX', 3.0],
+# ]
 
 # =================================================== DRS Response =====================================================
 response_txt = []

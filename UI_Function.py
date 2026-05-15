@@ -25,7 +25,7 @@ def model_select(event, parent, sel_op):
     Cons.selected_model = current_sel
     Comm.find_ch()
 
-    if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'MiniGimbal', 'Multi', 'CTEC']:
+    if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'UncooledTTL', 'MiniGimbal', 'Multi', 'CTEC']:
         col_name = Cons.column_array
     else:
         col_name = Cons.column_array_fine_tree
@@ -175,12 +175,9 @@ def execute_model_logic(app, parent, res_file_name):
     interval = Cons.script_itv_arrs
     script = Cons.script_cmd_arrs
     titles = Cons.script_cmd_titles
-    print(script)
 
-    if Cons.selected_model in ['Uncooled', 'DRS', 'Multi']:
-        # Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
-        file_name = f"{Cons.selected_model}_{Cons.start_time}.txt"
-        Async.async_send(Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent), root_view=parent, log_name=file_name)
+    if Cons.selected_model in ['Uncooled', 'UncooledTTL', 'DRS', 'Multi', 'CTEC']:
+        Comm.send_cmd_to_ucooled_with_interval(interval, script, titles, parent)
     elif Cons.selected_model == 'NYX Series':
         file_name = f"NYX Script_{Cons.start_time}.txt"
         Comm.send_cmd_to_nyx_with_interval(app, parent, titles, script, interval, file_name)
@@ -188,8 +185,12 @@ def execute_model_logic(app, parent, res_file_name):
         print('Finetree Script Run')
         file_name = f"{Cons.selected_model}_{Cons.start_time}.txt"
         for i, cmd_data in enumerate(Cons.finetree_parms_arrays):
-            Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1])
-            Async.async_send(Comm.fine_tree_send_cgi(cmd_data[0], cmd_data[1]), root_view=parent, log_name=file_name)
+            Async.async_send(
+                fn=lambda url=cmd_data[0], params=cmd_data[1]: Comm.fine_tree_send_cgi(url, params),
+                title=titles[i] if i < len(titles) else "FineTree Script",
+                root_view=parent,
+                log_name=file_name,
+            )
             file_name_cap = rf'{Cons.capture_path["zoom"]}/{titles[i]}.png'
             Mf.capture_image(parent, file_name_cap)
     elif Cons.selected_model == 'MiniGimbal':

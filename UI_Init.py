@@ -224,7 +224,7 @@ def Init_Ptz_Preset_Script(root, parent, app, treeview):
     Cons.etc_btn_obj['script_clear'] = script_clear_btn
 
 
-def makeUI_Groups(ui_groups: [], type: str):
+def makeUI_Groups(ui_groups: list, type: str):
     for i, group in enumerate(ui_groups):
         text = group.get('text')
         security = group.get('security')
@@ -265,11 +265,12 @@ def test_code():
     elif Cons.selected_model == 'FineTree':
         test_txt = {'ip': '192.168.100.152', 'port': '80', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
     elif Cons.selected_model == 'Uncooled':
-        test_txt = {'ip': '192.168.100.159', 'port': '443', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
-        # test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+    elif Cons.selected_model == 'UncooledTTL':
+        test_txt = {'ip': '192.168.22.101', 'port': '38400', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
     elif Cons.selected_model == 'Multi':
         # test_txt = {'ip': '192.168.100.162', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
-        test_txt = {'ip': '192.168.100.151', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.157', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'CTEC':
         test_txt = {'ip': '192.168.100.160', 'port': '9000', 'rtsp_port': '554', 'id': 'root', 'pw': 'asdf12345!'}
     Cons.network_obj['ip_txt'].insert(0, test_txt['ip'])

@@ -18,6 +18,13 @@ def run_in_worker(fn, *, root_view=None, on_done=None, on_error=None, desc="work
     on_error  : 에러 발생 시 UI를 갱신하는 콜백(ex) -> None
     desc      : 로그용 설명 텍스트
     """
+    if not callable(fn):
+        ex = TypeError(f"{desc} expected callable fn, got {type(fn).__name__}")
+        logging.error("ERROR before worker start: %s", ex)
+        if root_view is not None and on_error is not None:
+            root_view.after(0, lambda err=ex: on_error(err))
+        return None
+
     def worker():
         try:
             result = fn()
@@ -37,13 +44,16 @@ def run_in_worker(fn, *, root_view=None, on_done=None, on_error=None, desc="work
 
 
 # 2025.11.20 NYX Series Async Function
-def async_send(fn, cmd=None, title=None, root_view=None, log_name=None):
+def async_send(fn, cfinfffffmd=None, title=None, root_view=None, log_name=None):
     def done_func(rx):
         # if isinstance(rx, (bytes, bytearray)):
         #     response_raw = binascii.hexlify(rx).decode('utf-8')
         # else:
         #     response_raw = str(rx)
-        logging.info(title, rx)
+        logging.info("async_send done title=%s rx=%r", title, rx)
+
+        if rx is None:
+            return
 
         current_time = datetime.now()
         time_str = current_time.strftime('%Y-%m-%d-%H-%M-%S')
@@ -60,9 +70,14 @@ def async_send(fn, cmd=None, title=None, root_view=None, log_name=None):
         def _update_ui():
             # log_pos = Cons.log_txt_fld_info
             # log_fld = Res.Response(root_view, log_pos)
-            if Cons.res_log_obj is not None:
-                Cons.res_log_obj.dis_response_text()
-
+            # if Cons.res_log_obj is not None:
+            #     Cons.res_log_obj.dis_response_text()
+            if Cons.selected_model == 'DRS':
+                if Cons.res_log_obj is not None:
+                    Cons.res_log_obj.dis_response_text()
+            elif Cons.selected_model == 'Multi':
+                if Cons.res_log_obj is not None:
+                    Cons.res_log_obj.multi_response()
         root_view.after(0, _update_ui)
 
     def on_error(ex: Exception):
