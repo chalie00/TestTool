@@ -611,7 +611,6 @@ def parse_drs_reply(reply):
 def update_drs_response(key, value):
     Cons.drs_response[key] = value
 
-
 def handle_network_error(err, root_view):
     print(f'network error: {err}')
     dialog_txt = f'Network Error \n Please check a network info.\n {err}'
