@@ -25,7 +25,11 @@ def model_select(event, parent, sel_op):
     Cons.selected_model = current_sel
     Comm.find_ch()
 
-    if current_sel in ['NYX Series', 'DRS', 'Uncooled', 'UncooledTTL', 'MiniGimbal', 'Multi', 'CTEC']:
+    if current_sel in ['UncooledTTL', 'Uncooled', 'DRS', 
+                       'CTEC', 
+                       'NYX Series', 
+                       'Multi', 'CMJ_PT',
+                       'MiniGimbal']:
         col_name = Cons.column_array
     else:
         col_name = Cons.column_array_fine_tree

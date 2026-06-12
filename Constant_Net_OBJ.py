@@ -4,7 +4,10 @@
 #   because FineTree needs to collect another arrays
 
 selected_model = 'Multi'
-model_option = ['Uncooled', 'UncooledTTL', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
+model_option = ['Uncooled', 'UncooledTTL', 'DRS',
+                'FineTree', 'CTEC', 'NYX Series',
+                'Multi', 'CMJ_PT',
+                'MiniGimbal']
 
 # ====================================================  NETWORK ==================================================================
 # Network Information form User Input

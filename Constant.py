@@ -25,7 +25,7 @@ selected_model = Net_Obj_Con.selected_model
 model_option = Net_Obj_Con.model_option
 data_sending = Net_Obj_Con.data_sending
 host_ip: str = Net_Obj_Con.host_ip
-port: int  = Net_Obj_Con.port
+port: int = Net_Obj_Con.port
 rtsp_port = Net_Obj_Con.rtsp_port
 buf_size = Net_Obj_Con.buf_size
 rtsp_url = Net_Obj_Con.rtsp_url
@@ -64,12 +64,12 @@ interval_button = Net_Obj_Con.interval_button
 uncooled_normal_q = Qry.uncooled_normal_q
 uncooled_zoom_q = Qry.uncooled_zoom_q
 uncooled_focus_q = Qry.uncooled_focus_q
-uncooled_comm_q =  Qry.uncooled_comm_q
+uncooled_comm_q = Qry.uncooled_comm_q
 uncooled_lens_q = Qry.uncooled_lens_q
 uncooled_image_q = Qry.uncooled_image_q
 uncooled_sensor_q = Qry.uncooled_sensor_q
 uncooled_cali_q = Qry.uncooled_cali_q
-uncooled_etc_q =Qry.uncooled_etc_q
+uncooled_etc_q = Qry.uncooled_etc_q
 uncooled_status_q = Qry.uncooled_status_q
 uncooled_version_q = Qry.uncooled_version_q
 uncooled_encoder_q = Qry.uncooled_encoder_q
@@ -88,7 +88,7 @@ log_path = rf'Log/'
 # Table Data
 column_array = ['Function', 'Command']
 column_array_fine_tree = ['Function', 'Parameter']
-tv: Optional[any] = None         # CheckboxTreeview면 Any가 현실적으로 편함
+tv: Optional[any] = None  # CheckboxTreeview면 Any가 현실적으로 편함
 tv_vsb: Optional[ttk.Scrollbar] = None
 
 # Command from CSV File
@@ -138,6 +138,11 @@ ch4_rtsp_info = {'ch': '', 'model': '', 'ip': '', 'id': '', 'pw': '', 'rtsp_port
                  }
 pt_drv_info = {'ch': '', 'model': '', 'ip': '', 'port': '', 'drv': False}  # Default Port :1470
 
+tms_rtsp_info = [
+    {'ch': 'ch1', 'model': 'CMJ_PT', 'ip': '192.168.10.32', 'id': 'root', 'pw': 'root', 'rtsp_port': '554', 'port': '', 'url': ''},  # EO
+    {'ch': 'ch2', 'model': 'CMJ_PT', 'ip': '192.168.10.31', 'id': '', 'pw': '', 'rtsp_port': '554', 'port': '', 'url': ''}  # IR
+]
+
 # User, Model Information
 left_label_size = int(WINDOWS_SIZE['x'] * 0.01875)
 right_text_fd_size = int(WINDOWS_SIZE['x'] * 0.01875)
@@ -167,12 +172,12 @@ save_btn = {'x': test_btn['x'] + 40, 'y': info_start_pos['y'] - 20,
             'h': lbl_size['h'], 'w': lbl_size['w'] / 3,
             'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Save'}
 
-arrow_left_btn = {'pos1_x': save_btn['x'] + 35, 'pos1_y': info_start_pos['y'] - 20 + lbl_size['h']/2,
+arrow_left_btn = {'pos1_x': save_btn['x'] + 35, 'pos1_y': info_start_pos['y'] - 20 + lbl_size['h'] / 2,
                   'pos2_x': save_btn['x'] + 80, 'pos2_y': info_start_pos['y'] - 20,
                   'pos3_x': save_btn['x'] + 80, 'pos3_y': info_start_pos['y'] - 20 + lbl_size['h'],
                   'bg': my_color['bg'], 'fg': my_color['fg'], 'text': ''}
 
-arrow_right_btn = {'pos1_x': arrow_left_btn['pos2_x'] + 25, 'pos1_y': arrow_left_btn['pos2_x'] - 20 + lbl_size['h']/2,
+arrow_right_btn = {'pos1_x': arrow_left_btn['pos2_x'] + 25, 'pos1_y': arrow_left_btn['pos2_x'] - 20 + lbl_size['h'] / 2,
                    'pos2_x': arrow_left_btn['pos2_x'] + 5, 'pos2_y': arrow_left_btn['pos2_x'] - 20,
                    'pos3_x': arrow_left_btn['pos2_x'] + 40, 'pos3_y': arrow_left_btn['pos2_x'] - 20 + lbl_size['h'],
                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': ''}
@@ -273,7 +278,6 @@ ptz_osd_mode_lbl = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view
 ptz_osd_mode_btn = {'x': ptz_osd_mode_lbl['x'], 'y': ptz_osd_mode_lbl['y'] + ptz_osd_mode_lbl['h'],
                     'h': lbl_size['h'], 'w': lbl_size['w'],
                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
-
 
 # =============================================== PTZ UI ===============================================================
 ptz_canvas = {'x': info_start_pos['x'], 'y': treeview_pos['y'] + tree_view_size['h'] - 15,

@@ -7,6 +7,10 @@ import Communication as Comm
 import VideoPlayer as Vp
 
 
+CMJ_PT_REQUIRED_CHANNELS = {'CH1', 'CH2'}
+cmj_pt_ready_infos = {}
+
+
 def open_video_window():
     Cons.selected_model = Cons.model_obj['model_name']
     if Cons.selected_ch and Cons.selected_ch.get('model') == Cons.selected_model:
@@ -62,49 +66,75 @@ def handle_minigimbal():
 def pushed_ch_btn(parent, ch_name):
     info = get_rtsp_info(ch_name)
     info['url'] = generate_rtsp_url(info)
+    print(info['url'])
     Cons.selected_model = info['model']
     Cons.selected_ch = info
-    logging.info("channel selected ch=%s model=%s ip=%s port=%s rtsp=%s", ch_name, info['model'], info['ip'], info['port'], info['rtsp_port'])
+    logging.info("channel selected ch=%s model=%s ip=%s port=%s rtsp=%s", ch_name, info['model'], info['ip'],
+                 info['port'], info['rtsp_port'])
 
     if info['url'] == 'Invalid model':
         print(f"Invalid model selected for {ch_name}")
         return
 
     Cons.channel_buttons[ch_name].config(bg='green')
+    if Cons.selected_model == 'CMJ_PT':
+        cmj_pt_ready_infos[ch_name.upper()] = info
+        if CMJ_PT_REQUIRED_CHANNELS.issubset(cmj_pt_ready_infos):
+            for cmj_ch_name in sorted(CMJ_PT_REQUIRED_CHANNELS):
+                start_video_player(parent, cmj_ch_name, cmj_pt_ready_infos[cmj_ch_name])
+            start_videos([Cons.video_player_ch1, Cons.video_player_ch2])
+            cmj_pt_ready_infos.clear()
+        return
+
     start_video_player(parent, ch_name, info)
 
 
 def get_rtsp_info(ch_name):
-    info = getattr(Cons, f'{ch_name.lower()}_rtsp_info')
-    info.update({
-        'ch': ch_name.lower(),
-        'model': Cons.model_obj['model_name'],
-        'ip': Cons.network_obj['ip_txt'].get(),
-        'id': Cons.network_obj['ipc_id_txt'].get(),
-        'pw': Cons.network_obj['ipc_pw_txt'].get(),
-        'rtsp_port': Cons.network_obj['rtsp_txt'].get(),
-        'port': Cons.network_obj['port_txt'].get(),
-    })
+    ch_key = ch_name.lower()
+    if Cons.selected_model == 'CMJ_PT' and ch_key == 'ch1':
+        info = Cons.tms_rtsp_info[0].copy()
+        info.update({'ch': ch_key, 'model': 'CMJ_PT'})
+    elif Cons.selected_model == 'CMJ_PT' and ch_key == "ch2":
+        info = Cons.tms_rtsp_info[1].copy()
+        info.update({'ch': ch_key, 'model': 'CMJ_PT'})
+    else:
+        info = getattr(Cons, f'{ch_key}_rtsp_info')
+        info.update({
+            'ch': ch_key,
+            'model': Cons.model_obj['model_name'],
+            'ip': Cons.network_obj['ip_txt'].get(),
+            'id': Cons.network_obj['ipc_id_txt'].get(),
+            'pw': Cons.network_obj['ipc_pw_txt'].get(),
+            'rtsp_port': Cons.network_obj['rtsp_txt'].get(),
+            'port': Cons.network_obj['port_txt'].get(),
+        })
+    print(info)
     return info
 
 
 def generate_rtsp_url(info):
-    url_patterns = {
-        'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
-        'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-        'UncooledTTL': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-        'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
-        'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1',
-        # MiniGimbal cannot display rtsp stream in currently
-        'MiniGimbal': rf'',
+    if Cons.selected_model == 'CMJ_PT' and info['ch'] == 'ch1':
         # EO Video Port: 20100, IR Video Port: 30100
-        'TMS_20_EO': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net0',
-        'TMS_20_IR': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net1',
-        #  2025.06.25 Added a CTEC EO Camera
-        # rtsp://192.168.100.160:554/AVStream1_1
-        'CTEC': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/AVStream1_1',
-    }
-    return url_patterns.get(info['model'], 'Invalid model')
+        # 'TMS_20_EO': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net0',
+        url_patterns = {'CMJ_PT': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/cam0_0'}
+        return url_patterns.get(info['model'], 'Invalid model')
+    elif Cons.selected_model == 'CMJ_PT' and info['ch'] == 'ch2':
+        url_patterns = {'CMJ_PT': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/net0'}
+        return url_patterns.get(info['model'], 'Invalid model')
+    else:
+        url_patterns = {
+            'NYX Series': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/test',
+            'Uncooled': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+            'UncooledTTL': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+            'DRS': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/cam0_0',
+            'FineTree': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}:{info["rtsp_port"]}/media/1/1',
+            # MiniGimbal cannot display rtsp stream in currently
+            'MiniGimbal': rf'',
+            #  2025.06.25 Added a CTEC EO Camera
+            # rtsp://192.168.100.160:554/AVStream1_1
+            'CTEC': rf'rtsp://{info["id"]}:{info["pw"]}@{info["ip"]}/AVStream1_1'
+        }
+        return url_patterns.get(info['model'], 'Invalid model')
 
 
 def start_video_player(parent, ch_name, info):

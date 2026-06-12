@@ -14,6 +14,7 @@ from datetime import datetime
 
 from Communication import find_ch
 
+
 class UIInit:
     def __init__(self, root, parent, app):
         self.root = root
@@ -37,12 +38,15 @@ class UIInit:
 # ================================================ Button UI ===========================================================
 # PT Drv, CH, TEST, Arrow
 
+
 def Init_btn_ui(root, parent):
     Cons.channel_buttons = {}
     for i in range(1, 5):
         btn_pos = getattr(Cons, f'ch{i}_btn_pos')
-        button = tk.Button(parent, text=f'CH{i}', command=lambda ch_name=f'CH{i}': Vr.pushed_ch_btn(parent, ch_name))
-        button.place(x=btn_pos['x'], y=btn_pos['y'], width=btn_pos['w'], height=btn_pos['h'])
+        button = tk.Button(
+            parent, text=f'CH{i}', command=lambda ch_name=f'CH{i}': Vr.pushed_ch_btn(parent, ch_name))
+        button.place(x=btn_pos['x'], y=btn_pos['y'],
+                     width=btn_pos['w'], height=btn_pos['h'])
         Cons.channel_buttons[f'CH{i}'] = button
 
     pt_drv_btn_pos = Cons.pt_drv_btn_pos
@@ -68,16 +72,20 @@ def Init_btn_ui(root, parent):
                                command=lambda: test_code_save())
 
     tri_left = Cons.arrow_left_btn
-    tri_canvas = tk.Canvas(parent, width=Cons.lbl_size['h'] * 2, height=Cons.lbl_size['h'])
+    tri_canvas = tk.Canvas(
+        parent, width=Cons.lbl_size['h'] * 2, height=Cons.lbl_size['h'])
     tri_canvas.place(x=tri_left['pos1_x'], y=tri_left['pos1_y'] - 10)
 
     tri_left_btn = tri_canvas.create_polygon(Cons.lbl_size['h'] - 1, 1,
                                              1, Cons.lbl_size['h'] / 2,
-                                             Cons.lbl_size['h'] - 1, Cons.lbl_size['h'] - 1,
+                                             Cons.lbl_size['h'] -
+                                             1, Cons.lbl_size['h'] - 1,
                                              fill=tri_left['bg'], outline='black')
     tri_right_btn = tri_canvas.create_polygon(Cons.lbl_size['h'] + 2, 1,
-                                              Cons.lbl_size['h'] * 2 - 1, Cons.lbl_size['h'] / 2,
-                                              Cons.lbl_size['h'] + 2, Cons.lbl_size['h'] - 1,
+                                              Cons.lbl_size['h'] * 2 -
+                                              1, Cons.lbl_size['h'] / 2,
+                                              Cons.lbl_size['h'] +
+                                              2, Cons.lbl_size['h'] - 1,
                                               fill=tri_left['bg'], outline='black')
 
 
@@ -89,7 +97,8 @@ def Init_Info(root, parent):
     model_txt = Cons.model_txt_fld
     fw = Cons.fw_lbl
     fw_txt = Cons.fw_txt_fld
-    ch_user_input_model_groups = [validator, validator_txt, model, model_txt, fw, fw_txt]
+    ch_user_input_model_groups = [validator,
+                                  validator_txt, model, model_txt, fw, fw_txt]
 
     makeUI_Groups(ch_user_input_model_groups, 'model')
 
@@ -100,8 +109,10 @@ def Init_Info(root, parent):
     drop_down = ttk.Combobox(parent, textvariable=sel_op)
     drop_down['values'] = model_option
     drop_down.current(5)
-    drop_down.place(x=model_txt['x'], y=model_txt['y'], height=model_txt['h'], width=model_txt['w'] - 3)
-    drop_down.bind('<<ComboboxSelected>>', lambda event: Ufn.model_select(event, parent, sel_op))
+    drop_down.place(x=model_txt['x'], y=model_txt['y'],
+                    height=model_txt['h'], width=model_txt['w'] - 3)
+    drop_down.bind('<<ComboboxSelected>>',
+                   lambda event: Ufn.model_select(event, parent, sel_op))
     Cons.etc_btn_obj['drop_down'] = drop_down
 
 
@@ -118,26 +129,29 @@ def Init_Network(root, parent):
     ipc_pw = Cons.ipc_pw_info
     ipc_pw_txt = Cons.ipc_pw_txt_fld_info
 
-    network_ui_groups = [ip, ip_txt, port, port_txt, rtsp, rtsp_txt, ipc_id, ipc_id_txt, ipc_pw, ipc_pw_txt]
+    network_ui_groups = [ip, ip_txt, port, port_txt, rtsp,
+                         rtsp_txt, ipc_id, ipc_id_txt, ipc_pw, ipc_pw_txt]
     makeUI_Groups(network_ui_groups, 'network')
 
 
 # ======================================== Set Command Table ===========================================================
 def Init_table_view(root, parent):
-        column_name = Cons.column_array
-        column_count = len(column_name)
-        cmd_data = Cons.command_array
+    column_name = Cons.column_array
+    column_count = len(column_name)
+    cmd_data = Cons.command_array
 
-        Cons.tv = tv = Mf.create_table(parent,
-                     column_titles=column_name,
-                     column_width=Cons.tree_view_size['w'],
-                     x=Cons.treeview_pos['x'],
-                     y=Cons.treeview_pos['y'])
-        Mf.update_table(Cons.tv,
-                column_titles=column_name,
-                column_width=Cons.tree_view_size['w'],
-                rows=cmd_data)
+    Cons.tv = tv = Mf.create_table(parent,
+                                   column_titles=column_name,
+                                   column_width=Cons.tree_view_size['w'],
+                                   x=Cons.treeview_pos['x'],
+                                   y=Cons.treeview_pos['y'])
+    Mf.update_table(Cons.tv,
+                    column_titles=column_name,
+                    column_width=Cons.tree_view_size['w'],
+                    rows=cmd_data)
 # ===================================== Set Searching a command and Register ===========================================
+
+
 def Init_Search_Register(root, parent, app, treeview):
     column_name = Cons.column_array
     column_count = len(column_name)
@@ -199,7 +213,8 @@ def Init_Ptz_Preset_Script(root, parent, app, treeview):
 
     # Set a Script Mode Slide and Run Button
     script_btn_id = 'SCRIPT'
-    script_mode_ui = onoffSW.SwitchOnOff(parent, None, script_btn_id, Cons.script_mode_btn)
+    script_mode_ui = onoffSW.SwitchOnOff(
+        parent, None, script_btn_id, Cons.script_mode_btn)
 
     script_run_btn = Mf.make_element(r_btn['x'], r_btn['y'],
                                      r_btn['h'], r_btn['w'],
@@ -241,12 +256,14 @@ def makeUI_Groups(ui_groups: list, type: str):
                 if security:
                     entry.configure(show='*')
             elif type == 'model':
-                model_name = ['validator', 'validator_txt', 'model', 'model_txt', 'fw', 'fw_txt']
+                model_name = ['validator', 'validator_txt',
+                              'model', 'model_txt', 'fw', 'fw_txt']
                 entry = Mf.make_element(group['x'], group['y'], group['h'], group['w'], element='Entry',
                                         bg=group['bg'])
                 Cons.model_obj[rf'{model_name[i]}'] = entry
             elif type == 'ptz':
-                etc_name = ['inter_lbl', 'inter_txt', 'repe_lbl', 'repe_txt', 'scr_mode_lbl']
+                etc_name = ['inter_lbl', 'inter_txt',
+                            'repe_lbl', 'repe_txt', 'scr_mode_lbl']
                 entry = Mf.make_element(group['x'], group['y'], group['h'], group['w'], element='Entry',
                                         bg=group['bg'])
                 Cons.etc_obj[rf'{etc_name[i]}'] = entry
@@ -258,21 +275,29 @@ def test_code():
     test_code_delete()
     # ['Uncooled', 'DRS', 'FineTree', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']
     if Cons.selected_model == 'NYX Series':
-        test_txt = {'ip': '192.168.100.148', 'port': '39190', 'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.148', 'port': '39190',
+                    'rtsp_port': '8554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'DRS':
         # test_txt = {'ip': '192.168.100.161', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'bw84218899!'}
-        test_txt = {'ip': '192.168.100.153', 'port': '32000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.153', 'port': '32000',
+                    'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'FineTree':
-        test_txt = {'ip': '192.168.100.152', 'port': '80', 'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
+        test_txt = {'ip': '192.168.100.152', 'port': '80',
+                    'rtsp_port': '554', 'id': 'admin', 'pw': 'admin1357'}
     elif Cons.selected_model == 'Uncooled':
-        test_txt = {'ip': '192.168.100.154', 'port': '31000', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.154', 'port': '31000',
+                    'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'UncooledTTL':
-        test_txt = {'ip': '192.168.22.101', 'port': '38400', 'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
+        test_txt = {'ip': '192.168.22.101', 'port': '38400',
+                    'rtsp_port': '554', 'id': 'root', 'pw': 'tbtseyeon2024!'}
     elif Cons.selected_model == 'Multi':
         # test_txt = {'ip': '192.168.100.162', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
-        test_txt = {'ip': '192.168.100.157', 'port': '1470', 'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
+        test_txt = {'ip': '192.168.100.157', 'port': '1470',
+                    'rtsp_port': '554', 'id': 'root', 'pw': 'root'}
     elif Cons.selected_model == 'CTEC':
-        test_txt = {'ip': '192.168.100.160', 'port': '9000', 'rtsp_port': '554', 'id': 'root', 'pw': 'asdf12345!'}
+        test_txt = {'ip': '192.168.100.160', 'port': '9000',
+                    'rtsp_port': '554', 'id': 'root', 'pw': 'asdf12345!'}
+
     Cons.network_obj['ip_txt'].insert(0, test_txt['ip'])
     Cons.network_obj['port_txt'].insert(0, test_txt['port'])
     Cons.network_obj['rtsp_txt'].insert(0, test_txt['rtsp_port'])
