@@ -49,7 +49,7 @@ def fix_selection_tags(event):
     tree = event.widget
     selected_iids = tree.selection()
     for iid in selected_iids:
-        # 현재 tag 다시 설정해서 선택 상태에서도 유지
+        # ?꾩옱 tag ?ㅼ떆 ?ㅼ젙?댁꽌 ?좏깮 ?곹깭?먯꽌???좎?
         tags = tree.item(iid, 'tags')
         tree.item(iid, tags=tags)
 
@@ -70,20 +70,20 @@ def create_table(root, column_titles, column_width, x, y, height=29):
     tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_ExtKey(e))
     tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_ExtKey(e))
 
-    # 스크롤바
+    # ?ㅽ겕濡ㅻ컮
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
     vsb.place(x=column_width * column_num + 105 + Cons.cam1_resolution['w'],
-              y=y,
-              height=Cons.tree_view_size['h'] - 30)
+            y=y,
+            height=Cons.tree_view_size['h'] - 30)
 
     tv.place(x=x, y=y)
     tv.configure(yscrollcommand=vsb.set)
 
-    # 기본 컬럼(#0)
+    # 湲곕낯 而щ읆(#0)
     tv.column('#0', width=70, anchor='center', stretch='yes')
     tv.heading('#0', text='No', anchor='center')
 
-    # 폰트/태그
+    # ?고듃/?쒓렇
     default_font = tkfont.nametofont("TkTextFont")
     bold_font = default_font.copy()
     bold_font.configure(weight="bold")
@@ -92,41 +92,41 @@ def create_table(root, column_titles, column_width, x, y, height=29):
     tv.tag_configure('query_tag', background='yellow')
     tv.tag_configure('bold_text', font=bold_font)
 
-    # ✅ bind는 생성 시 1번만
+    # ??bind???앹꽦 ??1踰덈쭔
     tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
     tv.bind('<<TreeviewSelect>>', fix_selection_tags)
 
-    # Cons에 저장 (선택)
+    # Cons?????(?좏깮)
     Cons.tv = tv
     Cons.tv_vsb = vsb
 
-    # 최초 생성 후 컬럼/데이터 세팅은 update에서 처리
+    # 理쒖큹 ?앹꽦 ??而щ읆/?곗씠???명똿? update?먯꽌 泥섎━
     return tv
 
 # 2025.12.16: Table update has been added
 def update_table(tv, column_titles, column_width, rows):
     """
-    기존 Treeview(tv)를 재사용하면서 컬럼/데이터만 갱신한다.
+    湲곗〈 Treeview(tv)瑜??ъ궗?⑺븯硫댁꽌 而щ읆/?곗씠?곕쭔 媛깆떊?쒕떎.
     """
     column_num = len(column_titles)
     dis_column = [str(i + 1) for i in range(column_num)]
 
-    # ✅ 컬럼 구조 갱신
+    # ??而щ읆 援ъ“ 媛깆떊
     tv.configure(columns=dis_column, displaycolumns=dis_column)
 
-    # #0 컬럼은 유지
+    # #0 而щ읆? ?좎?
     tv.column('#0', width=70, anchor='center', stretch='yes')
     tv.heading('#0', text='No', anchor='center')
 
-    # 나머지 컬럼 설정
+    # ?섎㉧吏 而щ읆 ?ㅼ젙
     for i in range(column_num):
         tv.column(dis_column[i], width=column_width, anchor='center')
         tv.heading(dis_column[i], text=column_titles[i], anchor='center')
 
-    # ✅ 기존 row 삭제
+    # ??湲곗〈 row ??젣
     tv.delete(*tv.get_children())
 
-    # ✅ row 재삽입
+    # ??row ?ъ궫??
     for i, row_values in enumerate(rows):
         tags = ['unchecked']
         if any(cell == 'CMD List' for cell in row_values):
@@ -241,7 +241,7 @@ def handle_script_mode(event, iden, value, root_view):
         check_interval_active()
 
     elif Cons.selected_model == 'FineTree':
-        index = int(iden.split('번')[0])
+        index = int(iden.removeprefix('row_'))
         # fine_tree_cmd_data = (para_arr, value_arr, url)
         items = Cons.fine_tree_cmd_data[index]
         # print(rf'items is {items}')
@@ -363,7 +363,10 @@ def get_data_from_csv(file_path) -> list[(str, str)]:
     max_column = sh.max_column
     max_row = sh.max_row
     
-    if sel_model in ['Uncooled', 'UncooledTTL', 'DRS', 'NYX Series', 'MiniGimbal', 'Multi', 'CTEC']:
+    if sel_model in ['Uncooled', 'UncooledTTL', 'DRS',
+                     'CTEC', 'NYX Series',
+                     'Multi', 'CMJ_PT',
+                     'MiniGimbal']:
         for i, row in enumerate(sh.iter_rows(max_col=max_column - 2, max_row=max_row - 2), start=3):
             cmd_title = sh.cell(row=i, column=2).value
             cmd_data = sh.cell(row=i, column=3).value
@@ -434,8 +437,8 @@ def get_secondary_monitor_bbox():
     if len(monitors) > 1:
         secondary_monitor = monitors[1]
         print(secondary_monitor.x, secondary_monitor.y,
-              secondary_monitor.x + secondary_monitor.width,
-              secondary_monitor.y + secondary_monitor.height)
+            secondary_monitor.x + secondary_monitor.width,
+            secondary_monitor.y + secondary_monitor.height)
         return (secondary_monitor.x, secondary_monitor.y,
                 secondary_monitor.x + secondary_monitor.width,
                 secondary_monitor.y + secondary_monitor.height)
@@ -445,7 +448,7 @@ def get_secondary_monitor_bbox():
 # (2024.02.15) CheckBox Change a treeview to CheckTreeView  and event is changed to
 #  Double-Button-1, CheckBox is controlled with tag
 def make_table(root: tkinter, column_num: int, width: int, column_title: list[str], x: int, y: int,
-               cmd_data: list[str]) -> CheckboxTreeview:
+            cmd_data: list[str]) -> CheckboxTreeview:
     # Create a table, column is the name of column,
     # The display column shows the order in which the table is executed.
 
@@ -465,7 +468,7 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
     vsb.place(x=width * column_num + 105 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'] - 30)
     # tv = tkinter.ttk.Treeview(root, columns=column, display columns=dis_column)
-    # Treeview의 width, height 글자 수로 정해 진다.
+    # Treeview??width, height 湲???섎줈 ?뺥빐 吏꾨떎.
     # tv.configure(height=len(Cons.command_array) + 1)
     tv.place(x=x, y=y)
     tv.configure(yscrollcommand=vsb.set)
@@ -489,19 +492,19 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
 
     # Insert the command data in Table
     for i, row_values in enumerate(cmd_data):
-        tags = ['unchecked']  # 기본 태그
+        tags = ['unchecked']  # 湲곕낯 ?쒓렇
 
-        # 태그 조건 누적
+        # ?쒓렇 議곌굔 ?꾩쟻
         if any(cell == 'CMD List' for cell in row_values):
             tags.append('cmd_tag')
         if any('Query' in str(cell) for cell in row_values):
             tags.append('query_tag')
             tags.append('bold_text')
 
-        # 단 한 번만 insert, 태그는 누적해서
-        tv.insert('', 'end', text=i + 1, values=row_values, iid=f'{i}번', tags=tags)
+        # ????踰덈쭔 insert, ?쒓렇???꾩쟻?댁꽌
+        tv.insert('', 'end', text=i + 1, values=row_values, iid=f'row_{i}', tags=tags)
 
-    # 더블 클릭 바인딩은 루프 밖에서 1번만!
+    # ?붾툝 ?대┃ 諛붿씤?⑹? 猷⑦봽 諛뽰뿉??1踰덈쭔!
     tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
     tv.bind('<<TreeviewSelect>>', fix_selection_tags)
     return tv

@@ -62,6 +62,28 @@ from requests.auth import HTTPDigestAuth
 from urllib3.util.ssl_ import create_urllib3_context
 
 
+def configure_runtime_paths():
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    runtime_dir = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.getcwd()
+
+    Cons.cmd_path = os.path.join(bundle_dir, "Command", "Command.xlsx")
+    Cons.log_path = os.path.join(runtime_dir, "Log")
+    Cons.capture_path = {
+        "zoom": os.path.join(runtime_dir, "Capture", "Zoom"),
+        "focus": os.path.join(runtime_dir, "Capture", "Focus"),
+    }
+
+    os.makedirs(Cons.log_path, exist_ok=True)
+    os.makedirs(Cons.capture_path["zoom"], exist_ok=True)
+    os.makedirs(Cons.capture_path["focus"], exist_ok=True)
+
+    logging.info("command workbook path=%s", Cons.cmd_path)
+    logging.info("runtime log path=%s", Cons.log_path)
+
+
+configure_runtime_paths()
+
+
 class TestTool(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)

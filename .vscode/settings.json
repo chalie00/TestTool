@@ -1,4 +1,15 @@
 {
-    "editor.defaultFormatter": "ms-python.python",
-    "editor.fontSize": 10
+    "editor.fontSize": 10,
+    "editor.formatOnPaste": true,
+    "autopep8.importStrategy": "fromEnvironment",
+    "autopep8.interpreter": [
+        "C:\\Users\\PC\\Desktop\\Project\\Python\\TestTool\\venv\\Scripts\\python.exe"
+    ],
+    "autopep8.showNotifications": "always",
+    "autopep8.trace.server": "verbose",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true
+    }
 }
