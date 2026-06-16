@@ -170,20 +170,26 @@ def check_interval_active():
 
 
 # Called when a table element was clicked
+# 2026.06.16 CMJ_PT was added
 def clicked_table_element(event, root_view, tv):
     iden = tv.identify_row(event.y)
     if not iden:
         return
 
-    Comm.find_ch()
-    if not Cons.selected_ch:
-        logging.warning("table click ignored: no selected channel, model=%s", Cons.selected_model)
-        show_network_dialog(root_view, 'Please select a registered channel first.')
-        return
+    if Cons.selected_model == 'CMJ_PT':
+        host = Cons.tms_rtsp_info[2]['ip']
+        input_port = Cons.tms_rtsp_info[2]['port']
+        port = int(0) if Cons.port == '' else int(input_port)
+    else:
+        Comm.find_ch()
+        if not Cons.selected_ch:
+            logging.warning("table click ignored: no selected channel, model=%s", Cons.selected_model)
+            show_network_dialog(root_view, 'Please select a registered channel first.')
+            return
 
-    host = Cons.selected_ch['ip']
-    input_port = Cons.selected_ch['port']
-    port = int(0) if Cons.port == '' else int(input_port)
+        host = Cons.selected_ch['ip']
+        input_port = Cons.selected_ch['port']
+        port = int(0) if Cons.port == '' else int(input_port)
     tags = tv.item(iden, 'tags')
     item = tv.item(iden)
     if not item or not item.get('values') or len(item['values']) < 2:
@@ -258,6 +264,7 @@ def handle_script_mode(event, iden, value, root_view):
 
 # 2024.07.04: Operating normal mode
 # (2024.07.25): NYX added to normal mode
+# 2026.06.16 CMJ_PT was added
 def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
     Cons.data_sending = True
     logging.info("handle_normal_mode model=%s id=%s title=%s", Cons.selected_model, iden, title)
@@ -313,7 +320,11 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         # file_name = f"Multi_{Cons.start_time}.txt"
         # Async.async_send(fn=lambda: Comm.send_cmd_only_for_multi(hex_value), title=title, root_view=root_view,
         #                  log_name=file_name)
-
+    elif Cons.selected_model in ['CMJ_PT']:
+        print('CMJ_PT was pressed : MF')
+        hex_value = select_item(event, root_view)
+        # print(hex_value)
+        Comm.send_cmd_only_for_multi(hex_value)
 
 def gene_interval_arrays(value, root_view):
     if not Cons.script_cmd_itv_arrs:

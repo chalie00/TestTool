@@ -1,4 +1,3 @@
-
 # (2024.07.19): Model Flag (Uncooled, NTX Series)
 #  !import (2025.04.29): When was selected FineTree at first, It will be crash,
 #   because FineTree needs to collect another arrays
@@ -29,6 +28,7 @@ video_player_ch4 = None
 
 # the selected ch is one of below ch(ch1_rtsp_info ....)
 # 2025.06.30 Added Muilti Sensor PT Drv
+# When the CH button was pushed, an object and Constant.chX_rtsp_info were created.
 selected_ch = None
 
 # for Seyeon TTL
@@ -48,7 +48,6 @@ READ_MAX_BYTES = 8192
 RECV_WAIT_SEC = 3.0  # 최대 대기
 PRE_SEND_DELAY = 0.30  # 헤더 보낸 뒤 터널 준비 시간
 POST_SEND_DELAY = 0.30  # 송신 직후 첫 수신까지 지연
-
 
 # ====================================================  OBJECT ==================================================================
 # validator_txt, model_txt, fw_txt

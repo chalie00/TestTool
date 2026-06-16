@@ -63,12 +63,17 @@ def send_cmd_for_multi(send_cmd, title, root_view):
 
 
 def send_cmd_only_for_multi(send_cmd):
-    find_ch()
-    logging.info("send_cmd_only_for_multi selected_ch=%s send_cmd=%s", Cons.selected_ch, send_cmd)
-    host = Cons.selected_ch['ip']
-    input_port = Cons.selected_ch['port']
-    # ic(Cons.selected_ch)
-    port = int(0) if Cons.port == '' else int(input_port)
+    if Cons.selected_model == 'CMJ_PT':
+        host = Cons.tms_rtsp_info[2]['ip']
+        input_port = Cons.tms_rtsp_info[2]['port']
+        port = int(0) if Cons.port == '' else int(input_port)
+    else:
+        find_ch()
+        logging.info("send_cmd_only_for_multi selected_ch=%s send_cmd=%s", Cons.selected_ch, send_cmd)
+        host = Cons.selected_ch['ip']
+        input_port = Cons.selected_ch['port']
+        # ic(Cons.selected_ch)
+        port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.READ_MAX_BYTES
 
     # 일시적으로 송신 가능 상태가 아니면, False라도 임시로 송신 허용
@@ -1117,4 +1122,59 @@ def log_control(text, log_dir="Log", file_name=None):
     except Exception as e:
         logging.error("Log file write error(%s): %s", full_path, e)
         return None
+
+
+def convert_dec_to_excel_ascii_hex(dec_value, scale):
+    """
+    Convert DEC to the same ASCII HEX format as this Excel formula:
+    DEC2HEX(CODE(MID(DEC2HEX(32768+ROUND(dec/scale,0),4),n,1)),2)
+
+    Example:
+        converted HEX text: "8000"
+        returned ASCII HEX: "38 30 30 30"
+    """
+    from decimal import Decimal, ROUND_HALF_UP
+
+    if scale == 0:
+        raise ValueError("scale must not be zero")
+
+    rounded = Decimal(str(dec_value)) / Decimal(str(scale))
+    rounded = rounded.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    converted_hex = f"{32768 + int(rounded):04X}"
+
+    return " ".join(f"{ord(char):02X}" for char in converted_hex)
+
+
+def send_dec_ascii_hex_to_ip(dec_value, scale, host, port, wait_reply=False, timeout=3):
+    """
+    Convert DEC with convert_dec_to_excel_ascii_hex() and send it to host:port by TCP.
+    The sent bytes are the ASCII HEX text itself.
+
+    Example:
+        "38 30 30 30" is sent as b"38 30 30 30".
+    """
+    ascii_hex = convert_dec_to_excel_ascii_hex(dec_value, scale)
+    payload = ascii_hex.encode("ascii")
+
+    client = socket.socket(AF_INET, SOCK_STREAM)
+    try:
+        client.settimeout(timeout)
+        client.connect((host, int(port)))
+        client.sendall(payload)
+        logging.info("send_dec_ascii_hex_to_ip host=%s port=%s tx=%s",
+                     host, port, payload.decode("ascii"))
+
+        if wait_reply:
+            reply = client.recv(Cons.READ_MAX_BYTES)
+            logging.info("send_dec_ascii_hex_to_ip rx=%s", reply.hex())
+            return reply
+
+        return None
+
+    except socket.error as err:
+        print(f"network error:{err}")
+        logging.error(err)
+        return None
+    finally:
+        client.close()
 

@@ -140,7 +140,8 @@ pt_drv_info = {'ch': '', 'model': '', 'ip': '', 'port': '', 'drv': False}  # Def
 
 tms_rtsp_info = [
     {'ch': 'ch1', 'model': 'CMJ_PT', 'ip': '192.168.10.32', 'id': 'root', 'pw': 'root', 'rtsp_port': '554', 'port': '', 'url': ''},  # EO
-    {'ch': 'ch2', 'model': 'CMJ_PT', 'ip': '192.168.10.31', 'id': '', 'pw': '', 'rtsp_port': '554', 'port': '', 'url': ''}  # IR
+    {'ch': 'ch2', 'model': 'CMJ_PT', 'ip': '192.168.10.31', 'id': '', 'pw': '', 'rtsp_port': '554', 'port': '', 'url': ''},  # IR
+    {'ch': 'ch0', 'model': 'CMJ_PT', 'ip': '192.168.10.30', 'id': '', 'pw': '', 'rtsp_port': '554', 'port': '60020', 'url': ''}  # DRV
 ]
 
 # User, Model Information
