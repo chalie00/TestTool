@@ -373,7 +373,7 @@ script_mode_btn = {'x': script_mode_lbl['x'] + script_mode_lbl['w'] + 5, 'y': sc
                    'h': lbl_size['h'], 'w': lbl_size['w'],
                    'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Mode'}
 
-script_run_btn = {'x': script_mode_lbl['x'] + 30, 'y': script_mode_lbl['y'] + script_mode_lbl['h'] + 5,
+script_run_btn = {'x': repeat_txt_fld['x'], 'y': script_mode_lbl['y'] + script_mode_lbl['h'] + 5,
                   'h': lbl_size['h'], 'w': lbl_size['w'],
                   'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Script Run'}
 script_stop_btn = {'x': script_run_btn['x'], 'y': script_run_btn['y'] + script_run_btn['h'] + 5,
@@ -386,3 +386,20 @@ script_clear_btn = {'x': script_stop_btn['x'], 'y': script_stop_btn['y'] + scrip
 capture_pos = {'x': ch1_rtsp_info['x'], 'y': ch1_rtsp_info['y'],
                'h': ch1_rtsp_info['h'] * 2, 'w': ch1_rtsp_info['w'] * 2}
 capture_path = {'zoom': rf'Capture/Zoom', 'focus': rf'Capture/Focus'}
+
+# ================================================== CMJ PT ============================================================
+cmj_canvas = {'x': preset_canvas['x'], 'y': tour_stop_btn['y'] + tour_stop_btn['h'] + 5,
+              'w': 130, 'h': 220, 'bg': my_color['bg']}
+cmj_pan_tilt_lbl = {'x': preset_canvas['x'], 'y': tour_stop_btn['y'] + tour_stop_btn['h'] + 5,
+                    'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Label', 'text': 'PT Angle'}
+cmj_pan_tilt_spd_lbl = {'x': cmj_pan_tilt_lbl['x'] + cmj_pan_tilt_lbl['w'] + 1, 'y': cmj_pan_tilt_lbl['y'],
+                        'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Label', 'text': 'PT SPD'}
+
+cmj_pan_tilt_txt_fld = {'x': cmj_pan_tilt_lbl['x'], 'y': cmj_pan_tilt_lbl['y'] + cmj_pan_tilt_lbl['h'] + 1,
+                        'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Entry'}
+cmj_pan_tilt_spd_txt_fld = {'x': cmj_pan_tilt_txt_fld['x'] + cmj_pan_tilt_txt_fld['w'] + 1,
+                            'y': cmj_pan_tilt_txt_fld['y'], 'w': 65, 'h': 20, 'bg': my_color['fg'], 'type': 'Entry'}
+
+cmj_move_call_btn = {'x': cmj_pan_tilt_lbl['x'] + cmj_pan_tilt_lbl['w'] / 2,
+                     'y': cmj_pan_tilt_txt_fld['y'] + cmj_pan_tilt_txt_fld['h'] + 1, 'h': 20, 'w': 32,
+                     'bg': my_color['bg'], 'fg': my_color['fg'], 'text': 'Call'}

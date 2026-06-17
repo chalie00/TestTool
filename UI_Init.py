@@ -1,5 +1,6 @@
 import tkinter as tk
 
+import CMJ_PT
 import UI_Function
 import UI_Function as Ufn
 import Video_RTSP as Vr
@@ -8,6 +9,7 @@ import MainFunction as Mf
 import OnOff_Switch as onoffSW
 import Ptz as pt
 import Preset as Pre
+import CMJ_PT as cmj_pt
 
 from tkinter import ttk
 from datetime import datetime
@@ -26,6 +28,7 @@ class UIInit:
         Init_Network(root, parent)
         ptz_ui = pt.PTZ(parent)
         preset_ui = Pre.Preset(parent)
+        cmj_pt_ui = cmj_pt.CMJ_PT(parent)
 
         log_file_name = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         Cons.start_time = log_file_name
@@ -185,8 +188,8 @@ def Init_Search_Register(root, parent, app, treeview):
 
 # ============= Set PTZ UI, Preset UI, interval, repeat, script mode, script run/stop/clear ============================
 def Init_Ptz_Preset_Script(root, parent, app, treeview):
-    ptz_ui = pt.PTZ(parent)
-    preset_ui = Pre.Preset(parent)
+    # ptz_ui = pt.PTZ(parent)
+    # preset_ui = Pre.Preset(parent)
 
     inter_lbl = Cons.interval_lbl
     inter_txt = Cons.interval_txt_fld
