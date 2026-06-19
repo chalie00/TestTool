@@ -51,6 +51,7 @@ network_obj = Net_Obj_Con.network_obj
 etc_obj = Net_Obj_Con.etc_obj
 etc_btn_obj = Net_Obj_Con.etc_btn_obj
 res_log_obj = Net_Obj_Con.res_log_obj
+cmj_pt_ui = None
 start_time = Net_Obj_Con.start_time
 only_socket = Net_Obj_Con.only_socket
 fine_tree_cmd_data = Net_Obj_Con.fine_tree_cmd_data

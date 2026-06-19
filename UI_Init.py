@@ -28,7 +28,7 @@ class UIInit:
         Init_Network(root, parent)
         ptz_ui = pt.PTZ(parent)
         preset_ui = Pre.Preset(parent)
-        cmj_pt_ui = cmj_pt.CMJ_PT(parent)
+        Cons.cmj_pt_ui = cmj_pt.CMJ_PT(parent)
 
         log_file_name = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         Cons.start_time = log_file_name

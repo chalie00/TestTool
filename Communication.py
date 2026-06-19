@@ -89,10 +89,11 @@ def send_cmd_only_for_multi(send_cmd):
             client.send(bytes(send_cmd))
             reply = client.recv(buf_size)
             # ic(reply.hex())
-            if Cons.res_log_obj:
+            if Cons.res_log_obj and Cons.selected_model != 'CMJ_PT':
                 Cons.res_log_obj.multi_response(reply.hex())
-            else:
+            elif Cons.res_log_obj is None:
                 logging.warning("res_log_obj is not initialized; reply=%s", reply.hex())
+            return reply.hex()
         else:
             print('Protocol sending was stopped')
 

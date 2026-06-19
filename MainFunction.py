@@ -324,7 +324,8 @@ def handle_normal_mode(event, tags, iden, title, root_view, tv, host, port):
         print('CMJ_PT was pressed : MF')
         hex_value = select_item(event, root_view)
         # print(hex_value)
-        Comm.send_cmd_only_for_multi(hex_value)
+        # Comm.send_cmd_only_for_multi(hex_value)
+        Async.async_send(fn=lambda: Comm.send_cmd_only_for_multi(hex_value), title=title, root_view=root_view)
 
 def gene_interval_arrays(value, root_view):
     if not Cons.script_cmd_itv_arrs:

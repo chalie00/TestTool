@@ -65,7 +65,8 @@ class PTZ:
     # (2024.07.19) modified so that commands sent from PTZ are also switched when model is changed
     # (20204.11.14): Added DRS Zoom Module
     def up_zoom_in(self, event=None):
-        logging.info("ptz up_zoom_in model=%s selected_ch=%s osd=%s", Cons.selected_model, Cons.selected_ch, Cons.ptz_osd_toggle_flag)
+        logging.info("ptz up_zoom_in model=%s selected_ch=%s osd=%s", Cons.selected_model,
+                     Cons.selected_ch, Cons.ptz_osd_toggle_flag)
         if not Cons.ptz_osd_toggle_flag:
             if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # OSD Uncooled
@@ -86,7 +87,8 @@ class PTZ:
                 self.send_miniGimbal('up')
             elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('up', 'pt_drv')
-
+            elif Cons.selected_model in ['CMJ_PT']:
+                Cons.cmj_pt_ui.send_speed_async('up')
         else:
             if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # PTZ Uncooled
@@ -154,6 +156,7 @@ class PTZ:
             elif Cons.selected_model == 'FineTree':
                 params = {'move': 'down'}
                 Comm.fine_tree_send_cgi(self.ptz_url, params)
+
             elif Cons.selected_model == 'DRS':
                 params = {'move': 'down'}
                 Comm.send_cmd_to_Finetree(self.ptz_url, params)
@@ -162,6 +165,8 @@ class PTZ:
                 self.send_miniGimbal('down')
             elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('down', 'pt_drv')
+            elif Cons.selected_model in ['CMJ_PT']:
+                Cons.cmj_pt_ui.send_speed_async('down')
         else:
             if Cons.selected_model in ['Uncooled', 'UncooledTTL', 'Multi', 'CTEC']:
                 # Uncooled Zoom Out
@@ -231,6 +236,8 @@ class PTZ:
                 self.send_miniGimbal('left')
             elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('left', 'pt_drv')
+            elif Cons.selected_model in ['CMJ_PT']:
+                Cons.cmj_pt_ui.send_speed_async('left')
         else:
             if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # Near Uncooled
@@ -276,6 +283,8 @@ class PTZ:
                 self.send_miniGimbal('right')
             elif Cons.selected_model in ['Multi', 'CTEC']:
                 self.send_pt_drv('right', 'pt_drv')
+            elif Cons.selected_model in ['CMJ_PT']:
+                Cons.cmj_pt_ui.send_speed_async('right')
         else:
             if Cons.selected_model in ['Uncooled', 'UncooledTTL']:
                 # Far Uncooled
@@ -368,6 +377,8 @@ class PTZ:
                 self.send_pt_drv('stop', 'ir')
             elif btn_text in ptz_text_arr:
                 self.send_pt_drv('stop', 'pt_drv')
+        elif Cons.selected_model in ['CMJ_PT']:
+            Cons.cmj_pt_ui.send_speed_async('stop')
 
     def stop_zoom_focus(self, model, command_type):
         ic('stop cmd was sent')

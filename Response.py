@@ -15,6 +15,8 @@ def split_by_bytes(hex_string: str):
         bytes = [hex_string[i:i + 14] for i in range(0, len(hex_string), 14)]
     elif len(hex_string) == 28:
         bytes = [hex_string[i:i + 28] for i in range(0, len(hex_string), 28)]
+    else:
+        bytes = [hex_string]
     return bytes
 
 # 2025.11.04: The displayed value includes the value converted to an int of msb(By5) + lsb(By6)
@@ -95,6 +97,9 @@ class Response:
 
         for res_cmd in split_bytes:
             spaced = " ".join([res_cmd[i:i + 2] for i in range(0, len(res_cmd), 2)])
+            if len(res_cmd) < 16:
+                self.text_widget.insert(tk.END, f"[{time_str}] {spaced}\n")
+                continue
             msb_lsb_pan = hex_to_signed(res_cmd[8:12], 16)
             msb_lsb_tilt = hex_to_signed(res_cmd[12:16], 16)
             self.text_widget.insert(tk.END, f"[{time_str}] {spaced} : 'Pan:Tilt:' {msb_lsb_pan}:{msb_lsb_tilt}\n")

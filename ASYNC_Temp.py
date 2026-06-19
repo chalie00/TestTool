@@ -44,7 +44,7 @@ def run_in_worker(fn, *, root_view=None, on_done=None, on_error=None, desc="work
 
 
 # 2025.11.20 NYX Series Async Function
-def async_send(fn, cfinfffffmd=None, title=None, root_view=None, log_name=None):
+def async_send(fn, title=None, root_view=None, log_name=None):
     def done_func(rx):
         # if isinstance(rx, (bytes, bytearray)):
         #     response_raw = binascii.hexlify(rx).decode('utf-8')
@@ -77,7 +77,10 @@ def async_send(fn, cfinfffffmd=None, title=None, root_view=None, log_name=None):
                     Cons.res_log_obj.dis_response_text()
             elif Cons.selected_model == 'Multi':
                 if Cons.res_log_obj is not None:
-                    Cons.res_log_obj.multi_response()
+                    Cons.res_log_obj.multi_response(rx)
+            elif Cons.selected_model == 'CMJ_PT':
+                if Cons.res_log_obj is not None:
+                    Cons.res_log_obj.multi_response(rx)
         root_view.after(0, _update_ui)
 
     def on_error(ex: Exception):
