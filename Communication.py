@@ -1113,8 +1113,9 @@ def log_control(text, log_dir="Log", file_name=None):
     os.makedirs(log_dir, exist_ok=True)
 
     if file_name is None:
-        time_str = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        file_name = f"log_{time_str}.txt"
+        if Cons.start_time is None:
+            Cons.start_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        file_name = f"log_{Cons.start_time}.txt"
 
     full_path = os.path.join(log_dir, file_name)
     try:

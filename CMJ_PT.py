@@ -22,6 +22,15 @@ def convert_position_to_ascii_hex(position, scale):
     return " ".join(f"{ord(char):02X}" for char in converted_hex)
 
 
+def convert_ascii_hex_to_position(ascii_hex, scale='0.01'):
+    ascii_hex = str(ascii_hex).replace(' ', '')
+    if len(ascii_hex) != 8:
+        raise ValueError(f"ascii_hex must be 8 hex characters: {ascii_hex}")
+
+    hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
+    return (int(hex_text, 16) - 32768) * Decimal(str(scale))
+
+
 # 0xFF Add1 Add2 Cmd1 Cmd2 Data 0xEF
 # PT Add: 3030, EO Add: 3031, IR Add: 3032
 # dir_ctrl is ['up', 'down', 'left', 'right']
@@ -168,3 +177,4 @@ class CMJ_PT:
             client.close()
 
 # TODO: 2026.06.29 Script Test add
+# TODO: 2026.06.23 Zoom, Focus 위치, D-Zoom상태, Defog 상태, DIS

@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import time, datetime
 from tkinter import font
+from decimal import Decimal
 
 import Constant as Cons
 
@@ -26,6 +27,25 @@ def hex_to_signed(value: str, bits: int = 16) -> int:
     if val >= 2 ** (bits - 1):
         val -= 2 ** bits
     return val
+
+
+def convert_ascii_hex_to_position(ascii_hex, scale='0.01'):
+    ascii_hex = str(ascii_hex).replace(' ', '')
+    if len(ascii_hex) != 8:
+        raise ValueError(f"ascii_hex must be 8 hex characters: {ascii_hex}")
+
+    hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
+    return (int(hex_text, 16) - 32768) * Decimal(str(scale))
+
+
+def convert_speed_ascii_hex_to_dec(ascii_hex):
+    ascii_hex = str(ascii_hex).replace(' ', '')
+    if len(ascii_hex) != 4:
+        raise ValueError(f"ascii_hex must be 4 hex characters: {ascii_hex}")
+
+    hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
+
+    return abs(int(hex_text, 16) - 64)
 
 
 class Response:
@@ -90,22 +110,77 @@ class Response:
 
     # 2025.07.02 Display a Response Text for Multi
     # function drs_response_text have to modify
+    def spaced_hex(self, hex_text):
+        return " ".join([hex_text[i:i + 2] for i in range(0, len(hex_text), 2)])
+
+    def insert_cmj_response(self, time_str, res_cmd, before_end, bold_ranges, after_start, label, value_text):
+        before = self.spaced_hex(res_cmd[:before_end])
+        after = self.spaced_hex(res_cmd[after_start:])
+
+        self.text_widget.insert(tk.END, f"[{time_str}] {before} ")
+        for idx, (start, end) in enumerate(bold_ranges):
+            if idx > 0:
+                self.text_widget.insert(tk.END, " ")
+            self.text_widget.insert(tk.END, self.spaced_hex(res_cmd[start:end]), "bold")
+        if after:
+            self.text_widget.insert(tk.END, f" {after}")
+        self.text_widget.insert(tk.END, f" : '{label}' {value_text}\n")
+
+    def insert_cmj_pt_response(self, time_str, res_cmd):
+        if res_cmd[6:10] in ['0181']:
+            tilt_spd_raw = res_cmd[18:22]
+            pan_spd_raw = res_cmd[22:26]
+            pan = convert_speed_ascii_hex_to_dec(pan_spd_raw)
+            tilt = convert_speed_ascii_hex_to_dec(tilt_spd_raw)
+            self.insert_cmj_response(
+                time_str=time_str,
+                res_cmd=res_cmd,
+                before_end=18,
+                bold_ranges=[(18, 26)],
+                after_start=26,
+                label='Pan:Tilt Speed',
+                value_text=f'{pan}:{tilt}',
+            )
+            return
+        elif res_cmd[6:10] in ['0162', '3030']:
+            if res_cmd[2:6] in ['3031']:
+                print('No Error')
+            else:
+                pan_raw = res_cmd[10:18]
+                tilt_raw = res_cmd[18:26]
+                pan = convert_ascii_hex_to_position(pan_raw)
+                tilt = convert_ascii_hex_to_position(tilt_raw)
+                self.insert_cmj_response(
+                    time_str=time_str,
+                    res_cmd=res_cmd,
+                    before_end=10,
+                    bold_ranges=[(10, 18), (18, 26)],
+                    after_start=26,
+                    label='Pan:Tilt:',
+                    value_text=f'{pan}:{tilt}',
+                )
+                return
+
     def multi_response(self, res_txt: str):
         current_time = datetime.now()
         time_str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
         split_bytes = split_by_bytes(res_txt)
 
         for res_cmd in split_bytes:
-            spaced = " ".join([res_cmd[i:i + 2] for i in range(0, len(res_cmd), 2)])
+            spaced = self.spaced_hex(res_cmd)
             if len(res_cmd) < 16:
                 self.text_widget.insert(tk.END, f"[{time_str}] {spaced}\n")
                 continue
-            msb_lsb_pan = hex_to_signed(res_cmd[8:12], 16)
-            msb_lsb_tilt = hex_to_signed(res_cmd[12:16], 16)
-            self.text_widget.insert(tk.END, f"[{time_str}] {spaced} : 'Pan:Tilt:' {msb_lsb_pan}:{msb_lsb_tilt}\n")
+            if Cons.selected_model in ['CMJ_PT']:
+                self.insert_cmj_pt_response(time_str, res_cmd)
+                continue
+            else:
+                pan = hex_to_signed(res_cmd[8:12], 16)
+                tilt = hex_to_signed(res_cmd[12:16], 16)
+            prefix = f"[{time_str}] {spaced} : 'Pan:Tilt:' "
+            self.text_widget.insert(tk.END, prefix)
+            self.text_widget.insert(tk.END, f"{pan}:{tilt}", "bold")
+            self.text_widget.insert(tk.END, "\n")
         self.text_widget.see(tk.END)
-
-        self.text_widget.see(tk.END)
-
 
 

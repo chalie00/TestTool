@@ -47,19 +47,10 @@ configure_runtime_logging()
 import UI_Init as UI_init
 import Constant as Cons
 import KeyBind
-import MainFunction as Mf
 import Communication as Comm
 import Table as tb
 import Response as Res
 import System_Info as SysInfo
-import TTL_Communication as ttl
-
-
-import ssl, hashlib, binascii, time
-import requests
-from requests.adapters import HTTPAdapter
-from requests.auth import HTTPDigestAuth
-from urllib3.util.ssl_ import create_urllib3_context
 
 
 def configure_runtime_paths():
