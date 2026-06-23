@@ -2,7 +2,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Literal
 
 
-# TODO: 2026.06.23 Implemented a parser for camera status and moved the conversion functions.
+# 2026.06.23 Implemented a parser for camera status and moved the conversion functions.
 def convert_position_to_ascii_hex(position, scale):
     if Decimal(str(scale)) == 0:
         raise ValueError("scale must not be zero")

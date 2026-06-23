@@ -6,7 +6,7 @@ from datetime import time, datetime
 from tkinter import font
 
 import Constant as Cons
-from CMJ_PT_Parser import convert_ascii_hex_to_position, parse_camera_status
+from CMJ_PT_Parser import convert_ascii_hex_to_position, parse_camera_status,  convert_ascii_hex_to_dec_encoder
 
 
 # 2025.07.02: Divide 7byte
@@ -122,7 +122,35 @@ class Response:
         self.text_widget.insert(tk.END, f"[{time_str}] {status_text}\n")
 
     def insert_cmj_pt_response(self, time_str, res_cmd):
-        if res_cmd[6:10] in ['0181']:
+        addr = res_cmd[2:6]
+        cmd = res_cmd[6:10]
+
+        if addr in ['3031', '3032'] and cmd in ['0162', '3030']:
+            if len(res_cmd) == 20:
+                print('20')
+                encoder = convert_ascii_hex_to_dec_encoder(res_cmd[10:18])
+                self.insert_cmj_response(
+                    time_str=time_str,
+                    res_cmd=res_cmd,
+                    before_end=10,
+                    bold_ranges=[(10, 18)],
+                    after_start=28,
+                    label='Encoder value is ',
+                    value_text=f'{encoder}',
+                )
+                return
+            elif len(res_cmd) == 16:
+                print('16')
+                return
+            elif len(res_cmd) == 14:
+                print('14')
+                return
+            camera_sta = parse_camera_status(res_cmd)
+            print(camera_sta)
+            self.insert_camera_status_response(time_str, camera_sta)
+            return
+
+        if cmd in ['0181']:
             tilt_spd_raw = res_cmd[18:22]
             pan_spd_raw = res_cmd[22:26]
             pan = convert_speed_ascii_hex_to_dec(pan_spd_raw)
@@ -137,27 +165,22 @@ class Response:
                 value_text=f'{pan}:{tilt}',
             )
             return
-        elif res_cmd[6:10] in ['0162', '3030']:
-            if res_cmd[2:6] in ['3031']:
-                camera_sta = parse_camera_status(res_cmd)
-                print(camera_sta)
-                self.insert_camera_status_response(time_str, camera_sta)
-                return
-            else:
-                pan_raw = res_cmd[10:18]
-                tilt_raw = res_cmd[18:26]
-                pan = convert_ascii_hex_to_position(pan_raw)
-                tilt = convert_ascii_hex_to_position(tilt_raw)
-                self.insert_cmj_response(
-                    time_str=time_str,
-                    res_cmd=res_cmd,
-                    before_end=10,
-                    bold_ranges=[(10, 18), (18, 26)],
-                    after_start=26,
-                    label='Pan:Tilt:',
-                    value_text=f'{pan}:{tilt}',
-                )
-                return
+
+        if cmd in ['0162', '3030']:
+            pan_raw = res_cmd[10:18]
+            tilt_raw = res_cmd[18:26]
+            pan = convert_ascii_hex_to_position(pan_raw)
+            tilt = convert_ascii_hex_to_position(tilt_raw)
+            self.insert_cmj_response(
+                time_str=time_str,
+                res_cmd=res_cmd,
+                before_end=10,
+                bold_ranges=[(10, 18), (18, 26)],
+                after_start=26,
+                label='Pan:Tilt:',
+                value_text=f'{pan}:{tilt}',
+            )
+            return
 
     def multi_response(self, res_txt: str):
         current_time = datetime.now()
@@ -166,11 +189,11 @@ class Response:
 
         for res_cmd in split_bytes:
             spaced = self.spaced_hex(res_cmd)
-            if len(res_cmd) < 16:
-                self.text_widget.insert(tk.END, f"[{time_str}] {spaced}\n")
-                continue
-            if Cons.selected_model in ['CMJ_PT']:
+            if Cons.selected_model in ['CMJ_PT'] and len(res_cmd) > 12:
                 self.insert_cmj_pt_response(time_str, res_cmd)
+                continue
+            if len(res_cmd) <= 12:
+                self.text_widget.insert(tk.END, f"[{time_str}] {spaced}\n")
                 continue
             else:
                 pan = hex_to_signed(res_cmd[8:12], 16)
@@ -180,5 +203,4 @@ class Response:
             self.text_widget.insert(tk.END, f"{pan}:{tilt}", "bold")
             self.text_widget.insert(tk.END, "\n")
         self.text_widget.see(tk.END)
-
 
