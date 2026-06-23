@@ -1,73 +1,17 @@
 import tkinter as tk
 import socket
 import logging
-from typing import Literal, Optional
+from typing import Literal
 
 import Constant as Cons
-import Communication as Comm
 import ASYNC_Temp as Async
+from CMJ_PT_Parser import (
+    convert_position_to_ascii_hex,
+    generate_cmd,
+    hex_text_to_int_array,
+)
 
-from decimal import Decimal, ROUND_HALF_UP
 from socket import AF_INET, SOCK_STREAM
-
-
-# 2026.06.17 Pan/Tilt Angle, Speed class was implemented
-def convert_position_to_ascii_hex(position, scale):
-    if Decimal(str(scale)) == 0:
-        raise ValueError("scale must not be zero")
-
-    rounded = Decimal(str(position)) / Decimal(str(scale))
-    rounded = rounded.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-    converted_hex = f"{32768 + int(rounded):04X}"  # 04X: 4자리포멧 대문자 빈자리 앞은 0으로 채움
-    return " ".join(f"{ord(char):02X}" for char in converted_hex)
-
-
-def convert_ascii_hex_to_position(ascii_hex, scale='0.01'):
-    ascii_hex = str(ascii_hex).replace(' ', '')
-    if len(ascii_hex) != 8:
-        raise ValueError(f"ascii_hex must be 8 hex characters: {ascii_hex}")
-
-    hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
-    return (int(hex_text, 16) - 32768) * Decimal(str(scale))
-
-
-# 0xFF Add1 Add2 Cmd1 Cmd2 Data 0xEF
-# PT Add: 3030, EO Add: 3031, IR Add: 3032
-# dir_ctrl is ['up', 'down', 'left', 'right']
-def generate_cmd(ctl_mode: Literal['Angle', 'Speed'],
-                 add: str, cmd: str, data: str, *, dir_ctrl=None, zoom=None, focus=None):
-    add = str(add).replace(' ', '')
-    cmd = str(cmd).replace(' ', '')
-    data = '' if data is None else str(data).replace(' ', '')
-
-    if ctl_mode == 'Angle':
-        send_cmd = f'FF{add}{cmd}{data}EF'
-        # ex) FF3030 0162 38303030 38303030 EF
-        print(send_cmd)
-
-    elif ctl_mode == 'Speed':
-        zoom = '3430' if zoom is None else str(zoom).replace(' ', '')
-        focus = '3430' if focus is None else str(focus).replace(' ', '')
-        if dir_ctrl in ['up', 'down']:
-            send_cmd = f'FF{add}{cmd}{zoom}{focus}{data}3430EF'
-            # ex) FF3030 0181 Zoom stop(3430) focus stop(3430) Tilt Pan EF
-        else:
-            send_cmd = f'FF{add}{cmd}{zoom}{focus}3430{data}EF'
-
-    return send_cmd
-
-
-def hex_text_to_int_array(hex_text: str):
-    hex_text = str(hex_text).replace(' ', '')
-    if len(hex_text) % 2 != 0:
-        raise ValueError(f"hex text length must be even: {hex_text}")
-
-    hex_array = []
-    for i in range(0, len(hex_text), 2):
-        hex_str = '0x' + hex_text[i:i + 2]
-        hex_int = int(hex_str, 16)
-        hex_array.append(hex_int)
-    return hex_array
 
 
 class CMJ_PT:
@@ -177,4 +121,3 @@ class CMJ_PT:
             client.close()
 
 # TODO: 2026.06.29 Script Test add
-# TODO: 2026.06.23 Zoom, Focus 위치, D-Zoom상태, Defog 상태, DIS

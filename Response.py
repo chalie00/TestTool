@@ -4,9 +4,9 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import time, datetime
 from tkinter import font
-from decimal import Decimal
 
 import Constant as Cons
+from CMJ_PT_Parser import convert_ascii_hex_to_position, parse_camera_status
 
 
 # 2025.07.02: Divide 7byte
@@ -29,15 +29,6 @@ def hex_to_signed(value: str, bits: int = 16) -> int:
     return val
 
 
-def convert_ascii_hex_to_position(ascii_hex, scale='0.01'):
-    ascii_hex = str(ascii_hex).replace(' ', '')
-    if len(ascii_hex) != 8:
-        raise ValueError(f"ascii_hex must be 8 hex characters: {ascii_hex}")
-
-    hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
-    return (int(hex_text, 16) - 32768) * Decimal(str(scale))
-
-
 def convert_speed_ascii_hex_to_dec(ascii_hex):
     ascii_hex = str(ascii_hex).replace(' ', '')
     if len(ascii_hex) != 4:
@@ -46,7 +37,6 @@ def convert_speed_ascii_hex_to_dec(ascii_hex):
     hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
 
     return abs(int(hex_text, 16) - 64)
-
 
 class Response:
     def __init__(self, root, pos):
@@ -113,7 +103,8 @@ class Response:
     def spaced_hex(self, hex_text):
         return " ".join([hex_text[i:i + 2] for i in range(0, len(hex_text), 2)])
 
-    def insert_cmj_response(self, time_str, res_cmd, before_end, bold_ranges, after_start, label, value_text):
+    def insert_cmj_response(self, time_str, res_cmd,
+                            before_end=None, bold_ranges=None, after_start=None, label=None, value_text=None):
         before = self.spaced_hex(res_cmd[:before_end])
         after = self.spaced_hex(res_cmd[after_start:])
 
@@ -125,6 +116,10 @@ class Response:
         if after:
             self.text_widget.insert(tk.END, f" {after}")
         self.text_widget.insert(tk.END, f" : '{label}' {value_text}\n")
+
+    def insert_camera_status_response(self, time_str, camera_sta):
+        status_text = ", ".join([f"{key}: {value}" for key, value in camera_sta.items()])
+        self.text_widget.insert(tk.END, f"[{time_str}] {status_text}\n")
 
     def insert_cmj_pt_response(self, time_str, res_cmd):
         if res_cmd[6:10] in ['0181']:
@@ -144,7 +139,10 @@ class Response:
             return
         elif res_cmd[6:10] in ['0162', '3030']:
             if res_cmd[2:6] in ['3031']:
-                print('No Error')
+                camera_sta = parse_camera_status(res_cmd)
+                print(camera_sta)
+                self.insert_camera_status_response(time_str, camera_sta)
+                return
             else:
                 pan_raw = res_cmd[10:18]
                 tilt_raw = res_cmd[18:26]
