@@ -1,9 +1,9 @@
-import tkinter as tk
+﻿import tkinter as tk
 import vlc
 from PIL import Image, ImageTk
 from PIL.ImageTk import PhotoImage
 
-import Constant as Cons
+from app.config import Constant as Cons
 
 
 class VideoPlayer:
@@ -25,11 +25,11 @@ class VideoPlayer:
         # self.instance = vlc.Instance('--network-caching=500', '--rtsp-tcp', '--clock-jitter=0',
         #                              '--sout-mux-caching=10', '--avcodec-hw=none', '--rtsp-frame-buffer-size=1000000',
         #                              '--verbose=2', '--no-drop-late-frames', '--no-skip-frames')
-        self.instance = vlc.Instance(    '--avcodec-hw=any',              # 가능한 하드웨어 디코딩 사용
-                                         '--network-caching=150',        # 네트워크 버퍼 150ms (기본 1000~3000보다 낮춤)
-                                         '--rtsp-tcp',                   # TCP로 강제 (필요 시 제거해 테스트)
+        self.instance = vlc.Instance(    '--avcodec-hw=any',              # Use hardware decoding when available.
+                                         '--network-caching=150',        # Lower network cache to reduce latency.
+                                         '--rtsp-tcp',                   # Force RTSP over TCP for stability.
                                          '--clock-jitter=0',
-                                         '--live-caching=100',           # 실시간 스트리밍 지연 감소
+                                         '--live-caching=100',           # Keep live-stream buffering low.
                                          '--file-caching=100',
                                          '--sout-mux-caching=100',
                                          '--drop-late-frames',
@@ -155,3 +155,4 @@ class VideoPlayer:
             else:
                 videos[i].canvas.place(x=infos[i]['x'], y=infos[i]['y'])
                 videos[i].size_btn.place(x=infos[i]['x'] + 10, y=infos[i]['y'] + 10, width=30, height=20)
+

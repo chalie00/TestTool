@@ -1,8 +1,8 @@
-# 2025.11.12: Added for Seyeon TTL Version
+﻿# 2025.11.12: Added for Seyeon TTL Version
 
 import ssl, socket, time, hashlib, binascii, re, secrets, logging
 
-import Constant as Cons
+from app.config import Constant as Cons
 
 
 def _resolve_tls_port(channel_info=None):
@@ -32,7 +32,7 @@ def _resolve_tls_port(channel_info=None):
 def _make_legacy_tls():
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     try:
-        ctx.minimum_version = ssl.TLSVersion.TLSv1  # 장비 호환
+        ctx.minimum_version = ssl.TLSVersion.TLSv1  # Keep compatibility with legacy devices.
     except Exception:
         pass
     ctx.set_ciphers("ALL:@SECLEVEL=0")
@@ -63,7 +63,7 @@ def _read_headers(fp, timeout=2.0):
 
 
 def _get_admin_challenge(host, port=None):
-    # /admin/aindex_m.asp 로 401 챌린지만 한번 받아 realm/nonce 확보 (MD5로 사용)
+    # Trigger a 401 challenge on /admin/aindex_m.asp and extract digest fields.
     tls_port = _resolve_tls_port()
     if port is not None:
         tls_port = int(port)
@@ -109,3 +109,4 @@ def _build_digest_md5(user, pw, method, uri, chal, nc="00000001"):
 def _enc_cookie(user, pw):
     enc = hashlib.sha256(f"{pw}:1:{user}".encode()).hexdigest()
     return f"id={user};sc=1;response={enc};"
+

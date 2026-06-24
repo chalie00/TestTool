@@ -1,12 +1,12 @@
-import array
+﻿import array
 import tkinter as tk
 
 from tkinter import *
 from tkinter import ttk
 from ttkwidgets import CheckboxTreeview
 
-import Constant as Cons
-import KeyBind as Kb
+from app.config import Constant as Cons
+from app.ui import KeyBind as Kb
 
 
 class Table:
@@ -53,10 +53,11 @@ class Table:
         # Remove the space of each element
         for i, data in enumerate(cmd_data):
             # values = (data, '')
-            tv.insert('', 'end', text=i + 1, values=data, iid=str(i) + '번', tags=('checked',))
+            tv.insert('', 'end', text=i + 1, values=data, iid=f'row_{i}', tags=('checked',))
             tv.column(dis_column[0], anchor='center')
 
         scrollbar = tk.Scrollbar(root, orient=tk.VERTICAL, command=tv.yview)
         scrollbar.place(x=Cons.script_tb_pos['x'] + Cons.script_tb_pos['w'] + 5, y=Cons.script_tb_pos['y'] + 10,
                         height=Cons.script_tb_pos['h'] - 450)
         tv.config(yscrollcommand=scrollbar.set)
+

@@ -44,13 +44,13 @@ def configure_runtime_logging():
 
 configure_runtime_logging()
 
-import UI_Init as UI_init
-import Constant as Cons
-import KeyBind
-import Communication as Comm
-import Table as tb
-import Response as Res
-import System_Info as SysInfo
+from app.ui import UI_Init as UI_init
+from app.config import Constant as Cons
+from app.ui import KeyBind
+from app.services import Communication as Comm
+from app.ui import Table as tb
+from app.ui import Response as Res
+from app.ui import System_Info as SysInfo
 
 
 def configure_runtime_paths():

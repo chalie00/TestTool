@@ -1,13 +1,13 @@
-import tkinter as tk
+﻿import tkinter as tk
 import time as ti
 import threading
 import logging
 
-import Communication as Comm
-import Constant as Cons
-import Communication as Th
-import OnOff_Switch as onoffSW
-import System_Info as sysinfo
+from app.services import Communication as Comm
+from app.config import Constant as Cons
+from app.services import Communication as Th
+from app.ui import OnOff_Switch as onoffSW
+from app.ui import System_Info as sysinfo
 
 from icecream import ic
 
@@ -550,3 +550,4 @@ class PTZ:
             self.canvas.create_window(Cons.set_nyx_btn['x'], Cons.set_nyx_btn['y'] + 5, window=set_btn, width=40,
                                       height=20)
             set_btn.config(state='disabled')
+

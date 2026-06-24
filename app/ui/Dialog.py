@@ -1,6 +1,6 @@
-from tkinter import *
+﻿from tkinter import *
 
-import Constant as Cons
+from app.config import Constant as Cons
 
 
 class DialogBox(Toplevel):
@@ -23,9 +23,9 @@ class DialogBox(Toplevel):
                                 bg=Cons.my_color['noti_bg'], fg=Cons.my_color['noti_txt'])
         self.noti_lbl.place(x=(Cons.POPUP_SIZE['x'] - self.noti_lbl.winfo_width()) / 2,
                             y=(Cons.POPUP_SIZE['y'] - self.noti_lbl.winfo_height()) / 2)
-        # place는 요소의 중앙을 좌표로 하지 않고 좌 상단의 꼭지점을 좌표로 쓴다.
-        # 때문에 아직 label 요소가 생성되기 전이기 때문에 Size 확인이 불가하다.
-        # Update 후 Label 크기를 확안 후 1차적으로 중앙에 위치 시키고, update 후 위치 조정한다.
+        # `place()` uses the widget's top-left corner, so center it after layout.
+        # The label size is not final until Tk has processed geometry updates.
+        # Call `update()` once, then reposition using the measured size.
         self.update()
         self.noti_lbl.place(x=self.noti_lbl.winfo_x() - self.noti_lbl.winfo_width() / 2,
                             y=self.noti_lbl.winfo_y() - self.noti_lbl.winfo_height() / 2)
@@ -39,3 +39,4 @@ class DialogBox(Toplevel):
 
     def quit_window(self):
         self.destroy()
+

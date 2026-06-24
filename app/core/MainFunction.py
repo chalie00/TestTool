@@ -1,4 +1,4 @@
-import threading
+﻿import threading
 
 import openpyxl
 import tkinter
@@ -9,12 +9,12 @@ import logging
 import time as ti
 import tkinter.font as tkfont
 
-import Dialog
-import Communication as Comm
-import Constant as Cons
-import Table as tb
-import KeyBind as Kb
-import ASYNC_Temp as Async
+from app.ui import Dialog
+from app.services import Communication as Comm
+from app.config import Constant as Cons
+from app.ui import Table as tb
+from app.ui import KeyBind as Kb
+from app.core import ASYNC_Temp as Async
 
 from tkinter import *
 from tkinter import ttk
@@ -23,7 +23,7 @@ from screeninfo import get_monitors
 from datetime import datetime
 from icecream import ic
 
-from Communication import nyx_cmd_to_convert, send_cmd_to_nyx
+from app.services.Communication import nyx_cmd_to_convert, send_cmd_to_nyx
 
 
 # Set an element (label, text field, button) as specified position and size
@@ -49,7 +49,7 @@ def fix_selection_tags(event):
     tree = event.widget
     selected_iids = tree.selection()
     for iid in selected_iids:
-        # ?꾩옱 tag ?ㅼ떆 ?ㅼ젙?댁꽌 ?좏깮 ?곹깭?먯꽌???좎?
+        # Reapply the original row tags so selection does not clear styling.
         tags = tree.item(iid, 'tags')
         tree.item(iid, tags=tags)
 
@@ -70,7 +70,7 @@ def create_table(root, column_titles, column_width, x, y, height=29):
     tv.bind("<KeyPress-Left>", lambda e: Kb.pressed_kbd_ExtKey(e))
     tv.bind("<KeyPress-Right>", lambda e: Kb.pressed_kbd_ExtKey(e))
 
-    # ?ㅽ겕濡ㅻ컮
+    # Add a vertical scrollbar for the table.
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
     vsb.place(x=column_width * column_num + 105 + Cons.cam1_resolution['w'],
             y=y,
@@ -79,11 +79,11 @@ def create_table(root, column_titles, column_width, x, y, height=29):
     tv.place(x=x, y=y)
     tv.configure(yscrollcommand=vsb.set)
 
-    # 湲곕낯 而щ읆(#0)
+    # Configure the built-in row number column (#0).
     tv.column('#0', width=70, anchor='center', stretch='yes')
     tv.heading('#0', text='No', anchor='center')
 
-    # ?고듃/?쒓렇
+    # Prepare fonts and row highlighting styles.
     default_font = tkfont.nametofont("TkTextFont")
     bold_font = default_font.copy()
     bold_font.configure(weight="bold")
@@ -92,41 +92,39 @@ def create_table(root, column_titles, column_width, x, y, height=29):
     tv.tag_configure('query_tag', background='yellow')
     tv.tag_configure('bold_text', font=bold_font)
 
-    # ??bind???앹꽦 ??1踰덈쭔
+    # Bind double-click and preserve row tags on selection changes.
     tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
     tv.bind('<<TreeviewSelect>>', fix_selection_tags)
 
-    # Cons?????(?좏깮)
+    # Store widget references in shared constants.
     Cons.tv = tv
     Cons.tv_vsb = vsb
 
-    # 理쒖큹 ?앹꽦 ??而щ읆/?곗씠???명똿? update?먯꽌 泥섎━
+    # Row and column content is filled by `update_table`.
     return tv
 
 # 2025.12.16: Table update has been added
 def update_table(tv, column_titles, column_width, rows):
-    """
-    湲곗〈 Treeview(tv)瑜??ъ궗?⑺븯硫댁꽌 而щ읆/?곗씠?곕쭔 媛깆떊?쒕떎.
-    """
+    """Replace the Treeview columns, headers, and rows with new data."""
     column_num = len(column_titles)
     dis_column = [str(i + 1) for i in range(column_num)]
 
-    # ??而щ읆 援ъ“ 媛깆떊
+    # Reconfigure the visible columns.
     tv.configure(columns=dis_column, displaycolumns=dis_column)
 
-    # #0 而щ읆? ?좎?
+    # Reset the row number column.
     tv.column('#0', width=70, anchor='center', stretch='yes')
     tv.heading('#0', text='No', anchor='center')
 
-    # ?섎㉧吏 而щ읆 ?ㅼ젙
+    # Apply the column headers and widths.
     for i in range(column_num):
         tv.column(dis_column[i], width=column_width, anchor='center')
         tv.heading(dis_column[i], text=column_titles[i], anchor='center')
 
-    # ??湲곗〈 row ??젣
+    # Clear existing rows.
     tv.delete(*tv.get_children())
 
-    # ??row ?ъ궫??
+    # Insert the new rows.
     for i, row_values in enumerate(rows):
         tags = ['unchecked']
         if any(cell == 'CMD List' for cell in row_values):
@@ -480,7 +478,7 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
     vsb = ttk.Scrollbar(root, orient='vertical', command=tv.yview)
     vsb.place(x=width * column_num + 105 + Cons.cam1_resolution['w'], y=y, height=Cons.tree_view_size['h'] - 30)
     # tv = tkinter.ttk.Treeview(root, columns=column, display columns=dis_column)
-    # Treeview??width, height 湲???섎줈 ?뺥빐 吏꾨떎.
+    # Keep the height fixed here; only the placement and scroll are adjusted.
     # tv.configure(height=len(Cons.command_array) + 1)
     tv.place(x=x, y=y)
     tv.configure(yscrollcommand=vsb.set)
@@ -504,19 +502,20 @@ def make_table(root: tkinter, column_num: int, width: int, column_title: list[st
 
     # Insert the command data in Table
     for i, row_values in enumerate(cmd_data):
-        tags = ['unchecked']  # 湲곕낯 ?쒓렇
+        tags = ['unchecked']  # Default row tag.
 
-        # ?쒓렇 議곌굔 ?꾩쟻
+        # Apply additional tags based on the row content.
         if any(cell == 'CMD List' for cell in row_values):
             tags.append('cmd_tag')
         if any('Query' in str(cell) for cell in row_values):
             tags.append('query_tag')
             tags.append('bold_text')
 
-        # ????踰덈쭔 insert, ?쒓렇???꾩쟻?댁꽌
+        # Insert the row with its styling tags.
         tv.insert('', 'end', text=i + 1, values=row_values, iid=f'row_{i}', tags=tags)
 
-    # ?붾툝 ?대┃ 諛붿씤?⑹? 猷⑦봽 諛뽰뿉??1踰덈쭔!
+    # Double-click sends the command for the selected row.
     tv.bind('<Double-Button-1>', lambda event, root_view=root, tree=tv: clicked_table_element(event, root_view, tv))
     tv.bind('<<TreeviewSelect>>', fix_selection_tags)
     return tv
+

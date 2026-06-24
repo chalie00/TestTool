@@ -1,9 +1,9 @@
-import tkinter as tk
+﻿import tkinter as tk
 
 from tkinter import *
 
-import Constant as Cons
-import Ptz
+from app.config import Constant as Cons
+from app.ui import Ptz
 
 
 class SwitchOnOff:
@@ -51,3 +51,4 @@ class SwitchOnOff:
         # Create A Button
         on_button = Button(self.canvas, image=off, bd=0, command=switch)
         on_button.pack()
+

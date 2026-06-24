@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import threading
 import time
 import queue
@@ -6,18 +6,18 @@ import queue
 from icecream import ic
 from functools import partial
 
-import Constant as Cons
-import Communication as Comm
-import Ptz
-import ASYNC_Temp as Async
+from app.config import Constant as Cons
+from app.services import Communication as Comm
+from app.ui import Ptz
+from app.core import ASYNC_Temp as Async
 
 ptz_url = '/cgi-bin/ptz/control.php?'
 ptz_ins = None
 
-# 큐: 백그라운드나 이벤트로부터 실제 PTZ 명령은 메인 스레드에서만 실행
+# Queue PTZ actions so command execution stays on the main UI flow.
 ptz_command_queue = queue.Queue()
 
-# 방향키 상태 (디바운스용)
+# Current pressed state for arrow keys.
 key_state = {
     'Up': False,
     'Down': False,
@@ -25,7 +25,7 @@ key_state = {
     'Right': False
 }
 
-# keymap 정리
+# Key maps for each device family.
 nyx_keymap = {
     'Prior': 'NYX.SET#lens_zctl=narrow',
     'Next': 'NYX.SET#lens_zctl=wide',
@@ -91,7 +91,7 @@ def initialize_ptz(root):
 
 
 def on_arrow_key_press(event):
-    """방향키 눌렀을 때 한 번만 move 요청."""
+    """Queue a move command only when the key changes to pressed."""
     key = event.keysym
     if key in key_state and not key_state[key]:
         key_state[key] = True
@@ -99,7 +99,7 @@ def on_arrow_key_press(event):
 
 
 def on_arrow_key_release(event):
-    """방향키 뗄 때 stop 요청."""
+    """Queue a stop command when the key is released."""
     key = event.keysym
     if key in key_state and key_state[key]:
         key_state[key] = False
@@ -107,17 +107,17 @@ def on_arrow_key_release(event):
 
 
 def key_monitor_loop():
-    """필요하다면 방향키 외 추가 감시용. (현재는 비워두거나 다른 상태 체크)"""
+    """Background loop reserved for future key-state monitoring."""
     while True:
         try:
-            # 현재 구조에서는 방향키는 이벤트 기반이므로 여기에 move/stop을 넣지 않음
+            # Arrow handling is event-driven for now, so this loop just idles.
             time.sleep(0.05)
         except Exception as e:
             logging.error(f"[KeyLoop] Error: {e}")
 
 
 def process_ptz_queue(root):
-    """메인 스레드에서 큐를 처리. 반드시 root.after로 주기 호출."""
+    """Process queued PTZ commands on the Tk main thread."""
     try:
         while not ptz_command_queue.empty():
             cmd_type, key = ptz_command_queue.get_nowait()
@@ -128,7 +128,7 @@ def process_ptz_queue(root):
     except Exception as e:
         logging.error(f"[PTZ Queue Processor] {e}")
     finally:
-        # 20ms마다 재호출
+        # Poll the queue every 20 ms.
         root.after(20, lambda: process_ptz_queue(root))
 
 
@@ -150,7 +150,7 @@ def handle_ptz_move(key):
         return
 
     now = time.time()
-    # 동일한 move를 너무 빠르게 반복 보내지 않도록 디바운스 (100ms)
+    # Debounce repeated move commands for the same key within 100 ms.
     if _last_sent['type'] == 'move' and _last_sent['key'] == key and now - _last_sent['time'] < 0.1:
         return
     _last_sent.update({'type': 'move', 'key': key, 'time': now})
@@ -205,7 +205,7 @@ def handle_ptz_stop(key):
         return
 
     now = time.time()
-    # stop도 연속적인 동일 명령은 무시
+    # Ignore repeated stop commands for the same key within 100 ms.
     if _last_sent['type'] == 'stop' and _last_sent['key'] == key and now - _last_sent['time'] < 0.1:
         return
     _last_sent.update({'type': 'stop', 'key': key, 'time': now})
@@ -239,7 +239,7 @@ def handle_ptz_stop(key):
 
 
 def pressed_kbd_ExtKey(event):
-    """Prior/Next/Insert/Delete/End 등 특수 키 처리"""
+    """Handle auxiliary keys such as zoom, focus, and AF."""
     try:
         key = event.keysym
         model = normalized_model()
@@ -286,7 +286,7 @@ def pressed_kbd_ExtKey(event):
 
 # 2025.12.15: FineTree, DRS's cmd has been added
 def extra_key_release(event):
-    """Nyx 같은 곳에서 release 시 stop 처리 (zoom/focus 등)"""
+    """Handle release-time stop commands for devices that need them."""
     key = event.keysym
     model = normalized_model()
     try:
@@ -318,7 +318,7 @@ def extra_key_release(event):
                 if cmd: 
                     Comm.send_cmd_for_drs(host=host, port=port, send_cmd=hex_array)
             
-        # 다른 모델/키 조합이 필요하면 여기에 확장
+        # Extend this block if more models need release handling.
     except Exception as e:
         logging.error(f"[ExtraKeyRelease] Error: {e}")
 
@@ -333,7 +333,7 @@ def control_preset(event, type, num):
 
 
 def bind_system_kbd(root):
-    # 방향키: press/release 각각 전용 핸들러
+    # Arrow-key press/release handlers.
     root.bind_all("<KeyPress-Up>", on_arrow_key_press)
     root.bind_all("<KeyRelease-Up>", on_arrow_key_release)
     root.bind_all("<KeyPress-Down>", on_arrow_key_press)
@@ -343,21 +343,22 @@ def bind_system_kbd(root):
     root.bind_all("<KeyPress-Right>", on_arrow_key_press)
     root.bind_all("<KeyRelease-Right>", on_arrow_key_release)
 
-    # 기타 키 (Zoom, Focus, AF 등)
+    # Extra keys for zoom, focus, and AF.
     extra_keys = ['Prior', 'Next', 'Insert', 'Delete', 'End', 'Home', 'Pause']
     for key in extra_keys:
         root.bind_all(f"<KeyPress-{key}>", pressed_kbd_ExtKey)
         root.bind_all(f"<KeyRelease-{key}>", extra_key_release)
 
-    # 프리셋 단축키
+    # Preset shortcuts.
     for i in range(1, 10):
         root.bind(rf"<Control-Key-{i}>",
                   partial(control_preset, type='Call_Preset', num=i))
         root.bind(rf"<F{i}>",
                   partial(control_preset, type='Save_Preset', num=i))
 
-    # 백그라운드 루프 (필요하다면)
+    # Start the background monitor loop.
     threading.Thread(target=key_monitor_loop, daemon=True).start()
 
-    # 큐 처리 시작 (메인 스레드)
+    # Start periodic queue processing on the main thread.
     root.after(20, lambda: process_ptz_queue(root))
+

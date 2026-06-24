@@ -1,6 +1,6 @@
-# (2024.07.19): Model Flag (Uncooled, NTX Series)
-#  !import (2025.04.29): When was selected FineTree at first, It will be crash,
-#   because FineTree needs to collect another arrays
+癤�# (2024.07.19): Model Flag (Uncooled, NTX Series)
+# Important (2025.04.29): Selecting FineTree first used to crash because it
+# needs additional arrays to be initialized before use.
 
 selected_model = 'Multi'
 model_option = ['Uncooled', 'UncooledTTL', 'DRS',
@@ -9,14 +9,14 @@ model_option = ['Uncooled', 'UncooledTTL', 'DRS',
                 'MiniGimbal']
 
 # ====================================================  NETWORK ==================================================================
-# Network Information form User Input
+# Network information from user input.
 data_sending = True
 host_ip: str = ""
 port: int = 0  # Default 32000
 rtsp_port: int = 0
 buf_size = 4096
 
-# RTSP Information
+# RTSP information.
 rtsp_url = ''
 ipc_id = ''
 ipc_pw = ''
@@ -26,13 +26,13 @@ video_player_ch2 = None
 video_player_ch3 = None
 video_player_ch4 = None
 
-# the selected ch is one of below ch(ch1_rtsp_info ....)
-# 2025.06.30 Added Muilti Sensor PT Drv
-# When the CH button was pushed, an object and Constant.chX_rtsp_info were created.
+# The selected channel points to one of the chX_rtsp_info objects.
+# 2025.06.30: Added Multi Sensor PT Drv.
+# The CH button initializes both the object and Constant.chX_rtsp_info.
 selected_ch = None
 
-# for Seyeon TTL
-# 확정된 파라미터
+# Seyeon TTL serial parameters.
+# Fixed serial parameters.
 FW_NODE = "ttyS1"
 FW_BAUD = {
     'Uncooled': 38400,
@@ -41,13 +41,13 @@ FW_BAUD = {
 }.get(selected_model, 38400)
 FW_DBITS = 8
 FW_SBITS = 1
-FW_PARITY = "n"  # 소문자
+FW_PARITY = "n"  # Lowercase as expected by the device.
 
-# 수신 루프 설정
+# Receive loop settings.
 READ_MAX_BYTES = 8192
-RECV_WAIT_SEC = 3.0  # 최대 대기
-PRE_SEND_DELAY = 0.30  # 헤더 보낸 뒤 터널 준비 시간
-POST_SEND_DELAY = 0.30  # 송신 직후 첫 수신까지 지연
+RECV_WAIT_SEC = 3.0  # Maximum receive wait time.
+PRE_SEND_DELAY = 0.30  # Delay after the header while the tunnel becomes ready.
+POST_SEND_DELAY = 0.30  # Delay before the first receiver after sending.
 
 # ====================================================  OBJECT ==================================================================
 # validator_txt, model_txt, fw_txt

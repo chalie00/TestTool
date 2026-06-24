@@ -1,4 +1,4 @@
-import os
+﻿import os
 import urllib
 import threading
 
@@ -11,14 +11,14 @@ import uuid
 import time
 import binascii
 
-import Constant as Cons
-import MainFunction as Mf
-import Response as Res
-import System_Info as SysInfo
-import DRS_Response as DR_r
-import TTL_Communication as ttl
-import Calculate_CMD as Cal
-import ASYNC_Temp as Async
+from app.config import Constant as Cons
+from app.core import MainFunction as Mf
+from app.ui import Response as Res
+from app.ui import System_Info as SysInfo
+from app.parsers import DRS_Response as DR_r
+from app.services import TTL_Communication as ttl
+from app.core import Calculate_CMD as Cal
+from app.core import ASYNC_Temp as Async
 
 from socket import AF_INET, SOCK_STREAM
 from requests.auth import HTTPBasicAuth
@@ -27,7 +27,7 @@ from datetime import datetime
 from openpyxl import Workbook, load_workbook
 from icecream import ic
 
-import Dialog
+from app.ui import Dialog
 
 file_lock = threading.Lock()
 
@@ -76,7 +76,7 @@ def send_cmd_only_for_multi(send_cmd):
         port = int(0) if Cons.port == '' else int(input_port)
     buf_size = Cons.READ_MAX_BYTES
 
-    # 일시적으로 송신 가능 상태가 아니면, False라도 임시로 송신 허용
+    # Temporarily enable sending so this helper can issue a one-off request.
     was_sending = Cons.data_sending
     if not Cons.data_sending:
         Cons.data_sending = True
@@ -290,7 +290,7 @@ def uncooled_store_response(root_view, title, response):
     # print(Cons.uncooled_normal_q)
 
 
-# ==================================  2025년 제공을 위해 기능을 OFF ==================================================
+# ================================== Feature disabled for 2025 maintenance ==================================
 #convert_str_with_hex(root_view)
 
 
@@ -537,12 +537,12 @@ def send_cmd_for_drs(host, port, send_cmd, root_view = None):
         reply = client.recv(buf_size)
         # print(reply)
         if Cons.selected_model == 'DRS':
-            # 데이터 파싱 함수 호출
+            # Parse the DRS response payload.
             parse_drs_reply(reply)
         else:
             return
 
-        # 로그 창에 응답 표시
+        # Display the response in the log area.
         log_pos = Cons.log_txt_fld_info
         log_fld = Res.Response(root_view, log_pos)
     except socket.error as err:
@@ -1041,12 +1041,12 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
     user_info = Cons.selected_ch
     tls_port = ttl._resolve_tls_port(user_info)
 
-    # 0) 안전장치
+    # 0) Validate and prepare the payload.
     if not isinstance(send_cmd, (bytes, bytearray)):
         raise TypeError("send_cmd_bytes must be bytes")
-    payload = bytes(send_cmd) + b"\r\n"  # ★ CRLF 필수
+    payload = bytes(send_cmd) + b"\r\n"  # The device requires CRLF termination.
                 
-    # 1) Digest 재료와 쿠키 준비
+    # 1) Prepare digest authentication and session cookie.
     logging.info(
         "send_cmd_for_TTL_uncooled host=%s cmd_port=%s tls_port=%s title=%s tx=%s",
         user_info['ip'],
@@ -1058,13 +1058,13 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
     chal = ttl._get_admin_challenge(user_info['ip'], tls_port)
     cookie = ttl._enc_cookie(user_info['id'], user_info['pw'])
 
-    # 2) fwtransparent 요청라인 만들기
+    # 2) Build the fwtransparent request URI.
     uri = (f"/cgi-bin/fwtransparent.cgi"
            f"?BaudRate={Cons.FW_BAUD}&DataBit={Cons.FW_DBITS}&StopBit={Cons.FW_SBITS}"
            f"&ParityBit={Cons.FW_PARITY}&Node={Cons.FW_NODE}&FwCgiVer=0x0001")
     authz = ttl._build_digest_md5(user_info['id'], user_info['pw'], "GET", uri, chal)
 
-    # 3) TLS 연결 후 GET 헤더 송신(응답은 기다리지 않고 터널 용도로 사용)
+    # 3) Open TLS and send the initial GET request to establish the tunnel.
     s = ttl._tls_connect(user_info['ip'], tls_port)
     try:
         req = (f"GET {uri} HTTP/1.0\r\n"
@@ -1075,13 +1075,13 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
                "Connection: keep-alive\r\n\r\n").encode()
         s.sendall(req)
 
-        # 4) 터널 준비 시간
+        # 4) Wait briefly for the tunnel to become ready.
         time.sleep(Cons.PRE_SEND_DELAY)
 
-        # 5) 명령 송신
+        # 5) Send the command payload.
         s.sendall(payload)
 
-        # 6) 응답 수신(최대 RECV_WAIT_SEC)
+        # 6) Receive the response until timeout.
         end_by = time.time() + Cons.RECV_WAIT_SEC
         buf = bytearray()
         while time.time() < end_by:
@@ -1094,7 +1094,7 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
                 break
 
         rx = bytes(buf)
-        # ★ 로그/가공 예시 (필요 시 기존 UI/저장 함수 호출)
+        # Log the raw TX/RX bytes for debugging.
         logging.info("uncooled tx=%s", binascii.hexlify(payload).decode())
         logging.info("uncooled rx(%d)=%s", len(rx), binascii.hexlify(rx).decode())
         return rx
@@ -1109,7 +1109,7 @@ def send_cmd_for_TTL_uncooled(send_cmd, title, root_view):
 
 # 2025.11.24 Control a Log Text File
 def log_control(text, log_dir="Log", file_name=None):
-    log_dir = Cons.log_path.rstrip('/\\')  # 끝의 / 또는 \ 제거
+    log_dir = Cons.log_path.rstrip('/\\')  # Trim trailing path separators.
     os.makedirs(log_dir, exist_ok=True)
 
     if file_name is None:
@@ -1124,5 +1124,6 @@ def log_control(text, log_dir="Log", file_name=None):
     except Exception as e:
         logging.error("Log file write error(%s): %s", full_path, e)
         return None
+
 
 

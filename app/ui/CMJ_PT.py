@@ -1,11 +1,11 @@
-import tkinter as tk
+﻿import tkinter as tk
 import socket
 import logging
 from typing import Literal
 
-import Constant as Cons
-import ASYNC_Temp as Async
-from CMJ_PT_Parser import (
+from app.config import Constant as Cons
+from app.core import ASYNC_Temp as Async
+from app.parsers.CMJ_PT_Parser import (
     convert_position_to_ascii_hex,
     generate_cmd,
     hex_text_to_int_array,
@@ -121,3 +121,4 @@ class CMJ_PT:
             client.close()
 
 # TODO: 2026.06.29 Script Test add
+

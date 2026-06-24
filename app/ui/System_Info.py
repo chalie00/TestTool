@@ -1,9 +1,9 @@
-# (2024.07.15) Init
+﻿# (2024.07.15) Init
 import tkinter as tk
 import threading
 
-import Constant as Cons
-import Communication as Comm
+from app.config import Constant as Cons
+from app.services import Communication as Comm
 
 
 class SysInfo:
@@ -211,16 +211,17 @@ class SysInfo:
                 elif Cons.selected_model == 'FineTree':
                     return
 
-                # 데이터 준비 완료 플래그 설정
+                # Mark the data as ready after the query sequence completes.
                 with self.data_lock:
                     self.data_ready = True
 
             except Exception as e:
                 print(f"Error during command execution: {e}")
 
-            # UI 업데이트를 위해 메인 스레드로 돌아가기
+            # Schedule the UI update back on the main Tk thread.
             self.root.after(100, self.update_ui)
             self.update_btn.config(state='normal')
 
-        # 별도의 스레드에서 작업 실행
+        # Run the blocking query sequence in a worker thread.
         threading.Thread(target=run_commands).start()
+

@@ -1,20 +1,20 @@
-import tkinter as tk
+﻿import tkinter as tk
 
-import CMJ_PT
-import UI_Function
-import UI_Function as Ufn
-import Video_RTSP as Vr
-import Constant as Cons
-import MainFunction as Mf
-import OnOff_Switch as onoffSW
-import Ptz as pt
-import Preset as Pre
-import CMJ_PT as cmj_pt
+from app.ui import CMJ_PT
+from app.ui import UI_Function
+from app.ui import UI_Function as Ufn
+from app.ui import Video_RTSP as Vr
+from app.config import Constant as Cons
+from app.core import MainFunction as Mf
+from app.ui import OnOff_Switch as onoffSW
+from app.ui import Ptz as pt
+from app.ui import Preset as Pre
+from app.ui import CMJ_PT as cmj_pt
 
 from tkinter import ttk
 from datetime import datetime
 
-from Communication import find_ch
+from app.services.Communication import find_ch
 
 
 class UIInit:
@@ -324,3 +324,4 @@ def test_code_save():
     Cons.network_obj['ipc_pw_txt'].get()
     for entry in Cons.network_obj.values():
         print(entry.get())
+

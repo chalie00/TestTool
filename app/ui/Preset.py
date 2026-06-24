@@ -1,10 +1,10 @@
-# (2024.09.30): Create preset file
+﻿# (2024.09.30): Create preset file
 import time
 import tkinter as tk
 import threading
 
-import Constant as Cons
-import Communication as Comm
+from app.config import Constant as Cons
+from app.services import Communication as Comm
 
 
 class Preset:
@@ -126,3 +126,4 @@ class Preset:
             'tour_save': self.tour_save_btn, 'tour_call': self.tour_call_btn,
             'tour_stop': self.tour_stop_btn
     }
+

@@ -1,22 +1,22 @@
-# 2025.11.20 Creating for async templet
+﻿# 2025.11.20 Creating for async templet
 import threading
 import os
 import logging
 
 
-import Constant as Cons
-import Communication as Comm
+from app.config import Constant as Cons
+from app.services import Communication as Comm
 
 from datetime import datetime
 
 # 2025.11.20 Async Templet
 def run_in_worker(fn, *, root_view=None, on_done=None, on_error=None, desc="worker"):
     """
-    fn        : 실제로 오래 걸리는 동기 함수 (blocking)
-    root_view : Tk root (UI 업데이트용). 없으면 콘솔/로그만.
-    on_done   : fn 이 성공했을 때, 결과를 받아 UI를 갱신하는 콜백(result) -> None
-    on_error  : 에러 발생 시 UI를 갱신하는 콜백(ex) -> None
-    desc      : 로그용 설명 텍스트
+    fn: Blocking function to run in a worker thread.
+    root_view: Tk root used to schedule UI updates with `after`.
+    on_done: Callback invoked on the UI thread with the worker result.
+    on_error: Callback invoked on the UI thread when an exception occurs.
+    desc: Label used in log messages.
     """
     if not callable(fn):
         ex = TypeError(f"{desc} expected callable fn, got {type(fn).__name__}")
@@ -40,7 +40,7 @@ def run_in_worker(fn, *, root_view=None, on_done=None, on_error=None, desc="work
 
     t = threading.Thread(target=worker, daemon=True)
     t.start()
-    return t   # 필요하면 thread 리턴, 필요없으면 무시해도 됨
+    return t  # Return the thread so callers can track it if needed.
 
 
 # 2025.11.20 NYX Series Async Function
@@ -87,3 +87,4 @@ def async_send(fn, title=None, root_view=None, log_name=None):
         logging.error('[NYX ERR] [%s] %s', title, ex)
 
     return run_in_worker(fn, root_view=root_view, on_done=done_func, on_error=on_error, desc=f'nyx: {title}')
+

@@ -1,10 +1,10 @@
-import threading
+﻿import threading
 import logging
 import icecream as ic
 
-import Constant as Cons
-import Communication as Comm
-import VideoPlayer as Vp
+from app.config import Constant as Cons
+from app.services import Communication as Comm
+from app.ui import VideoPlayer as Vp
 
 
 CMJ_PT_REQUIRED_CHANNELS = {'CH1', 'CH2'}
@@ -154,3 +154,4 @@ def start_video_player(parent, ch_name, info):
         ch_info = Cons.ch4_rtsp_info
         pos = {'x': ch_info['x'], 'y': ch_info['y'], 'h': ch_info['h'], 'w': ch_info['w']}
         Cons.video_player_ch4 = Vp.VideoPlayer(parent, info['url'], pos, ch_name)
+

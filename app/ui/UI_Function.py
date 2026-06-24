@@ -1,16 +1,16 @@
-import threading
+﻿import threading
 import time
 
 from datetime import datetime
 from tkinter import ttk
 from icecream import ic
 
-import Constant as Cons
-import MainFunction as Mf
-import Communication as Comm
-import Ptz as pt
-import Table as tb
-import ASYNC_Temp as Async
+from app.config import Constant as Cons
+from app.core import MainFunction as Mf
+from app.services import Communication as Comm
+from app.ui import Ptz as pt
+from app.ui import Table as tb
+from app.core import ASYNC_Temp as Async
 
 thread_running = threading.Event()
 thread = None
@@ -37,12 +37,12 @@ def model_select(event, parent, sel_op):
     command_data, ft_data = Mf.get_data_from_csv(Cons.cmd_path)
     if current_sel == "FineTree":
         Cons.fine_tree_cmd_data_all = ft_data
-        Cons.fine_tree_cmd_data_filtered = ft_data[:]   # ✅ 현재 뷰는 일단 전체
+        Cons.fine_tree_cmd_data_filtered = ft_data[:]  # Start with the full FineTree dataset.
     else:
         Cons.fine_tree_cmd_data_all = []
         Cons.fine_tree_cmd_data_filtered = []
 
-    # ✅ 테이블 재생성 금지, update만
+    # Reuse the existing table widget and only refresh its rows.
     Mf.update_table(Cons.tv, col_name, Cons.tree_view_size['w'], command_data)
 
     pt.PTZ(parent).refresh_ptz()
@@ -57,7 +57,7 @@ def search_command(event, parent, sear_fld, col_name, col_count, treeview):
     command_data, ft_data = Mf.get_data_from_csv(Cons.cmd_path)
     
     if Cons.selected_model == "FineTree":
-        Cons.fine_tree_cmd_data_all = ft_data  # 원본 갱신(엑셀 다시 읽었으니)
+        Cons.fine_tree_cmd_data_all = ft_data  # Refresh the source FineTree data.
         if query:
             paired = [(cmd, ft) for cmd, ft in zip(command_data, ft_data)
                       if query in str(cmd[0]).lower()]
@@ -67,13 +67,13 @@ def search_command(event, parent, sear_fld, col_name, col_count, treeview):
         filtered_cmd = [p[0] for p in paired]
         filtered_ft  = [p[1] for p in paired]
 
-        Cons.fine_tree_cmd_data_filtered = filtered_ft  # ✅ 화면용 갱신
+        Cons.fine_tree_cmd_data_filtered = filtered_ft  # Keep the filtered FineTree rows in sync.
         rows_to_show = filtered_cmd
     else:
         rows_to_show = [cmd for cmd in command_data
                         if (not query) or (query in str(cmd[0]).lower())]
 
-    # ✅ update만 호출
+    # Only refresh the existing table widget.
     Mf.update_table(treeview, col_name, Cons.tree_view_size['w'], rows_to_show)
     
 def interval_add(parent, interval):
@@ -97,7 +97,7 @@ def start_thread(parent, app, repeat_txt_fld, interval_txt_fld, treeview, script
     if not thread_running.is_set():
         thread_running.set()
         Cons.data_sending = True
-        # target에 함수 이름만 넘기고 인자는 별도로 설정 해야함
+        # Pass the target function itself; provide arguments separately.
         thread = threading.Thread(target=run_script, args=(parent, app, repeat_txt_fld, interval_txt_fld,
                                                            treeview, script_start_btn, script_stop_btn), daemon=True)
 
@@ -249,4 +249,5 @@ def pushed_pt_drv():
         Cons.channel_buttons['pt_drv'].config(bg='green')
         for i in range(3, 5):
             Cons.channel_buttons[f'CH{i}'].config(state='disabled')
+
 

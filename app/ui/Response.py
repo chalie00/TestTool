@@ -1,12 +1,12 @@
-# (2024.07.11) Init
+﻿# (2024.07.11) Init
 import tkinter as tk
 
 from tkinter import ttk
 from datetime import time, datetime
 from tkinter import font
 
-import Constant as Cons
-from CMJ_PT_Parser import (
+from app.config import Constant as Cons
+from app.parsers.CMJ_PT_Parser import (
     convert_ascii_hex_to_position, parse_camera_status,
     convert_ascii_hex_to_dec_encoder, convert_2byte_ascii_hex_to_dec,
     convert_dzoom_raw_to_rate
@@ -15,7 +15,8 @@ from CMJ_PT_Parser import (
 
 # 2025.07.02: Divide 7byte
 def split_by_bytes(hex_string: str):
-    hex_string = hex_string.lower().replace(" ", "")  # 공백 제거 및 소문자 정리
+    # Normalize the input by removing spaces and converting to lowercase.
+    hex_string = hex_string.lower().replace(" ", "")
     if len(hex_string) == 14:
         bytes = [hex_string[i:i + 14] for i in range(0, len(hex_string), 14)]
     elif len(hex_string) == 28:
@@ -27,7 +28,7 @@ def split_by_bytes(hex_string: str):
 
 # 2025.11.04: The displayed value includes the value converted to an int of msb(By5) + lsb(By6)
 def hex_to_signed(value: str, bits: int = 16) -> int:
-    """주어진 16진수를 지정된 비트수의 signed 값으로 변환"""
+    """Convert a hex string to a signed integer with the given bit width."""
     val = int(value, 16)
     if val >= 2 ** (bits - 1):
         val -= 2 ** bits
@@ -49,14 +50,14 @@ class Response:
         self.root = root
         self.pos = pos
 
-        # 1) 바깥 컨테이너 Frame (이걸 root에 직접 배치)
+        # Outer container frame for the response text area.
         self.frame = tk.Frame(self.root, bg=pos['bg'])
         self.frame.place(x=pos['x'],
                          y=pos['y'] + 5,
                          width=pos['w'] - 30,
                          height=pos['h'] + 15)
 
-        # 2) frame 안에서 Text + Scrollbar 를 pack으로 정렬
+        # Place the text widget and scrollbar inside the frame.
         self.text_widget = tk.Text(self.frame, bg='lightgray')
         self.text_font = font.Font(size=8)
         self.text_widget.configure(font=self.text_font)
@@ -68,7 +69,7 @@ class Response:
                                  orient='vertical',
                                  command=self.text_widget.yview)
 
-        # 왼쪽에 Text, 오른쪽에 Scrollbar
+        # Text on the left, scrollbar on the right.
         self.text_widget.pack(side='left', fill='both', expand=True)
         scrollbar.pack(side='right', fill='y')
 
@@ -80,7 +81,7 @@ class Response:
     # Response Text
     def dis_response_text(self):
         self.text_widget.config(state=tk.NORMAL)
-        self.text_widget.delete(1.0, tk.END)  # 기존 텍스트 지우기
+        self.text_widget.delete(1.0, tk.END)  # Clear existing text.
 
         if Cons.selected_model in ['Uncooled', 'NYX Series']:
             dis_txt = list(reversed(Cons.response_txt))
@@ -88,10 +89,10 @@ class Response:
                 self.text_widget.insert(tk.END, txt + '\n')
                 if Cons.selected_model == 'Uncooled':
                     # Get the start index for this line
-                    line_index = f"{i + 1}.0"  # Start of line (i+1 because line index in tkinter starts from 1)
-                    if len(txt) != 30 and len(txt) >= 12:  # 길이가 12 이상일 경우
-                        start_index = f"{i + 1}.8"  # 8번째 문자부터
-                        end_index = f"{i + 1}.12"  # 12번째 문자까지
+                    line_index = f"{i + 1}.0"  # Tkinter text lines are 1-based.
+                    if len(txt) != 30 and len(txt) >= 12:  # Highlight bytes 8-12 when present.
+                        start_index = f"{i + 1}.8"  # Start at the 8th character.
+                        end_index = f"{i + 1}.12"  # End at the 12th character.
                         self.text_widget.tag_add("bold", start_index, end_index)
                 # (2024.07.17) Move last line
                 # self.text_widget.see(tk.END)
@@ -232,3 +233,4 @@ class Response:
             self.text_widget.insert(tk.END, f"{pan}:{tilt}", "bold")
             self.text_widget.insert(tk.END, "\n")
         self.text_widget.see(tk.END)
+

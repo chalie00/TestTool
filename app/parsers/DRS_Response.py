@@ -1,5 +1,5 @@
-# (2024.08.14): Added for DRS Response
-import Constant as Cons
+﻿# (2024.08.14): Added for DRS Response
+from app.config import Constant as Cons
 
 
 # Bit0:Mirror, Bit1:Flip, Bit2:Invert, Bit8~Bit11:Digital Zoom, Bit12~Bit15:Color Palette
@@ -94,7 +94,7 @@ def check_data18(data):
     })
 
 
-# Bit0:ROI0 Enable, Bit1:ROI1 Enable,… Bit9:ROI9 Enable, Bit10:Min/Max Enable,
+# Bit0:ROI0 Enable, Bit1:ROI1 Enable, ... Bit9:ROI9 Enable, Bit10:Min/Max Enable,
 # Bit11:Mask0 Enable, Bit12:Mask1 Enable, Bit13:Mask2 Enable
 def check_data46(data):
     Cons.drs_response.update({
@@ -115,7 +115,7 @@ def check_data46(data):
     })
 
 
-# Bit0:ROI0 Alarm, Bit1:ROI1 Alarm,… Bit9:ROI9 Alarm
+# Bit0:ROI0 Alarm, Bit1:ROI1 Alarm, ... Bit9:ROI9 Alarm
 def check_data47(data):
     Cons.drs_response.update({
         'arm0': int(data[15], 2),
