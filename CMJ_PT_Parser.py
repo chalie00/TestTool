@@ -84,7 +84,7 @@ def parse_camera_status(res_cmd):
         'focus_pos': focus_pos,
         'dzoom': f'x{dzoom_rate}',
         'defog': defog,
-        'stabilizer': stabilizer,
+        'dis': stabilizer,
     }
 
 

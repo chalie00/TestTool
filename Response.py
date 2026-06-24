@@ -6,7 +6,11 @@ from datetime import time, datetime
 from tkinter import font
 
 import Constant as Cons
-from CMJ_PT_Parser import convert_ascii_hex_to_position, parse_camera_status,  convert_ascii_hex_to_dec_encoder
+from CMJ_PT_Parser import (
+    convert_ascii_hex_to_position, parse_camera_status,
+    convert_ascii_hex_to_dec_encoder, convert_2byte_ascii_hex_to_dec,
+    convert_dzoom_raw_to_rate
+)
 
 
 # 2025.07.02: Divide 7byte
@@ -19,6 +23,7 @@ def split_by_bytes(hex_string: str):
     else:
         bytes = [hex_string]
     return bytes
+
 
 # 2025.11.04: The displayed value includes the value converted to an int of msb(By5) + lsb(By6)
 def hex_to_signed(value: str, bits: int = 16) -> int:
@@ -37,6 +42,7 @@ def convert_speed_ascii_hex_to_dec(ascii_hex):
     hex_text = ''.join(chr(int(ascii_hex[i:i + 2], 16)) for i in range(0, len(ascii_hex), 2))
 
     return abs(int(hex_text, 16) - 64)
+
 
 class Response:
     def __init__(self, root, pos):
@@ -115,7 +121,7 @@ class Response:
             self.text_widget.insert(tk.END, self.spaced_hex(res_cmd[start:end]), "bold")
         if after:
             self.text_widget.insert(tk.END, f" {after}")
-        self.text_widget.insert(tk.END, f" : '{label}' {value_text}\n")
+        self.text_widget.insert(tk.END, f" : {label} {value_text}\n")
 
     def insert_camera_status_response(self, time_str, camera_sta):
         status_text = ", ".join([f"{key}: {value}" for key, value in camera_sta.items()])
@@ -127,23 +133,46 @@ class Response:
 
         if addr in ['3031', '3032'] and cmd in ['0162', '3030']:
             if len(res_cmd) == 20:
-                print('20')
                 encoder = convert_ascii_hex_to_dec_encoder(res_cmd[10:18])
                 self.insert_cmj_response(
                     time_str=time_str,
                     res_cmd=res_cmd,
                     before_end=10,
                     bold_ranges=[(10, 18)],
-                    after_start=28,
-                    label='Encoder value is ',
+                    after_start=18,
+                    label='Encoder value is',
                     value_text=f'{encoder}',
                 )
                 return
             elif len(res_cmd) == 16:
-                print('16')
+                defog = convert_2byte_ascii_hex_to_dec(res_cmd[10:14])
+                dzoom_raw = convert_2byte_ascii_hex_to_dec(res_cmd[10:14])
+                if dzoom_raw <= 70 and dzoom_raw%10 == 0:
+                    dzoom = convert_dzoom_raw_to_rate(dzoom_raw)
+                else:
+                    dzoom = 'XXX'
+                self.insert_cmj_response(
+                    time_str=time_str,
+                    res_cmd=res_cmd,
+                    before_end=10,
+                    bold_ranges=[(10, 14)],
+                    after_start=14,
+                    label=f'\n If the query is dzoom, the dzoom is x{dzoom}, otherwise, the value for defog is {defog}.',
+                    value_text=f'',
+                )
                 return
             elif len(res_cmd) == 14:
-                print('14')
+                dis_raw = res_cmd[10:12]
+                dis = 'OFF' if dis_raw == '30' else 'ON'
+                self.insert_cmj_response(
+                    time_str=time_str,
+                    res_cmd=res_cmd,
+                    before_end=10,
+                    bold_ranges=[(10, 12)],
+                    after_start=12,
+                    label=f'DIS is ',
+                    value_text=f'{dis}',
+                )
                 return
             camera_sta = parse_camera_status(res_cmd)
             print(camera_sta)
@@ -203,4 +232,3 @@ class Response:
             self.text_widget.insert(tk.END, f"{pan}:{tilt}", "bold")
             self.text_widget.insert(tk.END, "\n")
         self.text_widget.see(tk.END)
-

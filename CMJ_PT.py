@@ -37,7 +37,7 @@ class CMJ_PT:
         self.pan_tilt_spd_txt_fld.place(x=Cons.cmj_pan_tilt_spd_txt_fld['x'], y=Cons.cmj_pan_tilt_spd_txt_fld['y'],
                                         width=Cons.cmj_pan_tilt_spd_txt_fld['w'],
                                         height=Cons.cmj_pan_tilt_spd_txt_fld['h'])
-        self.pan_tilt_spd_txt_fld.insert(0, 10)
+        self.pan_tilt_spd_txt_fld.insert(0, 30)
         # self.pan_tilt_spd_txt_fld.bind('<Return>', lambda event: self.send_speed_async())
 
         self.call_move_btn = tk.Button(self.root, text=Cons.cmj_move_call_btn['text'],
